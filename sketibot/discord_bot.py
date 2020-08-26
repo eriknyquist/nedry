@@ -2,11 +2,6 @@ import os
 import discord
 import threading
 
-# The guild ID of the only guild this bot will send messages to
-GUILD_ID = 626753649602986024
-
-CHANNEL_NAME = 'live-strimmers'
-
 
 class MessageResponse(object):
     def __init__(self, response_data, channel=None, member=None):
@@ -30,15 +25,12 @@ class DiscordBot(object):
         async def on_guild_available(guild):
             if self.guild_id == guild.id:
                 for c in guild.text_channels:
-                    print(c.name)
                     if c.name == self.channel_name:
                         self.channel = c
                         break
 
             if self.channel is None:
                 raise RuntimeError("Unable to find channel '%s'" % CHANNEL_NAME)
-
-            await self.channel.send("Testing!")
 
         @self.client.event
         async def on_connect():
@@ -71,8 +63,8 @@ class DiscordBot(object):
     def thread_task(self):
         pass
 
-    def send_message(self, channel_name, message):
-        pass
+    async def send_message(self, message):
+        await self.channel.send(message)
 
     def on_connect(self):
         pass
@@ -84,7 +76,7 @@ class DiscordBot(object):
         pass
 
 def main():
-    bot = DiscordBot(os.environ['SKETIBOT_DISCORD_TOKEN'], GUILD_ID, CHANNEL_NAME)
+    bot = build_sketi_bot()
     bot.run()
 
 if __name__ == "__main__":
