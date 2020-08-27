@@ -44,16 +44,15 @@ def read_streamer_info(client, users):
 def check_streamers(config, client, bot, users):
     channels = read_streamer_info(client, users)
     msgs = []
-    send_msg = False
 
     for c in channels:
+        #print("%s live: %s" % (c.name, c.is_live))
         if c.name in streamers:
-            if c.is_live and not streamers[c.name].is_live:
-                send_msg = True
+            if c.is_live and (not streamers[c.name].is_live):
+                msgs.append("%s is live! watch it here %s" % (c.name, c.url))
+            elif (not c.is_live) and streamers[c.name].is_live:
+                msgs.append("%s stopped streaming :(" % c.name)
 
-        if send_msg:
-            msgs.append("%s is live! watch it here %s" % (c.name, c.url))  
-        
         streamers[c.name] = c
 
     return msgs
@@ -64,8 +63,19 @@ def streamer_check_loop(config, client, bot, users):
 
         msgs = check_streamers(config, client, bot, users)
         for msg in msgs:
-            asyncio.run_coroutine_threadsafe(bot.send_message(msg),
-                                             main_event_loop)
+            print(msg)
+            #asyncio.run_coroutine_threadsafe(bot.send_message(msg),
+            #                                 main_event_loop)
+
+def translate_usernames(client, names, max_per_request=16):
+    users = []
+
+    while len(names) > 0:
+        req = names[:max_per_request]
+        users.extend(client.users.translate_usernames_to_ids(req))
+        names = names[max_per_request:]
+
+    return users
 
 def main():
     parser = argparse.ArgumentParser()
@@ -84,9 +94,12 @@ def main():
     config = BotConfig(args.config_file)
 
     client = TwitchClient(client_id=config.twitch_clientid)
-    users = client.users.translate_usernames_to_ids(config.streamers)
+    print(config.streamers)
+    users = translate_usernames(client, config.streamers)
 
     bot = DiscordBot(config.discord_token, config.discord_guildid, config.discord_channel)
+
+    _ = check_streamers(config, client, bot, users)
     thread = threading.Thread(target=streamer_check_loop, args=(config, client, bot, users))
     thread.start()
 
