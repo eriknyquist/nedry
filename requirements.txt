@@ -1,2 +1,2 @@
 discord
-twitch-python
+python-twitch-client

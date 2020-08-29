@@ -12,7 +12,7 @@ with open(README, 'r') as f:
     long_description = f.read()
 
 setup(
-    name='twitch_monitor_discord_bot'
+    name='twitch_monitor_discord_bot',
     version=__version__,
     description=('A discord bot for monitoring twitch streams'),
     long_description=long_description,
