@@ -1,6 +1,11 @@
 import os
 import discord
 import threading
+import logging
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class MessageResponse(object):
@@ -23,6 +28,8 @@ class DiscordBot(object):
 
         @self.client.event
         async def on_guild_available(guild):
+            logger.info("connected to guild \"%s\"", guild.name)
+
             if self.guild_id == guild.id:
                 for c in guild.text_channels:
                     if c.name == self.channel_name:

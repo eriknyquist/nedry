@@ -1,4 +1,10 @@
 import json
+import logging
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 TWITCH_CLIENTID_KEY = "twitch_client_id"
 TWITCH_CLIENTID_DEFAULT = ""
@@ -21,6 +27,11 @@ HOST_STREAM_DEFAULT = ""
 SILENT_HOST_STREAM_KEY = "silent_when_host_streaming"
 SILENT_HOST_STREAM_DEFAULT = False
 
+STREAM_START_MESSAGES_KEY = "stream_start_messages"
+STREAM_START_MESSAGES_DEFAULT = [
+    '{streamer_name} just started streaming! Check them out here: {stream_url}'
+]
+
 STREAMER_LIST_KEY = "streamers_to_monitor"
 
 
@@ -36,8 +47,10 @@ class BotConfig(object):
         return BotConfig(filename)
     
     def __init__(self, filename=None):
+        self.filename = filename
         if filename is None:
             # No filename passed- use default values
+            self.stream_start_messages = STREAM_START_MESSAGES_DEFAULT
             self.twitch_clientid = TWITCH_CLIENTID_DEFAULT
             self.discord_token = DISCORD_TOKEN_DEFAULT
             self.discord_guildid = DISCORD_GUILDID_DEFAULT
@@ -48,10 +61,11 @@ class BotConfig(object):
             self.streamers = []
         else:
             # Load provided config file
-            self.filename = filename
             self.load_from_file(filename)
 
     def load_from_file(self, filename):
+        logger.info("loading configuration from %s", filename)
+
         with open(filename, 'r') as fh:
             attrs = json.load(fh)
 
@@ -60,17 +74,20 @@ class BotConfig(object):
         except Exception:
             return None
 
+        self.stream_start_messages = load_cfg_default(attrs, STREAM_START_MESSAGES_KEY, STREAM_START_MESSAGES_DEFAULT)
         self.twitch_clientid = load_cfg_default(attrs, TWITCH_CLIENTID_KEY, TWITCH_CLIENTID_DEFAULT)
         self.discord_token = load_cfg_default(attrs, DISCORD_TOKEN_KEY, DISCORD_TOKEN_DEFAULT)
         self.discord_guildid = load_cfg_default(attrs, DISCORD_GUILDID_KEY, DISCORD_GUILDID_DEFAULT)
         self.discord_channel = load_cfg_default(attrs, DISCORD_CHANNEL_KEY, DISCORD_CHANNEL_DEFAULT)
         self.poll_period_secs = load_cfg_default(attrs, POLL_PERIOD_KEY, POLL_PERIOD_DEFAULT)
         self.host_streamer = load_cfg_default(attrs, HOST_STREAM_KEY, HOST_STREAM_DEFAULT)
-        self.slient_during_host_stream = load_cfg_default(attrs, SILENT_HOST_STREAM_KEY, SILENT_HOST_STREAM_DEFAULT)
+        self.silent_during_host_stream = load_cfg_default(attrs, SILENT_HOST_STREAM_KEY, SILENT_HOST_STREAM_DEFAULT)
 
         return self
 
     def save_to_file(self, filename=None):
+        logger.info("saving configuration to %s", filename)
+
         if filename is None:
             filename = self.filename
 
