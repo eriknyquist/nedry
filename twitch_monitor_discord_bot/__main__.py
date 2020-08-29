@@ -6,9 +6,8 @@ import random
 import os
 import logging
 
-from twitch import TwitchClient
-
 from twitch_monitor_discord_bot.discord_bot import DiscordBot
+from twitch_monitor_discord_bot.twitch_monitor import TwitchMonitor
 from twitch_monitor_discord_bot.config import BotConfig, STREAM_START_MESSAGES_KEY
 
 
@@ -29,33 +28,8 @@ format_args = {
     FMT_TOK_STREAM_URL: None
 }
 
-class TwitchChannel(object):
-    def __init__(self, channel, stream):
-        self.channel = channel
-        self.stream = stream
-
-    @property
-    def is_live(self):
-        return self.stream is not None
-
-    @property
-    def name(self):
-        return self.channel.name
-
-    @property
-    def url(self):
-        return self.channel.url
-
-def read_streamer_info(client, user):
-    channel = client.channels.get_by_id(user.id)
-    stream = client.streams.get_stream_by_user(user.id)
-    return TwitchChannel(channel, stream)
-
-def read_all_streamer_info(client, users):
-    return [read_streamer_info(client, u) for u in users]
-
-def check_streamers(config, client, bot, users, host_user):
-    channels = read_all_streamer_info(client, users)
+def check_streamers(config, monitor, bot, host_user):
+    channels = monitor.read_all_streamer_info()
     msgs = []
 
     # If configured, check whether host is streaming before
@@ -80,25 +54,15 @@ def check_streamers(config, client, bot, users, host_user):
         streamers[c.name] = c
 
     return msgs
-    
-def streamer_check_loop(config, client, bot, users, host_user):
+
+def streamer_check_loop(config, monitor, bot, host_user):
     while True:
         time.sleep(config.poll_period_secs)
 
-        msgs = check_streamers(config, client, bot, users, host_user)
+        msgs = check_streamers(config, monitor, bot, host_user)
         for msg in msgs:
-            asyncio.run_coroutine_threadsafe(bot.send_message(msg),
-                                             main_event_loop)
-
-def translate_usernames(client, names, max_per_request=16):
-    users = []
-
-    while len(names) > 0:
-        req = names[:max_per_request]
-        users.extend(client.users.translate_usernames_to_ids(req))
-        names = names[max_per_request:]
-
-    return users
+            logger.debug("sending message to channel '%s'" % config.discord_channel)
+            asyncio.run_coroutine_threadsafe(bot.send_message(msg), main_event_loop)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -125,20 +89,19 @@ def main():
                                                            STREAM_START_MESSAGES_KEY))
             return
 
-    client = TwitchClient(client_id=config.twitch_clientid)
-    users = translate_usernames(client, config.streamers)
+    monitor = TwitchMonitor(config.twitch_clientid, config.streamers)
 
     host_user = None
     if config.host_streamer not in ["", None]:
-        host_user = client.users.translate_usernames_to_ids([config.host_streamer])[0]
+        host_user = monitor.translate_username(config.host_streamer)
 
     bot = DiscordBot(config.discord_token, config.discord_guildid, config.discord_channel)
 
-    _ = check_streamers(config, client, bot, users, host_user)
-    thread = threading.Thread(target=streamer_check_loop, args=(config, client, bot, users, host_user))
+    _ = check_streamers(config, monitor, bot, host_user)
+    thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot, host_user))
     thread.start()
 
     bot.run()
-    
+
 if __name__ == "__main__":
     main()
