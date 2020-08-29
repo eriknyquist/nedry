@@ -47,4 +47,3 @@ class TwitchMonitor(object):
 
     def read_all_streamer_info(self):
         return [self.read_streamer_info(u) for u in self.users]
-
