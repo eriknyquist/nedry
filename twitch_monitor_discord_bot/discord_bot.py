@@ -1,10 +1,13 @@
 import os
 import discord
+import asyncio
 import logging
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+main_event_loop = asyncio.get_event_loop()
 
 
 class MessageResponse(object):
@@ -66,8 +69,8 @@ class DiscordBot(object):
     def stop(self):
         self.client.logout()
 
-    async def send_message(self, message):
-        await self.channel.send(message)
+    def send_message(self, message):
+        asyncio.run_coroutine_threadsafe(self.channel.send(msg), main_event_loop)
 
     def on_connect(self):
         pass

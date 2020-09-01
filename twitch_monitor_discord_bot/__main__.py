@@ -1,5 +1,4 @@
 import argparse
-import asyncio
 import time
 import threading
 import random
@@ -17,7 +16,6 @@ logger.setLevel(logging.INFO)
 
 DEFAULT_CONFIG_FILE = "default_bot_config.json"
 
-main_event_loop = asyncio.get_event_loop()
 streamers = {}
 
 FMT_TOK_STREAMER_NAME = "streamer_name"
@@ -62,7 +60,7 @@ def streamer_check_loop(config, monitor, bot, host_user):
         msgs = check_streamers(config, monitor, bot, host_user)
         for msg in msgs:
             logger.debug("sending message to channel '%s'" % config.discord_channel)
-            asyncio.run_coroutine_threadsafe(bot.send_message(msg), main_event_loop)
+            bot.send_message(msg)
 
 def main():
     parser = argparse.ArgumentParser()
