@@ -100,5 +100,6 @@ class BotConfig(object):
                 STREAMER_LIST_KEY: self.streamers,
                 HOST_STREAM_KEY: self.host_streamer,
                 SILENT_HOST_STREAM_KEY: self.silent_during_host_stream,
-                POLL_PERIOD_KEY: self.poll_period_secs
+                POLL_PERIOD_KEY: self.poll_period_secs,
+                STREAM_START_MESSAGES_KEY: self.stream_start_messages
             }, fh, indent=4)
