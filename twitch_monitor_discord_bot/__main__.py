@@ -36,7 +36,7 @@ def check_streamers(config, monitor, bot, host_user):
     # making any announcements
     if config.silent_during_host_stream:
         if host_user is not None:
-            host = read_streamer_info(host_user)
+            host = monitor.read_streamer_info(host_user)
             if host.is_live:
                 # Host is streaming, make no announcements
                 return []
@@ -99,9 +99,13 @@ def main():
 
     _ = check_streamers(config, monitor, bot, host_user)
     thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot, host_user))
+    thread.daemon = True
     thread.start()
 
-    bot.run()
+    try:
+        bot.run()
+    except KeyboardInterrupt:
+        bot.stop()
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,5 @@
 import os
 import discord
-import threading
 import logging
 
 
@@ -20,9 +19,6 @@ class DiscordBot(object):
         self.guild_id = guild_id
         self.channel_name = channel_name
         self.client = discord.Client()
-
-        self.thread = threading.Thread(target=self.thread_task)
-        self.thread.start()
 
         self.channel = None
 
@@ -67,8 +63,8 @@ class DiscordBot(object):
     def run(self):
         self.client.run(self.token)
 
-    def thread_task(self):
-        pass
+    def stop(self):
+        self.client.logout()
 
     async def send_message(self, message):
         await self.channel.send(message)

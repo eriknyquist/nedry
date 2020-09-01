@@ -26,7 +26,7 @@ class TwitchMonitor(object):
     def translate_username(self, name):
         ret = self.client.users.translate_usernames_to_ids([name])
         if len(ret) > 0:
-            return ret
+            return ret[0]
 
         return None
 
