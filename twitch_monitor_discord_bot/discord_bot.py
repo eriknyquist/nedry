@@ -70,7 +70,7 @@ class DiscordBot(object):
         self.client.logout()
 
     def send_message(self, message):
-        asyncio.run_coroutine_threadsafe(self.channel.send(msg), main_event_loop)
+        asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
 
     def on_connect(self):
         pass
