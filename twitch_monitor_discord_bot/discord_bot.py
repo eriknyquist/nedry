@@ -2,7 +2,7 @@ import os
 import discord
 import asyncio
 import logging
-
+import threading
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -22,7 +22,7 @@ class DiscordBot(object):
         self.guild_id = guild_id
         self.channel_name = channel_name
         self.client = discord.Client()
-
+        self.guild_available = threading.Event()
         self.channel = None
 
         @self.client.event
@@ -37,6 +37,8 @@ class DiscordBot(object):
 
             if self.channel is None:
                 raise RuntimeError("Unable to find channel '%s'" % CHANNEL_NAME)
+
+            self.guild_available.set()
 
         @self.client.event
         async def on_connect():

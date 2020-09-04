@@ -54,6 +54,8 @@ def check_streamers(config, monitor, bot, host_user):
     return msgs
 
 def streamer_check_loop(config, monitor, bot, host_user):
+    bot.guild_available.wait()
+
     while True:
         time.sleep(config.poll_period_secs)
 
