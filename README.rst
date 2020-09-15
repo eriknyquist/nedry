@@ -40,6 +40,7 @@ The configuration file must be a .json file of the following form:
         "poll_period_seconds": 60,
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
+        "startup_message": "Hello! I am a bot who can monitor twitch streams for you.",
         "streamers_to_monitor": [
             "mrsketi"
         ]
@@ -64,6 +65,8 @@ Description of fields
 * ``host_streamer``: Enter the name of your own twitch channel here (optional).
 
 * ``silent_when_host_streaming``: If true, no announcements about other streams will be made when host streamer is live.
+
+* ``startup_message``: Enter the message you would like the bot to send when it comes online after being started up here.
 
 * ``streamers_to_monitor``: Enter the list of streamer names to monitor here.
 

@@ -56,6 +56,9 @@ def check_streamers(config, monitor, bot, host_user):
 def streamer_check_loop(config, monitor, bot, host_user):
     bot.guild_available.wait()
 
+    if config.startup_message is not None:
+        bot.send_message(config.startup_message)
+
     while True:
         time.sleep(config.poll_period_secs)
 

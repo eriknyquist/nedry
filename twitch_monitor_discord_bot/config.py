@@ -27,6 +27,9 @@ HOST_STREAM_DEFAULT = ""
 SILENT_HOST_STREAM_KEY = "silent_when_host_streaming"
 SILENT_HOST_STREAM_DEFAULT = False
 
+STARTUP_MESSAGE_KEY = "startup_message"
+STARTUP_MESSAGE_DEFAULT = None
+
 STREAM_START_MESSAGES_KEY = "stream_start_messages"
 STREAM_START_MESSAGES_DEFAULT = [
     '{streamer_name} just started streaming! Check them out here: {stream_url}'
@@ -58,6 +61,7 @@ class BotConfig(object):
             self.poll_period_secs = POLL_PERIOD_DEFAULT
             self.host_streamer = HOST_STREAM_DEFAULT
             self.silent_during_host_stream = SILENT_HOST_STREAM_DEFAULT
+            self.startup_message = STARTUP_MESSAGE_DEFAULT
             self.streamers = []
         else:
             # Load provided config file
@@ -82,6 +86,7 @@ class BotConfig(object):
         self.poll_period_secs = load_cfg_default(attrs, POLL_PERIOD_KEY, POLL_PERIOD_DEFAULT)
         self.host_streamer = load_cfg_default(attrs, HOST_STREAM_KEY, HOST_STREAM_DEFAULT)
         self.silent_during_host_stream = load_cfg_default(attrs, SILENT_HOST_STREAM_KEY, SILENT_HOST_STREAM_DEFAULT)
+        self.startup_message = load_cfg_default(attrs, STARTUP_MESSAGE_KEY, STARTUP_MESSAGE_DEFAULT)
 
         return self
 
@@ -101,5 +106,6 @@ class BotConfig(object):
                 HOST_STREAM_KEY: self.host_streamer,
                 SILENT_HOST_STREAM_KEY: self.silent_during_host_stream,
                 POLL_PERIOD_KEY: self.poll_period_secs,
-                STREAM_START_MESSAGES_KEY: self.stream_start_messages
+                STREAM_START_MESSAGES_KEY: self.stream_start_messages,
+                STARTUP_MESSAGE_KEY: self.startup_message
             }, fh, indent=4)
