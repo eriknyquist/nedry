@@ -56,8 +56,8 @@ def check_streamers(config, monitor, bot, host_user):
 def streamer_check_loop(config, monitor, bot, host_user):
     bot.guild_available.wait()
 
-    if config.startup_message is not None:
-        bot.send_message(config.startup_message)
+    #if config.startup_message is not None:
+    #    bot.send_message(config.startup_message)
 
     while True:
         time.sleep(config.poll_period_secs)
@@ -98,7 +98,7 @@ def main():
     if config.host_streamer not in ["", None]:
         host_user = monitor.translate_username(config.host_streamer)
 
-    bot = DiscordBot(config.discord_token, config.discord_guildid, config.discord_channel)
+    bot = DiscordBot(config, monitor)
 
     _ = check_streamers(config, monitor, bot, host_user)
     thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot, host_user))

@@ -24,6 +24,9 @@ POLL_PERIOD_DEFAULT = 60
 HOST_STREAM_KEY = "host_streamer"
 HOST_STREAM_DEFAULT = ""
 
+ADMIN_USERS_KEY = "discord_admin_users"
+ADMIN_USERS_DEFAULT = []
+
 SILENT_HOST_STREAM_KEY = "silent_when_host_streaming"
 SILENT_HOST_STREAM_DEFAULT = False
 
@@ -62,6 +65,7 @@ class BotConfig(object):
             self.host_streamer = HOST_STREAM_DEFAULT
             self.silent_during_host_stream = SILENT_HOST_STREAM_DEFAULT
             self.startup_message = STARTUP_MESSAGE_DEFAULT
+            self.admin_users = ADMIN_USERS_DEFAULT
             self.streamers = []
         else:
             # Load provided config file
@@ -87,14 +91,15 @@ class BotConfig(object):
         self.host_streamer = load_cfg_default(attrs, HOST_STREAM_KEY, HOST_STREAM_DEFAULT)
         self.silent_during_host_stream = load_cfg_default(attrs, SILENT_HOST_STREAM_KEY, SILENT_HOST_STREAM_DEFAULT)
         self.startup_message = load_cfg_default(attrs, STARTUP_MESSAGE_KEY, STARTUP_MESSAGE_DEFAULT)
+        self.admin_users = load_cfg_default(attrs, ADMIN_USERS_KEY, ADMIN_USERS_DEFAULT)
 
         return self
 
     def save_to_file(self, filename=None):
-        logger.info("saving configuration to %s", filename)
-
         if filename is None:
             filename = self.filename
+
+        logger.info("saving configuration to %s", filename)
 
         with open(filename, 'w') as fh:
             json.dump({
@@ -107,5 +112,6 @@ class BotConfig(object):
                 SILENT_HOST_STREAM_KEY: self.silent_during_host_stream,
                 POLL_PERIOD_KEY: self.poll_period_secs,
                 STREAM_START_MESSAGES_KEY: self.stream_start_messages,
-                STARTUP_MESSAGE_KEY: self.startup_message
+                STARTUP_MESSAGE_KEY: self.startup_message,
+                ADMIN_USERS_KEY: self.admin_users
             }, fh, indent=4)

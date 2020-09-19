@@ -40,12 +40,15 @@ The configuration file must be a .json file of the following form:
         "poll_period_seconds": 60,
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
+        "discord_admin_users" : [422222187366187010, 487222187346187011],
         "startup_message": "Hello! I am a bot who can monitor twitch streams for you.",
         "streamers_to_monitor": [
-            "mrsketi"
+            "mrsketi",
+            "none_of_many"
         ]
         "stream_start_messages": [
-            "{streamer_name} is now streaming! watch it here: {stream_url}"
+            "{streamer_name} is now streaming! watch it here: {stream_url}",
+            "{streamer_name} is doing something, go see it here: {stream_url}"
         ]
     }
 
@@ -65,6 +68,9 @@ Description of fields
 * ``host_streamer``: Enter the name of your own twitch channel here (optional).
 
 * ``silent_when_host_streaming``: If true, no announcements about other streams will be made when host streamer is live.
+
+* ``discord_admin_user``: Multiple discord user ID numbers can be added here. Users added
+  here will be allowed to configure the bot by sending commands in discord.
 
 * ``startup_message``: Enter the message you would like the bot to send when it comes online after being started up here.
 

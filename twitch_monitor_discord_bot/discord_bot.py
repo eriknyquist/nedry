@@ -4,6 +4,8 @@ import asyncio
 import logging
 import threading
 
+from twitch_monitor_discord_bot.command_processor import CommandProcessor, twitch_monitor_bot_command_list
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -17,11 +19,14 @@ class MessageResponse(object):
         self.response_data = response_data
 
 class DiscordBot(object):
-    def __init__(self, token, guild_id, channel_name):
-        self.token = token
-        self.guild_id = guild_id
-        self.channel_name = channel_name
+    def __init__(self, config, twitch_monitor):
+        self.token = config.discord_token
+        self.guild_id = config.discord_guildid
+        self.channel_name = config.discord_channel
+        self.admin_users = config.admin_users
+        self.config = config
         self.client = discord.Client()
+        self.cmdprocessor = CommandProcessor(config, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
         self.channel = None
 
@@ -50,7 +55,13 @@ class DiscordBot(object):
 
         @self.client.event
         async def on_message(message):
-            resp = self.on_message(message)
+            resp = None
+
+            if (self.mention() in message.content) or (self.nickmention() in message.content):
+                resp = self.on_mention(message)
+            else:
+                resp = self.on_message(message)
+
             if resp is None:
                 return
 
@@ -64,6 +75,12 @@ class DiscordBot(object):
             else:
                 raise RuntimeError("malformed response: either member or "
                                    "channel must be set")
+
+    def mention(self):
+        return "<@%d>" % self.client.user.id
+
+    def nickmention(self):
+        return"<@!%d>" % self.client.user.id
 
     def run(self):
         self.client.run(self.token)
@@ -82,6 +99,14 @@ class DiscordBot(object):
 
     def on_message(self, message):
         pass
+
+    def on_mention(self, message):
+        if message.author.id in self.admin_users:
+            msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
+            resp = self.cmdprocessor.process(msg)
+
+            if resp is not None:
+                return MessageResponse(resp, channel=message.channel)
 
 def main():
     bot = build_sketi_bot()
