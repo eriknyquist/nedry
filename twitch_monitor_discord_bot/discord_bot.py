@@ -26,7 +26,7 @@ class DiscordBot(object):
         self.admin_users = config.admin_users
         self.config = config
         self.client = discord.Client()
-        self.cmdprocessor = CommandProcessor(config, twitch_monitor, twitch_monitor_bot_command_list)
+        self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
         self.channel = None
 

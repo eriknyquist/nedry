@@ -56,6 +56,13 @@ Removes a phrase from the list of phrases being used for stream announcements.
 numbered list produced by the 'addphrase' command.
 """
 
+CMD_SAY_HELP = """
+{0} [stuff to say]
+
+Causes the bot to send a message in the announcements channel, immediately, containing
+whatever you type in place of [stuff to say].
+"""
+
 class Command(object):
     def __init__(self, word, handler, helptext):
         self.word = word
@@ -67,9 +74,10 @@ class Command(object):
 
 
 class CommandProcessor(object):
-    def __init__(self, config, twitch_monitor, command_list):
+    def __init__(self, config, bot, twitch_monitor, command_list):
         self.twitch_monitor = twitch_monitor
         self.config = config
+        self.bot = bot
         self.cmds = {x.word: x for x in command_list}
 
     def help(self):
@@ -191,6 +199,13 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
 
     return "OK! Removed the following phrase:\n```%s```" % deleted
 
+def cmd_say(proc, config, twitch_monitor, args):
+    if len(args) < 1:
+        return "You didn't write a message for me to say. So I'll say nothing."
+
+    proc.bot.send_message(" ".join(args))
+    return "OK! message sent to channel '%s'" % config.discord_channel
+
 twitch_monitor_bot_command_list = [
     Command("help", cmd_help, "Are you serious?"),
     Command("streamers", cmd_streamers, CMD_STREAMERS_HELP),
@@ -199,5 +214,6 @@ twitch_monitor_bot_command_list = [
     Command("phrases", cmd_phrases, CMD_PHRASES_HELP),
     Command("addphrase", cmd_addphrase, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, CMD_REMOVEPHRASE_HELP),
-    Command("nocompetition", cmd_nocompetition, CMD_NOCOMPETITION_HELP)
+    Command("nocompetition", cmd_nocompetition, CMD_NOCOMPETITION_HELP),
+    Command("say", cmd_say, CMD_SAY_HELP)
 ]
