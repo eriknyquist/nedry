@@ -5,6 +5,7 @@ import random
 import os
 import logging
 
+from twitch_monitor_discord_bot import utils
 from twitch_monitor_discord_bot.discord_bot import DiscordBot
 from twitch_monitor_discord_bot.twitch_monitor import TwitchMonitor
 from twitch_monitor_discord_bot.config import BotConfig, STREAM_START_MESSAGES_KEY
@@ -17,14 +18,6 @@ logger.setLevel(logging.INFO)
 DEFAULT_CONFIG_FILE = "default_bot_config.json"
 
 streamers = {}
-
-FMT_TOK_STREAMER_NAME = "streamer_name"
-FMT_TOK_STREAM_URL = "stream_url"
-
-format_args = {
-    FMT_TOK_STREAMER_NAME: None,
-    FMT_TOK_STREAM_URL: None
-}
 
 def check_streamers(config, monitor, bot, host_user):
     channels = monitor.read_all_streamer_info()
@@ -44,8 +37,8 @@ def check_streamers(config, monitor, bot, host_user):
         if c.name in streamers:
             if c.is_live and (not streamers[c.name].is_live):
                 logger.debug("streamer %s went live" % c.name)
-                format_args[FMT_TOK_STREAMER_NAME] = c.name
-                format_args[FMT_TOK_STREAM_URL] = c.url
+                format_args[utils.FMT_TOK_STREAMER_NAME] = c.name
+                format_args[utils.FMT_TOK_STREAM_URL] = c.url
                 fmtstring = random.choice(config.stream_start_messages)
                 msgs.append(fmtstring.format(**format_args))
 
@@ -56,8 +49,8 @@ def check_streamers(config, monitor, bot, host_user):
 def streamer_check_loop(config, monitor, bot, host_user):
     bot.guild_available.wait()
 
-    #if config.startup_message is not None:
-    #    bot.send_message(config.startup_message)
+    if config.startup_message is not None:
+        bot.send_message(config.startup_message)
 
     while True:
         time.sleep(config.poll_period_secs)
@@ -85,9 +78,7 @@ def main():
 
     # Make sure stream start messages are valid
     for m in config.stream_start_messages:
-        try:
-            dd = m.format(**format_args)
-        except KeyError:
+        if not utils.validate_format_tokens(m):
             print("%s: unrecognized format token in %s" % (config.filename,
                                                            STREAM_START_MESSAGES_KEY))
             return
