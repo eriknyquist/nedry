@@ -37,10 +37,10 @@ def check_streamers(config, monitor, bot, host_user):
         if c.name in streamers:
             if c.is_live and (not streamers[c.name].is_live):
                 logger.debug("streamer %s went live" % c.name)
-                format_args[utils.FMT_TOK_STREAMER_NAME] = c.name
-                format_args[utils.FMT_TOK_STREAM_URL] = c.url
+                utils.format_args[utils.FMT_TOK_STREAMER_NAME] = c.name
+                utils.format_args[utils.FMT_TOK_STREAM_URL] = c.url
                 fmtstring = random.choice(config.stream_start_messages)
-                msgs.append(fmtstring.format(**format_args))
+                msgs.append(fmtstring.format(**utils.format_args))
 
         streamers[c.name] = c
 

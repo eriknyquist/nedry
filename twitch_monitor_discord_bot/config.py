@@ -1,4 +1,5 @@
 import json
+import time
 import logging
 
 
@@ -20,6 +21,9 @@ DISCORD_CHANNEL_DEFAULT = ""
 
 POLL_PERIOD_KEY = "poll_period_seconds"
 POLL_PERIOD_DEFAULT = 60
+
+CONFIG_FILE_WRITE_DELAY_KEY = "config_write_delay_seconds"
+CONFIG_FILE_WRITE_DELAY_DEFAULT = 30
 
 HOST_STREAM_KEY = "host_streamer"
 HOST_STREAM_DEFAULT = ""
@@ -54,6 +58,8 @@ class BotConfig(object):
     
     def __init__(self, filename=None):
         self.filename = filename
+        self.last_write_time = 0.0
+
         if filename is None:
             # No filename passed- use default values
             self.stream_start_messages = STREAM_START_MESSAGES_DEFAULT
@@ -66,6 +72,7 @@ class BotConfig(object):
             self.silent_during_host_stream = SILENT_HOST_STREAM_DEFAULT
             self.startup_message = STARTUP_MESSAGE_DEFAULT
             self.admin_users = ADMIN_USERS_DEFAULT
+            self.write_delay_seconds = CONFIG_FILE_WRITE_DELAY_DEFAULT
             self.streamers = []
         else:
             # Load provided config file
@@ -92,10 +99,15 @@ class BotConfig(object):
         self.silent_during_host_stream = load_cfg_default(attrs, SILENT_HOST_STREAM_KEY, SILENT_HOST_STREAM_DEFAULT)
         self.startup_message = load_cfg_default(attrs, STARTUP_MESSAGE_KEY, STARTUP_MESSAGE_DEFAULT)
         self.admin_users = load_cfg_default(attrs, ADMIN_USERS_KEY, ADMIN_USERS_DEFAULT)
+        self.write_delay_seconds = load_cfg_default(attrs, CONFIG_FILE_WRITE_DELAY_KEY, CONFIG_FILE_WRITE_DELAY_DEFAULT)
 
         return self
 
     def save_to_file(self, filename=None):
+        if not self.write_allowed():
+            # Write delay hasn't expired since last write, do nothing
+            return False
+
         if filename is None:
             filename = self.filename
 
@@ -113,5 +125,12 @@ class BotConfig(object):
                 POLL_PERIOD_KEY: self.poll_period_secs,
                 STREAM_START_MESSAGES_KEY: self.stream_start_messages,
                 STARTUP_MESSAGE_KEY: self.startup_message,
-                ADMIN_USERS_KEY: self.admin_users
+                ADMIN_USERS_KEY: self.admin_users,
+                CONFIG_FILE_WRITE_DELAY_KEY: self.write_delay_seconds
             }, fh, indent=4)
+
+        self.last_write_time = time.time()
+        return True
+
+    def write_allowed(self):
+        return ((time.time() - self.last_write_time) >= self.write_delay_seconds)

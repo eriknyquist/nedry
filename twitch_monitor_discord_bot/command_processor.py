@@ -2,6 +2,13 @@ from twitch_monitor_discord_bot.utils import validate_format_tokens
 
 COMMAND_PREFIX = "!"
 
+CMD_HELP_HELP = """
+{0} [command]
+
+Shows helpful information about the given command. Replace [command] with the
+command you want help with.
+"""
+
 CMD_STREAMERS_HELP = """
 {0}
 
@@ -44,8 +51,8 @@ CMD_ADDPHRASE_HELP = """
 Adds a new phrase to be used for stream annnouncements. The following format
 tokens may be used within a phrase:
 
-    {streamer_name} : replaced with the streamer's twitch name
-    {stream_url}    : replaced with the stream URL on twitch.tv
+    {{streamer_name}} : replaced with the streamer's twitch name
+    {{stream_url}}    : replaced with the stream URL on twitch.tv
 """
 
 CMD_REMOVEPHRASE_HELP = """
@@ -101,7 +108,7 @@ def cmd_help(proc, config, twitch_monitor, args):
     if len(args) == 0:
         return proc.help()
 
-    cmd = args[0]
+    cmd = args[0].strip()
     if cmd.startswith(COMMAND_PREFIX):
         cmd = cmd.lstrip(COMMAND_PREFIX)
 
@@ -125,8 +132,11 @@ def cmd_addstreamer(proc, config, twitch_monitor, args):
     if user_id is None:
         return "Invalid twitch streamer: %s" % args[0]
 
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.write_delay_seconds)
+
     config.streamers.append(args[0])
-    config.save_to_file()
 
     return "OK! Streamer '%s' is now being monitored" % args[0]
 
@@ -136,6 +146,10 @@ def cmd_removestreamer(proc, config, twitch_monitor, args):
 
     if args[0] not in config.streamers:
         return "Nothing to remove, %s is not being monitored" % args[0]
+
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.write_delay_seconds)
 
     config.streamers.remove(args[0])
     config.save_to_file()
@@ -149,6 +163,10 @@ def cmd_nocompetition(proc, config, twitch_monitor, args):
     val = args[0].lower()
     if val not in ["true", "false"]:
         return "Invalid value '%s': please use 'true' or 'false'" % val
+
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.write_delay_seconds)
 
     val = True if val == "true" else False
 
@@ -172,6 +190,10 @@ def cmd_addphrase(proc, config, twitch_monitor, args):
     if not validate_format_tokens(phrase):
         return "There's an invalid format token in the phrase you provided"
 
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.write_delay_seconds)
+
     config.stream_start_messages.append(phrase)
     config.save_to_file()
 
@@ -193,6 +215,10 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
     if (num < 1) or (num > size):
         return "There is no phrase number %d, valid phrases numbers are 1-%d" % (num, size)
 
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.write_delay_seconds)
+
     deleted = config.stream_start_messages[num - 1]
     del config.stream_start_messages[num - 1]
     config.save_to_file()
@@ -207,7 +233,7 @@ def cmd_say(proc, config, twitch_monitor, args):
     return "OK! message sent to channel '%s'" % config.discord_channel
 
 twitch_monitor_bot_command_list = [
-    Command("help", cmd_help, "Are you serious?"),
+    Command("help", cmd_help, CMD_HELP_HELP),
     Command("streamers", cmd_streamers, CMD_STREAMERS_HELP),
     Command("addstreamer", cmd_addstreamer, CMD_ADDSTREAMER_HELP),
     Command("removestreamer", cmd_removestreamer, CMD_REMOVESTREAMER_HELP),
