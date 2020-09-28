@@ -38,6 +38,7 @@ The configuration file must be a .json file of the following form:
         "discord_server_id": 123456789123456789,
         "discord_channel_name": "my-discord-channel",
         "poll_period_seconds": 60,
+        "config_write_delay_seconds": 60,
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
         "discord_admin_users" : [422222187366187010, 487222187346187011],
@@ -71,6 +72,9 @@ Description of fields
 
 * ``discord_admin_user``: Multiple discord user ID numbers can be added here. Users added
   here will be allowed to configure the bot by sending commands in discord.
+
+* ``config_write_delay_seconds``: Enter the desired cooldown time (in seconds) for commands that
+  write changes to the bot config file here (makes it more difficult for someone with admin privileges to spam the disk).
 
 * ``startup_message``: Enter the message you would like the bot to send when it comes online after being started up here.
 
