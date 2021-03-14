@@ -46,7 +46,7 @@ The configuration file must be a .json file of the following form:
         "streamers_to_monitor": [
             "mrsketi",
             "none_of_many"
-        ]
+        ],
         "stream_start_messages": [
             "{streamer_name} is now streaming! watch it here: {stream_url}",
             "{streamer_name} is doing something, go see it here: {stream_url}"

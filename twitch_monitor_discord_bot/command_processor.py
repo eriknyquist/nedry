@@ -13,20 +13,42 @@ CMD_STREAMERS_HELP = """
 {0}
 
 Shows a list of streamers currently being monitored.
+
+Example:
+
+@BotName !streamers
 """
 
-CMD_ADDSTREAMER_HELP = """
-{0} [name]
+CMD_CLEARALLSTREAMERS_HELP = """
+{0}
 
-Adds a new streamer to list of streamers being monitored. Replace [name] with the
-twitch name of the streamer you want to monitor.
+Clears the list of streamers currently being monitored.
+
+Example:
+
+@BotName !clearallstreamers
 """
 
-CMD_REMOVESTREAMER_HELP = """
-{0} [name]
+CMD_ADDSTREAMERS_HELP = """
+{0} [name] ...
 
-Romoves a streamer from the  list of streamers being monitored. Replace [name]
-with the twitch name of the streamer you want to remove.
+Adds one or more new streamers to list of streamers being monitored. Replace
+[name] with the twitch name(s) of the streamer(s) you want to monitor.
+
+Example:
+
+@BotName !addstreamers streamer1 streamer2 streamer3
+"""
+
+CMD_REMOVESTREAMERS_HELP = """
+{0} [name] ...
+
+Romoves one or more streamers from the  list of streamers being monitored. Replace [name]
+with the twitch name(s) of the streamer(s) you want to remove.
+
+Example:
+
+@BotName !removestreamers streamer1 streamer2 streamer3
 """
 
 CMD_NOCOMPETITION_HELP = """
@@ -37,12 +59,18 @@ announcements about other streams will be made while the host streamer is stream
 If false, then announcements will always be made, even if the host streamer is streaming.
 
 (To check if nocompetition is enabled, run the command with no true/false argument)
+
+Example:
+
+@BotName !nocompetition
 """
 
 CMD_PHRASES_HELP = """
 {0}
 
 Shows a numbered list of phrases currently in use for stream announcements.
+
+@BotName !phrases
 """
 
 CMD_ADDPHRASE_HELP = """
@@ -53,6 +81,10 @@ tokens may be used within a phrase:
 
     {{streamer_name}} : replaced with the streamer's twitch name
     {{stream_url}}    : replaced with the stream URL on twitch.tv
+
+Example:
+
+@BotName !addphrase \"{{streamer_name}} is now streaming at {{stream_url}}!\"
 """
 
 CMD_REMOVEPHRASE_HELP = """
@@ -61,6 +93,10 @@ CMD_REMOVEPHRASE_HELP = """
 Removes a phrase from the list of phrases being used for stream announcements.
 [number] must be replaced with the number for the desired phrase, as shown in the
 numbered list produced by the 'addphrase' command.
+
+Example:
+
+@BotName !removephrase 4
 """
 
 CMD_SAY_HELP = """
@@ -68,7 +104,12 @@ CMD_SAY_HELP = """
 
 Causes the bot to send a message in the announcements channel, immediately, containing
 whatever you type in place of [stuff to say].
+
+Example:
+
+@BotName !say Good morning
 """
+
 
 class Command(object):
     def __init__(self, word, handler, helptext):
@@ -104,6 +145,17 @@ class CommandProcessor(object):
         return "Sorry, I don't recognize the command '%s'" % command
 
 
+def _list_to_english(words):
+    if not words:
+        return ""
+    elif len(words) == 1:
+        return words[0]
+    elif len(words) == 2:
+        return "%s and %s" % (words[0], words[1])
+    else:
+        return ", ".join(words[:-1]) + " and " + words[-1]
+
+
 def cmd_help(proc, config, twitch_monitor, args):
     if len(args) == 0:
         return proc.help()
@@ -118,43 +170,70 @@ def cmd_help(proc, config, twitch_monitor, args):
     return proc.cmds[cmd].help()
 
 def cmd_streamers(proc, config, twitch_monitor, args):
-    return "Streamers being monitored:\n```%s```" % "\n".join(config.streamers)
+    if len(config.streamers) == 0:
+        return "No streamers are currently being monitored."
 
-def cmd_addstreamer(proc, config, twitch_monitor, args):
+    return "Streamers being monitored:\n```\n%s```" % "\n".join(config.streamers)
+
+def cmd_addstreamers(proc, config, twitch_monitor, args):
     if len(args) < 1:
-        return "'addstreamer' requires an argument, please provide the name of the streamer you want to add"
+        return "'addstreamers' requires an argument, please provide the name(s) of the streamer(s) you want to add"
 
-    try:
-        user_id = twitch_monitor.translate_username(args[0])
-    except:
-        user_id = None
+    names_to_add = []
+    for arg in args:
+        try:
+            user_id = twitch_monitor.translate_username(arg)
+        except:
+            user_id = None
 
-    if user_id is None:
-        return "Invalid twitch streamer: %s" % args[0]
+        if user_id is None:
+            return "Invalid twitch streamer: %s" % arg
+
+        # Check if streamer was already added
+        if twitch_monitor.username_added(arg):
+            continue # Already added, skip
+
+        names_to_add.append(arg)
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
                 config.write_delay_seconds)
 
-    config.streamers.append(args[0])
+    twitch_monitor.add_usernames(args)
+    config.streamers.extend([x.lower() for x in args])
 
-    return "OK! Streamer '%s' is now being monitored" % args[0]
-
-def cmd_removestreamer(proc, config, twitch_monitor, args):
-    if len(args) < 1:
-        return "'removestreamer' requires an argument, please provide the name of the streamer you want to remove"
-
-    if args[0] not in config.streamers:
-        return "Nothing to remove, %s is not being monitored" % args[0]
-
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.write_delay_seconds)
-
-    config.streamers.remove(args[0])
     config.save_to_file()
 
-    return "OK! Streamer '%s' is no longer being monitored" % args[0]
+    if len(args) == 1:
+        return "OK! Streamer '%s' is now being monitored" % args[0]
+    else:
+        return "OK! Streamers %s are now being monitored" % _list_to_english(args)
+
+def cmd_removestreamers(proc, config, twitch_monitor, args):
+    if len(args) < 1:
+        return "'removestreamers' requires an argument, please provide the name(s) of the streamer(s) you want to remove"
+
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.write_delay_seconds)
+
+    twitch_monitor.remove_usernames(args)
+
+    for name in args:
+        config.streamers.remove(name.lower())
+
+    config.save_to_file()
+
+    if len(args) == 1:
+        return "OK! Streamer '%s' is no longer being monitored" % args[0]
+    else:
+        return "OK! Streamers %s are no longer being monitored" % _list_to_english(args)
+
+def cmd_clearallstreamers(proc, config, twitch_monitor, args):
+    twitch_monitor.clear_usernames()
+    config.streamers.clear()
+
+    return "OK, no streamers are being monitored any more."
 
 def cmd_nocompetition(proc, config, twitch_monitor, args):
     if len(args) < 1:
@@ -180,7 +259,7 @@ def cmd_nocompetition(proc, config, twitch_monitor, args):
 def cmd_phrases(proc, config, twitch_monitor, args):
     msgs = config.stream_start_messages
     lines = ["%d. %s" % (i + 1, msgs[i]) for i in range(len(msgs))]
-    return "Phrases currently in use:\n```%s```" % "\n".join(lines)
+    return "Phrases currently in use:\n```\n%s```" % "\n".join(lines)
 
 def cmd_addphrase(proc, config, twitch_monitor, args):
     if len(args) < 1:
@@ -235,8 +314,9 @@ def cmd_say(proc, config, twitch_monitor, args):
 twitch_monitor_bot_command_list = [
     Command("help", cmd_help, CMD_HELP_HELP),
     Command("streamers", cmd_streamers, CMD_STREAMERS_HELP),
-    Command("addstreamer", cmd_addstreamer, CMD_ADDSTREAMER_HELP),
-    Command("removestreamer", cmd_removestreamer, CMD_REMOVESTREAMER_HELP),
+    Command("addstreamers", cmd_addstreamers, CMD_ADDSTREAMERS_HELP),
+    Command("removestreamers", cmd_removestreamers, CMD_REMOVESTREAMERS_HELP),
+    Command("clearallstreamers", cmd_clearallstreamers, CMD_CLEARALLSTREAMERS_HELP),
     Command("phrases", cmd_phrases, CMD_PHRASES_HELP),
     Command("addphrase", cmd_addphrase, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, CMD_REMOVEPHRASE_HELP),

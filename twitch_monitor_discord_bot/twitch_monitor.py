@@ -21,7 +21,47 @@ class TwitchChannel(object):
 class TwitchMonitor(object):
     def __init__(self, twitch_client_id, usernames):
         self.client = TwitchClient(client_id=twitch_client_id)
-        self.users = self.translate_usernames(usernames)
+        self.users = []
+        self.usernames = [x.lower() for x in usernames]
+        self._update_users()
+
+    def _update_users(self):
+        self.users = self.translate_usernames(self.usernames)
+
+    def _user_by_name(self, name):
+        lname = name.lower()
+        for i in range(len(self.users)):
+            user = self.users[i]
+            if user.name.lower() == lname:
+                return user, i
+
+        return None, None
+
+    def add_usernames(self, names):
+        lnames = [x.lower() for x in names]
+        self.usernames.extend(lnames)
+        users = self.translate_usernames(lnames)
+        self.users.extend(users)
+
+    def remove_usernames(self, names):
+        for name in names:
+            user, index = self._user_by_name(name)
+            if user is None:
+                continue
+
+            del self.users[index]
+
+            if name not in self.usernames:
+                continue
+
+            self.usernames.remove(name)
+
+    def clear_usernames(self):
+        self.users = []
+        self.usernames = []
+
+    def username_added(self, name):
+        return name in self.usernames
 
     def translate_username(self, name):
         ret = self.client.users.translate_usernames_to_ids([name])
