@@ -220,7 +220,17 @@ def cmd_removestreamers(proc, config, twitch_monitor, args):
     twitch_monitor.remove_usernames(args)
 
     for name in args:
-        config.streamers.remove(name.lower())
+        try:
+            config.streamers.remove(name.lower())
+        except ValueError:
+            if len(args) == 1:
+                # If removing only one streamer, let the user know if they're trying
+                # to remove a streamer that doesn't exist
+                return "Streamer '%s' is not being monitored, nothing to remove" % args[0]
+            else:
+                # If removing multiple streamers at once, ignore any missing streamers
+                # and just continue without notifying
+                continue
 
     config.save_to_file()
 
