@@ -42,6 +42,7 @@ The configuration file must be a .json file of the following form:
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
         "discord_admin_users" : [422222187366187010, 487222187346187011],
+        "command_log_file" : "/home/user/twitch_monitor_bot_command_log.txt",
         "startup_message": "Hello! I am a bot who can monitor twitch streams for you.",
         "streamers_to_monitor": [
             "mrsketi",
@@ -70,8 +71,11 @@ Description of fields
 
 * ``silent_when_host_streaming``: If true, no announcements about other streams will be made when host streamer is live.
 
-* ``discord_admin_user``: Multiple discord user ID numbers can be added here. Users added
+* ``discord_admin_users``: Multiple discord user ID numbers can be added here. Users added
   here will be allowed to configure the bot by sending commands in discord.
+
+* ``command_log_file``: Enter desired filename to log commands received from discord messages.
+                        Set to "null" if you don't want to log commands.
 
 * ``config_write_delay_seconds``: Enter the desired cooldown time (in seconds) for commands that
   write changes to the bot config file here (makes it more difficult for someone with admin privileges to spam the disk).

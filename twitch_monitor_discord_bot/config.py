@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+COMMAND_LOG_KEY = "command_log_file"
+COMMAND_LOG_DEFAULT = ""
+
 TWITCH_CLIENTID_KEY = "twitch_client_id"
 TWITCH_CLIENTID_DEFAULT = ""
 
@@ -73,6 +76,7 @@ class BotConfig(object):
             self.startup_message = STARTUP_MESSAGE_DEFAULT
             self.admin_users = ADMIN_USERS_DEFAULT
             self.write_delay_seconds = CONFIG_FILE_WRITE_DELAY_DEFAULT
+            self.command_log_file = COMMAND_LOG_DEFAULT
             self.streamers = []
         else:
             # Load provided config file
@@ -100,6 +104,7 @@ class BotConfig(object):
         self.startup_message = load_cfg_default(attrs, STARTUP_MESSAGE_KEY, STARTUP_MESSAGE_DEFAULT)
         self.admin_users = load_cfg_default(attrs, ADMIN_USERS_KEY, ADMIN_USERS_DEFAULT)
         self.write_delay_seconds = load_cfg_default(attrs, CONFIG_FILE_WRITE_DELAY_KEY, CONFIG_FILE_WRITE_DELAY_DEFAULT)
+        self.command_log_file = load_cfg_default(attrs, COMMAND_LOG_KEY, COMMAND_LOG_DEFAULT)
 
         return self
 
@@ -126,7 +131,8 @@ class BotConfig(object):
                 STREAM_START_MESSAGES_KEY: self.stream_start_messages,
                 STARTUP_MESSAGE_KEY: self.startup_message,
                 ADMIN_USERS_KEY: self.admin_users,
-                CONFIG_FILE_WRITE_DELAY_KEY: self.write_delay_seconds
+                CONFIG_FILE_WRITE_DELAY_KEY: self.write_delay_seconds,
+                COMMAND_LOG_FILE: self.command_log_file
             }, fh, indent=4)
 
         self.last_write_time = time.time()

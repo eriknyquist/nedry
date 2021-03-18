@@ -1,3 +1,6 @@
+import datetime
+import os
+
 from twitch_monitor_discord_bot.utils import validate_format_tokens
 
 COMMAND_PREFIX = "!"
@@ -128,10 +131,33 @@ class CommandProcessor(object):
         self.bot = bot
         self.cmds = {x.word: x for x in command_list}
 
+        self.log_filename = None
+
+        try:
+            # Check if command log file path is accessible
+            _ = open(config.command_log_file, 'a')
+        except:
+            pass
+        else:
+            self.log_filename = config.command_log_file
+
+    def _log_command_event(self, message):
+        if self.log_filename is None:
+            return
+
+        timestamp = datetime.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S.%f")[:-3]
+
+        with open(self.log_filename, 'a') as fh:
+            fh.write("[%s] %s\n" % (timestamp, message))
+
+    def _log_valid_command(self, author, command_text):
+        msg = "[%s (%d)] %s" % (author.name, author.id, command_text)
+        self._log_command_event(msg)
+
     def help(self):
         return "Available commands:\n```%s```" % "\n".join(self.cmds.keys())
 
-    def process(self, text):
+    def process(self, author, text):
         text = text.strip()
         if not text.startswith(COMMAND_PREFIX):
             return None
@@ -140,6 +166,10 @@ class CommandProcessor(object):
         command = words[0].lower()
 
         if command in self.cmds:
+            # Log received command
+            self._log_valid_command(author, text)
+
+            # Run command handler
             return self.cmds[command].handler(self, self.config, self.twitch_monitor, words[1:])
 
         return "Sorry, I don't recognize the command '%s'" % command

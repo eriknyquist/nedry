@@ -103,7 +103,7 @@ class DiscordBot(object):
     def on_mention(self, message):
         if message.author.id in self.admin_users:
             msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
-            resp = self.cmdprocessor.process(msg)
+            resp = self.cmdprocessor.process(message.author, msg)
 
             if resp is not None:
                 return MessageResponse(resp, channel=message.channel)
