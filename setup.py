@@ -21,6 +21,7 @@ setup(
     author_email='eknyquist@gmail.com',
     license='Apache 2.0',
     packages=['twitch_monitor_discord_bot'],
+    data_files=[('', ['twitch_monitor_discord_bot/quotedb.json'])],
     include_package_data=True,
     zip_safe=False
 )

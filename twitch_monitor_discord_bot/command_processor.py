@@ -1,6 +1,7 @@
 import datetime
 import os
 
+from twitch_monitor_discord_bot import quotes
 from twitch_monitor_discord_bot.utils import validate_format_tokens
 
 COMMAND_PREFIX = "!"
@@ -10,6 +11,12 @@ CMD_HELP_HELP = """
 
 Shows helpful information about the given command. Replace [command] with the
 command you want help with.
+"""
+
+CMD_QUOTE_HELP = """
+{0}
+
+Displays a random famous quote
 """
 
 CMD_STREAMERS_HELP = """
@@ -344,6 +351,10 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
 
     return "OK! Removed the following phrase:\n```%s```" % deleted
 
+def cmd_quote(proc, config, twitch_monitor, args):
+    text, author = quotes.get_donk_quote()
+    return "```\n\"%s\"\n  - %s\n```" % (text, author)
+
 def cmd_say(proc, config, twitch_monitor, args):
     if len(args) < 1:
         return "You didn't write a message for me to say. So I'll say nothing."
@@ -361,5 +372,6 @@ twitch_monitor_bot_command_list = [
     Command("addphrase", cmd_addphrase, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, CMD_REMOVEPHRASE_HELP),
     Command("nocompetition", cmd_nocompetition, CMD_NOCOMPETITION_HELP),
+    Command("quote", cmd_quote, CMD_QUOTE_HELP),
     Command("say", cmd_say, CMD_SAY_HELP)
 ]
