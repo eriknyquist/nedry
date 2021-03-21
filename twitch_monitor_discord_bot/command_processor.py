@@ -122,10 +122,11 @@ Example:
 
 
 class Command(object):
-    def __init__(self, word, handler, helptext):
+    def __init__(self, word, handler, admin_only, helptext):
         self.word = word
         self.handler = handler
         self.helptext = helptext
+        self.admin_only = admin_only
 
     def help(self):
         return "```%s```" % self.helptext.format(self.word)
@@ -173,6 +174,10 @@ class CommandProcessor(object):
         command = words[0].lower()
 
         if command in self.cmds:
+            admin_only = self.cmds[command].admin_only
+            if admin_only and (author.id not in self.config.admin_users):
+                return "Sorry %s, this command can only be used by admin users" % author.mention
+
             # Log received command
             self._log_valid_command(author, text)
 
@@ -363,15 +368,15 @@ def cmd_say(proc, config, twitch_monitor, args):
     return "OK! message sent to channel '%s'" % config.discord_channel
 
 twitch_monitor_bot_command_list = [
-    Command("help", cmd_help, CMD_HELP_HELP),
-    Command("streamers", cmd_streamers, CMD_STREAMERS_HELP),
-    Command("addstreamers", cmd_addstreamers, CMD_ADDSTREAMERS_HELP),
-    Command("removestreamers", cmd_removestreamers, CMD_REMOVESTREAMERS_HELP),
-    Command("clearallstreamers", cmd_clearallstreamers, CMD_CLEARALLSTREAMERS_HELP),
-    Command("phrases", cmd_phrases, CMD_PHRASES_HELP),
-    Command("addphrase", cmd_addphrase, CMD_ADDPHRASE_HELP),
-    Command("removephrase", cmd_removephrase, CMD_REMOVEPHRASE_HELP),
-    Command("nocompetition", cmd_nocompetition, CMD_NOCOMPETITION_HELP),
-    Command("quote", cmd_quote, CMD_QUOTE_HELP),
-    Command("say", cmd_say, CMD_SAY_HELP)
+    Command("help", cmd_help, False, CMD_HELP_HELP),
+    Command("streamers", cmd_streamers, True, CMD_STREAMERS_HELP),
+    Command("addstreamers", True, cmd_addstreamers, CMD_ADDSTREAMERS_HELP),
+    Command("removestreamers", True, cmd_removestreamers, CMD_REMOVESTREAMERS_HELP),
+    Command("clearallstreamers", True ,cmd_clearallstreamers, CMD_CLEARALLSTREAMERS_HELP),
+    Command("phrases", cmd_phrases, True, CMD_PHRASES_HELP),
+    Command("addphrase", cmd_addphrase, True, CMD_ADDPHRASE_HELP),
+    Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
+    Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),
+    Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
+    Command("say", cmd_say, True, CMD_SAY_HELP)
 ]

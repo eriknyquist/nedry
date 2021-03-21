@@ -23,7 +23,6 @@ class DiscordBot(object):
         self.token = config.discord_token
         self.guild_id = config.discord_guildid
         self.channel_name = config.discord_channel
-        self.admin_users = config.admin_users
         self.config = config
         self.client = discord.Client()
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
@@ -101,12 +100,11 @@ class DiscordBot(object):
         pass
 
     def on_mention(self, message):
-        if message.author.id in self.admin_users:
-            msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
-            resp = self.cmdprocessor.process(message.author, msg)
+        msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
+        resp = self.cmdprocessor.process(message.author, msg)
 
-            if resp is not None:
-                return MessageResponse(resp, channel=message.channel)
+        if resp is not None:
+            return MessageResponse(resp, channel=message.channel)
 
 def main():
     bot = build_sketi_bot()
