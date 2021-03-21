@@ -1,4 +1,3 @@
-
 FMT_TOK_STREAMER_NAME = "streamer_name"
 FMT_TOK_STREAM_URL = "stream_url"
 

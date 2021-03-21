@@ -1,3 +1,6 @@
+# Implements routines for reading a random quote from a .json file, and replacing
+# a random noun or verb with the work "donk"
+
 import string
 import os
 import json
@@ -85,9 +88,6 @@ def _find_words_with_tag(text, find_tag):
                 spans.append((position, end, True))
 
             position = end
-            #while (position < len(text)) and (not text[position].isspace()):
-            #    position += 1
-
             while (position < len(text)) and not text[position].isalpha():
                 position += 1
 
@@ -145,6 +145,14 @@ def _process_quote(text):
     return spans
 
 def get_donk_quote(json_filename=DEFAULT_JSON_FILE):
+    """
+    Retrieve a famous quote with some qord automatically replaced with "donk"
+
+    :param str json_filename: Name of .json file containing quotes
+
+    :return: Tuple of the form (str(quote_text), str(quote_author))
+    :rtype: tuple
+    """
     quote = None
     words = None
     spans = []
@@ -169,4 +177,3 @@ def get_donk_quote(json_filename=DEFAULT_JSON_FILE):
     replacement = " donk%s " % ("s" if is_plural else "")
     quote_text = (header.strip() + replacement + end.strip()).strip()
     return _post_clean(quote_text), author
-

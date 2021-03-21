@@ -1,3 +1,6 @@
+# Implements a DiscordBot class that provides a interface for interacting
+# with discord's bot API
+
 import os
 import discord
 import asyncio
@@ -13,12 +16,20 @@ main_event_loop = asyncio.get_event_loop()
 
 
 class MessageResponse(object):
+    """
+    Represents a message being sent by the bot back to discord, in response to a
+    command
+    """
     def __init__(self, response_data, channel=None, member=None):
         self.channel = channel
         self.member = member
         self.response_data = response_data
 
 class DiscordBot(object):
+    """
+    Wraps some interactions with the discord bot API, handles running the
+    CommandProcessor when commands are received from discord messages
+    """
     def __init__(self, config, twitch_monitor):
         self.token = config.discord_token
         self.guild_id = config.discord_guildid
@@ -76,6 +87,9 @@ class DiscordBot(object):
                                    "channel must be set")
 
     def mention(self):
+        """
+        Returns the text for a mention of the bot
+        """
         return "<@%d>" % self.client.user.id
 
     def nickmention(self):
@@ -105,10 +119,3 @@ class DiscordBot(object):
 
         if resp is not None:
             return MessageResponse(resp, channel=message.channel)
-
-def main():
-    bot = build_sketi_bot()
-    bot.run()
-
-if __name__ == "__main__":
-    main()

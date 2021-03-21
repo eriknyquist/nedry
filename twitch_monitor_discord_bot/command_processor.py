@@ -1,3 +1,8 @@
+# Implements a CommandProcesser class to parse and handle commands received from
+# discord users.
+#
+# All of the handler functions for commands are also implemented here.
+
 import datetime
 import os
 
@@ -122,6 +127,9 @@ Example:
 
 
 class Command(object):
+    """
+    Represents all data required to handle a single command
+    """
     def __init__(self, word, handler, admin_only, helptext):
         self.word = word
         self.handler = handler
@@ -133,6 +141,10 @@ class Command(object):
 
 
 class CommandProcessor(object):
+    """
+    Handles a specific set of commands, defined by a list of Command objects passed
+    on object initialization
+    """
     def __init__(self, config, bot, twitch_monitor, command_list):
         self.twitch_monitor = twitch_monitor
         self.config = config
@@ -163,9 +175,22 @@ class CommandProcessor(object):
         self._log_command_event(msg)
 
     def help(self):
+        """
+        Get the text for a discord message showing all available commands
+        """
         return "Available commands:\n```%s```" % "\n".join(self.cmds.keys())
 
     def process(self, author, text):
+        """
+        Parse some text containing a command and run the handler, if there is an
+        appropriate one
+
+        :param author: User object from discord.py, the user who wrote the message
+        :param str text: Command text to parse
+
+        :return: Response to send back to discord
+        :rtype: str
+        """
         text = text.strip()
         if not text.startswith(COMMAND_PREFIX):
             return None
@@ -197,6 +222,8 @@ def _list_to_english(words):
     else:
         return ", ".join(words[:-1]) + " and " + words[-1]
 
+
+# All command handlers, for all commands, follow...
 
 def cmd_help(proc, config, twitch_monitor, args):
     if len(args) == 0:
@@ -366,6 +393,7 @@ def cmd_say(proc, config, twitch_monitor, args):
 
     proc.bot.send_message(" ".join(args))
     return "OK! message sent to channel '%s'" % config.discord_channel
+
 
 twitch_monitor_bot_command_list = [
     Command("help", cmd_help, False, CMD_HELP_HELP),

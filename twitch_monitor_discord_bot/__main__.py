@@ -1,3 +1,6 @@
+# Main entry point for regular bot operation. Reads the configuration file and
+# initializes everything.
+
 import argparse
 import time
 import threading

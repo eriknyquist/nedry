@@ -1,3 +1,6 @@
+# Implements a BotConfig class that handles saving/loading the bot .json
+# configuration file from disk.
+
 import json
 import time
 import logging
@@ -55,6 +58,9 @@ def load_cfg_default(attrs, key, default):
     return default
 
 class BotConfig(object):
+    """
+    Represents an in-memory copy of the configuration .json file for the bot
+    """
     @classmethod
     def from_file(cls, filename):
         return BotConfig(filename)
@@ -83,6 +89,11 @@ class BotConfig(object):
             self.load_from_file(filename)
 
     def load_from_file(self, filename):
+        """
+        Load data from a configuration .json file
+
+        :param str filename: Name of .json file to load
+        """
         logger.info("loading configuration from %s", filename)
 
         with open(filename, 'r') as fh:
@@ -109,6 +120,17 @@ class BotConfig(object):
         return self
 
     def save_to_file(self, filename=None):
+        """
+        Save current data to configuration .json file.
+
+        :param str filename: Optional filename to write to. If unset, the filename \
+                             provided when the object was initialized will be used.
+
+        :return: True if save was successful, False otherwise (saving may fail if \
+                the configured cooldown period has not expired since the last write \
+                to the configuration .json file)
+        :rtype: bool
+        """
         if not self.write_allowed():
             # Write delay hasn't expired since last write, do nothing
             return False
@@ -139,4 +161,11 @@ class BotConfig(object):
         return True
 
     def write_allowed(self):
+        """
+        Check if the configured cooldown has elapsed since the last write to the
+        configuration .json file
+
+        :return: True if cooldown time has elapsed
+        :rtype: bool
+        """
         return ((time.time() - self.last_write_time) >= self.write_delay_seconds)

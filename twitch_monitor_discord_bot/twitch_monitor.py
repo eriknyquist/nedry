@@ -1,7 +1,13 @@
+# Implements a TwitchMonitor class that interacts with the twitch API to
+# provide information about the status of streamers being monitored
+
 from twitch import TwitchClient
 
 
 class TwitchChannel(object):
+    """
+    Holds all the bits of information we care about for a single twitch streamer
+    """
     def __init__(self, channel, stream):
         self.channel = channel
         self.stream = stream
@@ -19,6 +25,10 @@ class TwitchChannel(object):
         return self.channel.url
 
 class TwitchMonitor(object):
+    """
+    Qeurys that status of a list of twitch streamers periodically to determine
+    when they start streaming
+    """
     def __init__(self, twitch_client_id, usernames):
         self.client = TwitchClient(client_id=twitch_client_id)
         self.users = []
