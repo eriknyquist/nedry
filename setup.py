@@ -22,7 +22,13 @@ setup(
     license='Apache 2.0',
     packages=['twitch_monitor_discord_bot'],
     package_dir={'twitch_monitor_discord_bot': 'twitch_monitor_discord_bot'},
-    package_data={'twitch_monitor_discord_bot': ['twitch_monitor_discord_bot/quotedb.json']},
+    package_data={'twitch_monitor_discord_bot': [os.path.join('twitch_monitor_discord_bot', 'quotedb.json')]},
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
+
+    install_requires=[
+        'nltk',
+        'discord',
+        'python-twitch-client'
+    ]
 )

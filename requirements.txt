@@ -1,4 +1,0 @@
-wheel
-nltk
-discord
-python-twitch-client
