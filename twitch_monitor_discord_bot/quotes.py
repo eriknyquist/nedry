@@ -120,19 +120,6 @@ def _process_quote(text):
     spans = []
     pos = 0
 
-    # Search all sentences for verbs
-    for s in sentences:
-        vspans = _find_words_with_tag(s, 'VB')
-
-        for start, end, plural in vspans:
-            spans.append((start + pos, end + pos, plural))
-
-        pos += len(s) + 2
-
-    if spans:
-        return spans
-
-    pos = 0
     # Search all sentences for nouns
     for s in sentences:
         vspans = _find_words_with_tag(s, 'NN')
@@ -140,7 +127,23 @@ def _process_quote(text):
         for start, end, plural in vspans:
             spans.append((start + pos, end + pos, plural))
 
-        pos += len(s) + 2
+        extra = 1 if s == '' else 2
+        pos += len(s) + extra
+
+    if spans:
+        return spans
+
+    pos = 0
+
+    # Search all sentences for verbs
+    for s in sentences:
+        vspans = _find_words_with_tag(s, 'VB')
+
+        for start, end, plural in vspans:
+            spans.append((start + pos, end + pos, plural))
+
+        extra = 1 if s == '' else 2
+        pos += len(s) + extra
 
     return spans
 

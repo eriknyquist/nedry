@@ -111,11 +111,18 @@ class DiscordBot(object):
         pass
 
     def on_message(self, message):
-        pass
-
-    def on_mention(self, message):
-        msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
-        resp = self.cmdprocessor.process(message.author, msg)
+        resp = self.cmdprocessor.process_message(message.author, message.content)
 
         if resp is not None:
             return MessageResponse(resp, channel=message.channel)
+
+        return None
+
+    def on_mention(self, message):
+        msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
+        resp = self.cmdprocessor.process_command(message.author, msg)
+
+        if resp is not None:
+            return MessageResponse(resp, channel=message.channel)
+
+        return None

@@ -14,3 +14,6 @@ def validate_format_tokens(phrase):
 
     return True
 
+def mockify_text(text):
+    return ''.join([text[i] if i % 2 else text[i].upper() for i in range(len(text))])
+

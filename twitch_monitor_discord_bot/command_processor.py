@@ -7,7 +7,7 @@ import datetime
 import os
 
 from twitch_monitor_discord_bot import quotes
-from twitch_monitor_discord_bot.utils import validate_format_tokens
+from twitch_monitor_discord_bot import utils
 
 COMMAND_PREFIX = "!"
 
@@ -16,6 +16,27 @@ CMD_HELP_HELP = """
 
 Shows helpful information about the given command. Replace [command] with the
 command you want help with.
+"""
+
+CMD_MOCK_HELP = """
+{0} [mention]
+
+Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
+with a mention of the discord user you want to mock.
+"""
+
+CMD_UNMOCK_HELP = """
+{0} [mention]
+
+Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
+you want to stop mocking.
+"""
+
+CMD_APOLOGIZE_HELP = """
+{0} [mention]
+
+Apologize to a specific user for having mocked them. Replace [mention]
+with a mention of the discord user you want to apologize to.
 """
 
 CMD_QUOTE_HELP = """
@@ -150,6 +171,8 @@ class CommandProcessor(object):
         self.config = config
         self.bot = bot
         self.cmds = {x.word: x for x in command_list}
+        self.last_msg_by_user = {}
+        self.mocking_users = []
 
         self.log_filename = None
 
@@ -180,7 +203,22 @@ class CommandProcessor(object):
         """
         return "Available commands:\n```%s```" % "\n".join(self.cmds.keys())
 
-    def process(self, author, text):
+    def process_message(self, author, text):
+        """
+        Called for any old message (not a command for the bot)
+
+        :param author: User object from discord.py, the user who wrote the message
+        :param str text: Message text
+
+        :return: Response to send back to discord
+        :rtype: str
+        """
+        self.last_msg_by_user[author.id] = text
+
+        if author.id in self.mocking_users:
+            return utils.mockify_text(text)
+
+    def process_command(self, author, text):
         """
         Parse some text containing a command and run the handler, if there is an
         appropriate one
@@ -345,7 +383,7 @@ def cmd_addphrase(proc, config, twitch_monitor, args):
         return "'addphrase' requires an argument, please provide the text for the phrase you want to add"
 
     phrase = " ".join(args)
-    if not validate_format_tokens(phrase):
+    if not utils.validate_format_tokens(phrase):
         return "There's an invalid format token in the phrase you provided"
 
     if not config.write_allowed():
@@ -383,6 +421,58 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
 
     return "OK! Removed the following phrase:\n```%s```" % deleted
 
+def cmd_mock(proc, config, twitch_monitor, args):
+    if len(args) == 0:
+        return "'mock' requires more information, please mention the user you want to mock"
+
+    mention = args[0].strip()
+    if (not mention.startswith('<@!')) or (not mention.endswith('>')):
+        return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
+
+    try:
+        user_id = int(mention[3:-1])
+    except ValueError:
+        return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
+
+    if user_id not in proc.mocking_users:
+        proc.mocking_users.append(user_id)
+
+    if user_id in proc.last_msg_by_user:
+        return utils.mockify_text(proc.last_msg_by_user[user_id])
+
+def cmd_unmock(proc, config, twitch_monitor, args):
+    if len(args) == 0:
+        return "'unmock' requires more information, please mention the user you want to unmock"
+
+    mention = args[0].strip()
+    if (not mention.startswith('<@!')) or (not mention.endswith('>')):
+        return "Please mention the user you wish to unmock (e.g. '!unmock @eknyquist)"
+
+    try:
+        user_id = int(mention[3:-1])
+    except ValueError:
+        return "Please mention the user you wish to unmock (e.g. '!mock @eknyquist)"
+
+    if user_id in proc.mocking_users:
+        proc.mocking_users.remove(user_id)
+        return "OK, I will leave %s alone now." % mention
+
+def cmd_apologize(proc, config, twitch_monitor, args):
+    if len(args) == 0:
+        return "'apologise' requires more information, please mention the user you want to apologise to"
+
+    mention = args[0].strip()
+    if (not mention.startswith('<@!')) or (not mention.endswith('>')):
+        return "Please mention the user you wish to apologise to (e.g. '!apologise @eknyquist)"
+
+    try:
+        user_id = int(mention[3:-1])
+    except ValueError:
+        return "Please mention the user you wish to apologise (e.g. '!apologise @eknyquist)"
+
+    return ("%s, I am truly, deeply sorry for mocking you just now. "
+            "I'm only a robot, you see. I have no free will." % mention)
+
 def cmd_quote(proc, config, twitch_monitor, args):
     text, author = quotes.get_donk_quote()
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
@@ -406,5 +496,9 @@ twitch_monitor_bot_command_list = [
     Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
     Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),
     Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
+    Command("mock", cmd_mock, False, CMD_MOCK_HELP),
+    Command("unmock", cmd_unmock, False, CMD_UNMOCK_HELP),
+    Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
+    Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("say", cmd_say, True, CMD_SAY_HELP)
 ]
