@@ -488,9 +488,9 @@ def cmd_say(proc, config, twitch_monitor, args):
 twitch_monitor_bot_command_list = [
     Command("help", cmd_help, False, CMD_HELP_HELP),
     Command("streamers", cmd_streamers, True, CMD_STREAMERS_HELP),
-    Command("addstreamers", True, cmd_addstreamers, CMD_ADDSTREAMERS_HELP),
-    Command("removestreamers", True, cmd_removestreamers, CMD_REMOVESTREAMERS_HELP),
-    Command("clearallstreamers", True ,cmd_clearallstreamers, CMD_CLEARALLSTREAMERS_HELP),
+    Command("addstreamers", cmd_addstreamers, True, CMD_ADDSTREAMERS_HELP),
+    Command("removestreamers", cmd_removestreamers, True, CMD_REMOVESTREAMERS_HELP),
+    Command("clearallstreamers", cmd_clearallstreamers, True, CMD_CLEARALLSTREAMERS_HELP),
     Command("phrases", cmd_phrases, True, CMD_PHRASES_HELP),
     Command("addphrase", cmd_addphrase, True, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),

@@ -154,7 +154,7 @@ class BotConfig(object):
                 STARTUP_MESSAGE_KEY: self.startup_message,
                 ADMIN_USERS_KEY: self.admin_users,
                 CONFIG_FILE_WRITE_DELAY_KEY: self.write_delay_seconds,
-                COMMAND_LOG_FILE: self.command_log_file
+                COMMAND_LOG_KEY: self.command_log_file
             }, fh, indent=4)
 
         self.last_write_time = time.time()

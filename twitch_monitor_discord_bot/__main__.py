@@ -58,7 +58,11 @@ def streamer_check_loop(config, monitor, bot, host_user):
     while True:
         time.sleep(config.poll_period_secs)
 
-        msgs = check_streamers(config, monitor, bot, host_user)
+        try:
+            msgs = check_streamers(config, monitor, bot, host_user)
+        except:
+            pass
+
         for msg in msgs:
             logger.debug("sending message to channel '%s'" % config.discord_channel)
             bot.send_message(msg)
