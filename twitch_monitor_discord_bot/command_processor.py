@@ -490,7 +490,7 @@ def cmd_clearmocks(proc, config, twitch_monitor, args):
     proc.mocking_users = []
     return "OK, I have forgotten about everyone I was supposed to mock!"
 
-def cmd_mocklist(proc, config, twitch_monitor, args):
+def cmd_listmocks(proc, config, twitch_monitor, args):
     names = []
 
     for user_id in proc.mocking_users:
@@ -572,7 +572,7 @@ twitch_monitor_bot_command_list = [
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
 
     # Commands only available to admin users
-    Command("mocklist", cmd_mocklist, True, CMD_MOCKLIST_HELP),
+    Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),
     Command("mockson", cmd_mockson, True, CMD_MOCKSON_HELP),
     Command("mocksoff", cmd_mocksoff, True, CMD_MOCKSOFF_HELP),
     Command("clearmocks", cmd_clearmocks, True, CMD_CLEARMOCKS_HELP),
