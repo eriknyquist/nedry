@@ -146,6 +146,30 @@ Example:
 @BotName !say Good morning
 """
 
+CMD_MOCKSON_HELP = """
+{0}
+
+Disable all mocking until 'mocksoff' command is sent
+"""
+
+CMD_MOCKSOFF_HELP = """
+{0}
+
+Re-enable mocking after disabling
+"""
+
+CMD_CLEARMOCKS_HELP = """
+{0}
+
+Clear all users that are currently being mocked
+"""
+
+CMD_MOCKLIST_HELP = """
+{0}
+
+List the name & discord IDs of all users currently being mocked
+"""
+
 
 class Command(object):
     """
@@ -173,6 +197,7 @@ class CommandProcessor(object):
         self.cmds = {x.word: x for x in command_list}
         self.last_msg_by_user = {}
         self.mocking_users = []
+        self.mocking_enabled = True
 
         self.log_filename = None
 
@@ -215,8 +240,10 @@ class CommandProcessor(object):
         """
         self.last_msg_by_user[author.id] = text
 
-        if author.id in self.mocking_users:
+        if self.mocking_enabled and (author.id in self.mocking_users):
             return utils.mockify_text(text)
+
+        return None
 
     def process_command(self, author, text):
         """
@@ -265,7 +292,9 @@ def _list_to_english(words):
 
 def cmd_help(proc, config, twitch_monitor, args):
     if len(args) == 0:
-        return proc.help()
+        return ("See list of available commands below. Use the help command again "
+                "and write another command word after 'help' (e.g. `@BotName !help mock`) "
+                "to get help with a specific command.\n" + proc.help())
 
     cmd = args[0].strip()
     if cmd.startswith(COMMAND_PREFIX):
@@ -437,8 +466,56 @@ def cmd_mock(proc, config, twitch_monitor, args):
     if user_id not in proc.mocking_users:
         proc.mocking_users.append(user_id)
 
-    if user_id in proc.last_msg_by_user:
-        return utils.mockify_text(proc.last_msg_by_user[user_id])
+    if proc.mocking_enabled:
+        if user_id in proc.last_msg_by_user:
+            return utils.mockify_text(proc.last_msg_by_user[user_id])
+    else:
+        return "Mocking has been disabled by an admin user, but I have remembered your request"
+
+def cmd_mockson(proc, config, twitch_monitor, args):
+    if proc.mocking_enabled:
+        return "Mocking is already enabled"
+
+    proc.mocking_enabled = True
+    return "OK, mocking is enabled now!"
+
+def cmd_mocksoff(proc, config, twitch_monitor, args):
+    if not proc.mocking_enabled:
+        return "Mocking is already disabled"
+
+    proc.mocking_enabled = False
+    return "OK, mocking is disabled now!"
+
+def cmd_clearmocks(proc, config, twitch_monitor, args):
+    proc.mocking_users = []
+    return "OK, I have forgotten about everyone I was supposed to mock!"
+
+def cmd_mocklist(proc, config, twitch_monitor, args):
+    names = []
+
+    for user_id in proc.mocking_users:
+        user_desc = "Unknown user"
+
+        try:
+            user = proc.bot.client.get_user(user_id)
+        except:
+            pass
+
+        if user:
+            user_desc = user.name
+
+        names.append('%s (%d)' % (user_desc, user_id))
+
+    if not names:
+        return "No users are being mocked right now."
+
+    ret = "Here are the users that I am currently mocking:\n"
+    ret += "```\n%s\n```" % '\n'.join(names)
+
+    if not proc.mocking_enabled:
+        ret += "\n(mocking not currently enabled)"
+
+    return ret
 
 def cmd_unmock(proc, config, twitch_monitor, args):
     if len(args) == 0:
@@ -486,7 +563,19 @@ def cmd_say(proc, config, twitch_monitor, args):
 
 
 twitch_monitor_bot_command_list = [
+    # Commands available to everyone
     Command("help", cmd_help, False, CMD_HELP_HELP),
+    Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
+    Command("mock", cmd_mock, False, CMD_MOCK_HELP),
+    Command("unmock", cmd_unmock, False, CMD_UNMOCK_HELP),
+    Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
+    Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
+
+    # Commands only available to admin users
+    Command("mocklist", cmd_mocklist, True, CMD_MOCKLIST_HELP),
+    Command("mockson", cmd_mockson, True, CMD_MOCKSON_HELP),
+    Command("mocksoff", cmd_mocksoff, True, CMD_MOCKSOFF_HELP),
+    Command("clearmocks", cmd_clearmocks, True, CMD_CLEARMOCKS_HELP),
     Command("streamers", cmd_streamers, True, CMD_STREAMERS_HELP),
     Command("addstreamers", cmd_addstreamers, True, CMD_ADDSTREAMERS_HELP),
     Command("removestreamers", cmd_removestreamers, True, CMD_REMOVESTREAMERS_HELP),
@@ -495,10 +584,5 @@ twitch_monitor_bot_command_list = [
     Command("addphrase", cmd_addphrase, True, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
     Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),
-    Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
-    Command("mock", cmd_mock, False, CMD_MOCK_HELP),
-    Command("unmock", cmd_unmock, False, CMD_UNMOCK_HELP),
-    Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
-    Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("say", cmd_say, True, CMD_SAY_HELP)
 ]
