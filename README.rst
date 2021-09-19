@@ -73,9 +73,9 @@ Interacting with the bot on discord
 -----------------------------------
 
 Whenever your bot is online in the discord server, you can issue commands to the bot
-by putting a mention of the bot's discord name at the beginning of the messagem, e.g.
-```@BotName !command```. The only command you really need to know is the ```help``` command;
-if you say ```@BotName !help```, then the bot will show you what commands are available
+by putting a mention of the bot's discord name at the beginning of the message, e.g.
+``@BotName !command``. The only command you really need to know is the ``help`` command;
+if you say ``@BotName !help``, then the bot will show you what commands are available
 and show you how to get help with individual commands.
 
 The first thing you'll probably want to do is add some twitch streamers to monitor--
@@ -147,3 +147,287 @@ Description of fields
 
   * ``{streamer_name}``: will be replaced with the name of the streamer
   * ``{stream_url}``: will be replaced with the stream URL on twitch.com
+
+Bot command reference
+=====================
+
+Command ``help``
+----------------
+
+::
+
+   
+   help [command]
+   
+   Shows helpful information about the given command. Replace [command] with the
+   command you want help with.
+   
+   All discord users may use this command.
+
+Command ``quote``
+-----------------
+
+::
+
+   
+   quote
+   
+   Displays a random famous quote
+   
+   All discord users may use this command.
+
+Command ``mock``
+----------------
+
+::
+
+   
+   mock [mention]
+   
+   Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
+   with a mention of the discord user you want to mock.
+   
+   All discord users may use this command.
+
+Command ``unmock``
+------------------
+
+::
+
+   
+   unmock [mention]
+   
+   Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
+   you want to stop mocking.
+   
+   All discord users may use this command.
+
+Command ``apologise``
+---------------------
+
+::
+
+   
+   apologise [mention]
+   
+   Apologize to a specific user for having mocked them. Replace [mention]
+   with a mention of the discord user you want to apologize to.
+   
+   All discord users may use this command.
+
+Command ``apologize``
+---------------------
+
+::
+
+   
+   apologize [mention]
+   
+   Apologize to a specific user for having mocked them. Replace [mention]
+   with a mention of the discord user you want to apologize to.
+   
+   All discord users may use this command.
+
+Command ``listmocks``
+---------------------
+
+::
+
+   
+   listmocks
+   
+   List the name & discord IDs of all users currently being mocked
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``mockson``
+-------------------
+
+::
+
+   
+   mockson
+   
+   Disable all mocking until 'mocksoff' command is sent
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``mocksoff``
+--------------------
+
+::
+
+   
+   mocksoff
+   
+   Re-enable mocking after disabling
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``clearmocks``
+----------------------
+
+::
+
+   
+   clearmocks
+   
+   Clear all users that are currently being mocked
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``streamers``
+---------------------
+
+::
+
+   
+   streamers
+   
+   Shows a list of streamers currently being monitored.
+   
+   Example:
+   
+   @BotName !streamers
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``addstreamers``
+------------------------
+
+::
+
+   
+   addstreamers [name] ...
+   
+   Adds one or more new streamers to list of streamers being monitored. Replace
+   [name] with the twitch name(s) of the streamer(s) you want to monitor.
+   
+   Example:
+   
+   @BotName !addstreamers streamer1 streamer2 streamer3
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``removestreamers``
+---------------------------
+
+::
+
+   
+   removestreamers [name] ...
+   
+   Romoves one or more streamers from the  list of streamers being monitored. Replace [name]
+   with the twitch name(s) of the streamer(s) you want to remove.
+   
+   Example:
+   
+   @BotName !removestreamers streamer1 streamer2 streamer3
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``clearallstreamers``
+-----------------------------
+
+::
+
+   
+   clearallstreamers
+   
+   Clears the list of streamers currently being monitored.
+   
+   Example:
+   
+   @BotName !clearallstreamers
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``phrases``
+-------------------
+
+::
+
+   
+   phrases
+   
+   Shows a numbered list of phrases currently in use for stream announcements.
+   
+   @BotName !phrases
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``addphrase``
+---------------------
+
+::
+
+   
+   addphrase [phrase]
+   
+   Adds a new phrase to be used for stream annnouncements. The following format
+   tokens may be used within a phrase:
+   
+       {streamer_name} : replaced with the streamer's twitch name
+       {stream_url}    : replaced with the stream URL on twitch.tv
+   
+   Example:
+   
+   @BotName !addphrase "{streamer_name} is now streaming at {stream_url}!"
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``removephrase``
+------------------------
+
+::
+
+   
+   removephrase [number]
+   
+   Removes a phrase from the list of phrases being used for stream announcements.
+   [number] must be replaced with the number for the desired phrase, as shown in the
+   numbered list produced by the 'addphrase' command.
+   
+   Example:
+   
+   @BotName !removephrase 4
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``nocompetition``
+-------------------------
+
+::
+
+   
+   nocompetition [enabled]
+   
+   [enabled] must be replaced with either 'true' or 'false'. If true, then no
+   announcements about other streams will be made while the host streamer is streaming.
+   If false, then announcements will always be made, even if the host streamer is streaming.
+   
+   (To check if nocompetition is enabled, run the command with no true/false argument)
+   
+   Example:
+   
+   @BotName !nocompetition
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``say``
+---------------
+
+::
+
+   
+   say [stuff to say]
+   
+   Causes the bot to send a message in the announcements channel, immediately, containing
+   whatever you type in place of [stuff to say].
+   
+   Example:
+   
+   @BotName !say Good morning
+   
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
