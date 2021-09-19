@@ -1,7 +1,6 @@
 import unittest
 import os
 from setuptools import setup
-from distutils.core import Command
 
 from twitch_monitor_discord_bot import __version__
 
