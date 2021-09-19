@@ -455,7 +455,7 @@ def cmd_mock(proc, config, twitch_monitor, args):
         return "'mock' requires more information, please mention the user you want to mock"
 
     mention = args[0].strip()
-    if (not mention.startswith('<@!')) or (not mention.endswith('>')):
+    if (not mention.startswith('<@')) or (not mention.endswith('>')):
         return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
 
     try:
