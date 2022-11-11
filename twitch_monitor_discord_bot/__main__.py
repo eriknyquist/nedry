@@ -22,24 +22,27 @@ DEFAULT_CONFIG_FILE = "default_bot_config.json"
 
 streamers = {}
 
-def check_streamers(config, monitor, bot, host_user):
+def check_streamers(config, monitor, bot):
     channels = monitor.read_all_streamer_info()
     msgs = []
 
     # If configured, check whether host is streaming before
     # making any announcements
-    if config.silent_during_host_stream:
-        if host_user is not None:
-            host = monitor.read_streamer_info(host_user)
+    if config.config.silent_when_host_streaming:
+        if config.config.host_streamer is not None:
+            host = monitor.read_streamer_info(config.config.host_streamer)
             if host.is_live:
                 # Host is streaming, make no announcements
                 return []
 
     # Check for any announcements that need to be made
     for c in channels:
+        if c.user is None:
+            continue
+
         if c.name in streamers:
             if c.is_live and (not streamers[c.name].is_live):
-                logger.debug("streamer %s went live" % c.name)
+                logger.info("streamer %s went live" % c.name)
                 utils.format_args[utils.FMT_TOK_STREAMER_NAME] = c.name
                 utils.format_args[utils.FMT_TOK_STREAM_URL] = c.url
                 fmtstring = random.choice(config.stream_start_messages)
@@ -49,22 +52,22 @@ def check_streamers(config, monitor, bot, host_user):
 
     return msgs
 
-def streamer_check_loop(config, monitor, bot, host_user):
+def streamer_check_loop(config, monitor, bot):
     bot.guild_available.wait()
 
-    if config.startup_message is not None:
-        bot.send_message(config.startup_message)
+    if config.config.startup_message is not None:
+        bot.send_message(config.config.startup_message)
 
     while True:
-        time.sleep(config.poll_period_secs)
+        time.sleep(config.config.poll_period_seconds)
 
         try:
-            msgs = check_streamers(config, monitor, bot, host_user)
+            msgs = check_streamers(config, monitor, bot)
         except:
             pass
 
         for msg in msgs:
-            logger.debug("sending message to channel '%s'" % config.discord_channel)
+            logger.debug("sending message to channel '%s'" % config.config.discord_channel_name)
             bot.send_message(msg)
 
 def main():
@@ -79,7 +82,6 @@ def main():
         b = BotConfigManager(DEFAULT_CONFIG_FILE)
 
         if os.path.isfile(DEFAULT_CONFIG_FILE):
-            b.load_from_file()
             config = b
         else:
             b.save_to_file()
@@ -88,7 +90,13 @@ def main():
             return
     else:
         config = BotConfigManager(args.config_file)
-        config.load_from_file()
+
+    result = config.load_from_file()
+    if result is not None:
+        # Config file migration was performed, log it and save the new file
+        logger.info("migrated config file from version %s to version %s" % (result.old_version, result.version_reached))
+        config.save_to_file()
+
 
     # Make sure stream start messages are valid
     for m in config.config.stream_start_messages:
@@ -96,18 +104,14 @@ def main():
             logger.error("%s: unrecognized format token in config file stream start messages" % config.filename)
             return
 
-    monitor = TwitchMonitor(config.config.twitch_client_id, config.config.streamers_to_monitor)
-
-    #host_user = None
-    #if config.config.host_streamer not in ["", None]:
-    #    host_user = monitor.translate_username(config.config.host_streamer)
+    monitor = TwitchMonitor(config.config.twitch_client_id, config.config.twitch_client_secret, config.config.streamers_to_monitor)
 
     bot = DiscordBot(config, monitor)
 
-    #_ = check_streamers(config, monitor, bot, host_user)
-    #thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot, host_user))
-    #thread.daemon = True
-    #thread.start()
+    _ = check_streamers(config, monitor, bot)
+    thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot))
+    thread.daemon = True
+    thread.start()
 
     try:
         bot.run()

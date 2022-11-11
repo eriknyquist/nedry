@@ -8,6 +8,8 @@ import os
 
 from twitch_monitor_discord_bot import quotes
 from twitch_monitor_discord_bot import utils
+from twitch_monitor_discord_bot.twitch_monitor import InvalidTwitchUser
+
 
 COMMAND_PREFIX = "!"
 
@@ -317,25 +319,24 @@ def cmd_addstreamers(proc, config, twitch_monitor, args):
 
     names_to_add = []
     for arg in args:
-        try:
-            user_id = twitch_monitor.translate_username(arg)
-        except:
-            user_id = None
-
-        if user_id is None:
-            return "Invalid twitch streamer: %s" % arg
-
         # Check if streamer was already added
         if twitch_monitor.username_added(arg):
             continue # Already added, skip
 
         names_to_add.append(arg)
 
+    if not names_to_add:
+        return "Streamer(s) already added"
+
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
                 config.config.config_write_delay_seconds)
 
-    twitch_monitor.add_usernames(args)
+    try:
+        twitch_monitor.add_usernames(names_to_add)
+    except InvalidTwitchUser as e:
+        return str(e)
+
     config.config.streamers_to_monitor.extend([x.lower() for x in args])
 
     config.save_to_file()
