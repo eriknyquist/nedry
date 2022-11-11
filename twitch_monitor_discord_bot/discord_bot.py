@@ -35,7 +35,7 @@ class DiscordBot(object):
         self.guild_id = config.config.discord_server_id
         self.channel_name = config.config.discord_channel_name
         self.config = config
-        self.client = discord.Client()
+        self.client = discord.Client(intents=discord.Intents.default())
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
         self.channel = None
