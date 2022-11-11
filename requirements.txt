@@ -1,0 +1,3 @@
+versionedobj>=2.0.0
+discord
+nltk

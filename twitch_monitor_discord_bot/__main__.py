@@ -11,7 +11,7 @@ import logging
 from twitch_monitor_discord_bot import utils
 from twitch_monitor_discord_bot.discord_bot import DiscordBot
 from twitch_monitor_discord_bot.twitch_monitor import TwitchMonitor
-from twitch_monitor_discord_bot.config import BotConfig, STREAM_START_MESSAGES_KEY
+from twitch_monitor_discord_bot.config import BotConfigManager
 
 
 logger = logging.getLogger(__name__)
@@ -73,35 +73,41 @@ def main():
             help="Path to bot config file (default=%(default)s)")
 
     args = parser.parse_args()
+    config = None
 
     if args.config_file is None:
-        b = BotConfig()
-        b.save_to_file(DEFAULT_CONFIG_FILE)
-        print("Created default config file '%s', please add required parameters" %
-              DEFAULT_CONFIG_FILE)
-        return
+        b = BotConfigManager(DEFAULT_CONFIG_FILE)
 
-    config = BotConfig(args.config_file)
+        if os.path.isfile(DEFAULT_CONFIG_FILE):
+            b.load_from_file()
+            config = b
+        else:
+            b.save_to_file()
+            print("Created default config file '%s', please add required parameters" %
+                  DEFAULT_CONFIG_FILE)
+            return
+    else:
+        config = BotConfigManager(args.config_file)
+        config.load_from_file()
 
     # Make sure stream start messages are valid
-    for m in config.stream_start_messages:
+    for m in config.config.stream_start_messages:
         if not utils.validate_format_tokens(m):
-            print("%s: unrecognized format token in %s" % (config.filename,
-                                                           STREAM_START_MESSAGES_KEY))
+            logger.error("%s: unrecognized format token in config file stream start messages" % config.filename)
             return
 
-    monitor = TwitchMonitor(config.twitch_clientid, config.streamers)
+    monitor = TwitchMonitor(config.config.twitch_client_id, config.config.streamers_to_monitor)
 
-    host_user = None
-    if config.host_streamer not in ["", None]:
-        host_user = monitor.translate_username(config.host_streamer)
+    #host_user = None
+    #if config.config.host_streamer not in ["", None]:
+    #    host_user = monitor.translate_username(config.config.host_streamer)
 
     bot = DiscordBot(config, monitor)
 
-    _ = check_streamers(config, monitor, bot, host_user)
-    thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot, host_user))
-    thread.daemon = True
-    thread.start()
+    #_ = check_streamers(config, monitor, bot, host_user)
+    #thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot, host_user))
+    #thread.daemon = True
+    #thread.start()
 
     try:
         bot.run()

@@ -203,11 +203,11 @@ class CommandProcessor(object):
 
         try:
             # Check if command log file path is accessible
-            _ = open(config.command_log_file, 'a')
+            _ = open(config.config.command_log_file, 'a')
         except:
             pass
         else:
-            self.log_filename = config.command_log_file
+            self.log_filename = config.config.command_log_file
 
     def _log_command_event(self, message):
         if self.log_filename is None:
@@ -265,7 +265,7 @@ class CommandProcessor(object):
 
         if command in self.cmds:
             admin_only = self.cmds[command].admin_only
-            if admin_only and (author.id not in self.config.admin_users):
+            if admin_only and (author.id not in self.config.config.discord_admin_users):
                 return "Sorry %s, this command can only be used by admin users" % author.mention
 
             # Log received command
@@ -306,10 +306,10 @@ def cmd_help(proc, config, twitch_monitor, args):
     return proc.cmds[cmd].help()
 
 def cmd_streamers(proc, config, twitch_monitor, args):
-    if len(config.streamers) == 0:
+    if len(config.config.streamers_to_monitor) == 0:
         return "No streamers are currently being monitored."
 
-    return "Streamers being monitored:\n```\n%s```" % "\n".join(config.streamers)
+    return "Streamers being monitored:\n```\n%s```" % "\n".join(config.config.streamers_to_monitor)
 
 def cmd_addstreamers(proc, config, twitch_monitor, args):
     if len(args) < 1:
@@ -333,10 +333,10 @@ def cmd_addstreamers(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.write_delay_seconds)
+                config.config.config_write_delay_seconds)
 
     twitch_monitor.add_usernames(args)
-    config.streamers.extend([x.lower() for x in args])
+    config.config.streamers_to_monitor.extend([x.lower() for x in args])
 
     config.save_to_file()
 
@@ -351,13 +351,13 @@ def cmd_removestreamers(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.write_delay_seconds)
+                config.config.write_delay_seconds)
 
     twitch_monitor.remove_usernames(args)
 
     for name in args:
         try:
-            config.streamers.remove(name.lower())
+            config.config.streamers_to_monitor.remove(name.lower())
         except ValueError:
             if len(args) == 1:
                 # If removing only one streamer, let the user know if they're trying
@@ -377,13 +377,13 @@ def cmd_removestreamers(proc, config, twitch_monitor, args):
 
 def cmd_clearallstreamers(proc, config, twitch_monitor, args):
     twitch_monitor.clear_usernames()
-    config.streamers.clear()
+    config.confing.streamers_to_monitor.clear()
 
     return "OK, no streamers are being monitored any more."
 
 def cmd_nocompetition(proc, config, twitch_monitor, args):
     if len(args) < 1:
-        return "nocompetition is %s" % ("enabled" if config.silent_during_host_stream else "disabled")
+        return "nocompetition is %s" % ("enabled" if config.config.silent_when_host_streaming else "disabled")
 
     val = args[0].lower()
     if val not in ["true", "false"]:
@@ -391,19 +391,19 @@ def cmd_nocompetition(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.write_delay_seconds)
+                config.config.write_delay_seconds)
 
     val = True if val == "true" else False
 
-    if val != config.silent_during_host_stream:
-        config.silent_during_host_stream = val
+    if val != config.config.silent_when_host_streaming:
+        config.config.silent_when_host_streaming = val
         config.save_to_file()
 
     return ("OK! nocompetition %s. announcements will %sbe made during host's stream" %
             ("enabled" if val else "disabled", "not " if val else ""))
 
 def cmd_phrases(proc, config, twitch_monitor, args):
-    msgs = config.stream_start_messages
+    msgs = config.config.stream_start_messages
     lines = ["%d. %s" % (i + 1, msgs[i]) for i in range(len(msgs))]
     return "Phrases currently in use:\n```\n%s```" % "\n".join(lines)
 
@@ -417,9 +417,9 @@ def cmd_addphrase(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.write_delay_seconds)
+                config.config.write_delay_seconds)
 
-    config.stream_start_messages.append(phrase)
+    config.config.stream_start_messages.append(phrase)
     config.save_to_file()
 
     return "OK! added the following phrase:\n```%s```" % phrase
@@ -428,7 +428,7 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
     if len(args) < 1:
         return "'removephrase' requires an argument, please provide the number for the phrase you want to remove"
 
-    size = len(config.stream_start_messages)
+    size = len(config.config.stream_start_messages)
     if size == 0:
         return "No phrases to remove"
 
@@ -442,10 +442,10 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.write_delay_seconds)
+                config.config.write_delay_seconds)
 
-    deleted = config.stream_start_messages[num - 1]
-    del config.stream_start_messages[num - 1]
+    deleted = config.config.stream_start_messages[num - 1]
+    del config.config.stream_start_messages[num - 1]
     config.save_to_file()
 
     return "OK! Removed the following phrase:\n```%s```" % deleted
@@ -559,7 +559,7 @@ def cmd_say(proc, config, twitch_monitor, args):
         return "You didn't write a message for me to say. So I'll say nothing."
 
     proc.bot.send_message(" ".join(args))
-    return "OK! message sent to channel '%s'" % config.discord_channel
+    return "OK! message sent to channel '%s'" % config.config.discord_channel_name
 
 
 twitch_monitor_bot_command_list = [

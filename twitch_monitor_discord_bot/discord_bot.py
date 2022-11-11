@@ -31,9 +31,9 @@ class DiscordBot(object):
     CommandProcessor when commands are received from discord messages
     """
     def __init__(self, config, twitch_monitor):
-        self.token = config.discord_token
-        self.guild_id = config.discord_guildid
-        self.channel_name = config.discord_channel
+        self.token = config.config.discord_bot_api_token
+        self.guild_id = config.config.discord_server_id
+        self.channel_name = config.config.discord_channel_name
         self.config = config
         self.client = discord.Client()
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
