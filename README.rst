@@ -34,9 +34,13 @@ Initial configuration
    bot is up and running, but there are a few parameters that need to be set in the configuration
    file first, to get the bot talking. Populate these required parameters in the .json file:
 
-   #. ``twitch_client_id``: Twitch client ID must be entered here as an integer.
-      You must have a twitch account, and register an application to obtain a twitch client ID.
-      `instructions here <https://dev.twitch.tv/docs/api/#step-1-register-an-application>`_.
+   #. ``twitch_client_id``: Twitch client ID must be entered here as a string.
+      You must have a twitch account, and register an application to obtain a client ID for your application.
+      `instructions here <https://dev.twitch.tv/docs/authentication/register-app>`_.
+
+   #. ``twitch_client_secret``: Twitch client secret must be entered here as a string.
+      You must have a twitch account, and register an application to obtain a client secret for your application.
+      `instructions here <https://dev.twitch.tv/docs/authentication/register-app>`_.
 
    #. ``discord_bot_api_token``: Discord bot API token must be entered here as a string.
       `Create a new bot application, and generate/copy token on the "Bot" page <https://discord.com/developers/applications>`_
