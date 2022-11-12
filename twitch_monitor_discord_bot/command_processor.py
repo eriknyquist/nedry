@@ -5,10 +5,14 @@
 
 import datetime
 import os
+import logging
 
 from twitch_monitor_discord_bot import quotes
 from twitch_monitor_discord_bot import utils
 from twitch_monitor_discord_bot.twitch_monitor import InvalidTwitchUser
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 COMMAND_PREFIX = "!"
@@ -199,6 +203,7 @@ class CommandProcessor(object):
         self.cmds = {x.word: x for x in command_list}
         self.last_msg_by_user = {}
         self.mocking_users = []
+        self.command_log_buf = []
         self.mocking_enabled = True
 
         self.log_filename = None
@@ -211,14 +216,28 @@ class CommandProcessor(object):
         else:
             self.log_filename = config.config.command_log_file
 
+    def close(self):
+        logger.info("Stopping")
+        if self.log_filename is not None:
+            self._flush_command_log_buf()
+
+    def _flush_command_log_buf(self):
+        if self.command_log_buf:
+            with open(self.log_filename, 'a') as fh:
+                fh.write("\n".join(self.command_log_buf) + "\n")
+
+            self.command_log_buf = []
+
     def _log_command_event(self, message):
         if self.log_filename is None:
             return
 
         timestamp = datetime.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S.%f")[:-3]
+        msg_to_write = "[%s] %s" % (timestamp, message)
+        self.command_log_buf.append(msg_to_write)
 
-        with open(self.log_filename, 'a') as fh:
-            fh.write("[%s] %s\n" % (timestamp, message))
+        if len(self.command_log_buf) >= 10:
+            self._flush_command_log_buf()
 
     def _log_valid_command(self, author, command_text):
         msg = "[%s (%d)] %s" % (author.name, author.id, command_text)
@@ -322,6 +341,11 @@ def cmd_addstreamers(proc, config, twitch_monitor, args):
         # Check if streamer was already added
         if twitch_monitor.username_added(arg):
             continue # Already added, skip
+
+        # Check if streamer name contains invalid chars
+        for c in arg:
+            if (not c.isalpha()) and not (c.isdigit()) and (c not in ['_', '-']):
+                return "Streamer name contains invalid character '%s'" % (c)
 
         names_to_add.append(arg)
 

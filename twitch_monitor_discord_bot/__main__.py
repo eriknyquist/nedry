@@ -113,10 +113,12 @@ def main():
     thread.daemon = True
     thread.start()
 
-    try:
-        bot.run()
-    except KeyboardInterrupt:
-        bot.stop()
+    # KeyboardInterrupt will not be bubbled up, instead it will just
+    # cause this function to return silently
+    bot.run()
+
+    logger.info("Stopping")
+    bot.stop()
 
 if __name__ == "__main__":
     main()

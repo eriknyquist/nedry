@@ -35,7 +35,16 @@ class DiscordBot(object):
         self.guild_id = config.config.discord_server_id
         self.channel_name = config.config.discord_channel_name
         self.config = config
-        self.client = discord.Client(intents=discord.Intents.default())
+
+        #intents = discord.Intents.default()
+        #intents.members = True
+        #intents.messages = True
+        #intents.message_content = True
+        #intents.guilds = True
+        #intents.guild_messages = True
+        #self.client = discord.Client(intents=intents)
+        self.client = discord.Client()
+
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
         self.channel = None
@@ -51,7 +60,7 @@ class DiscordBot(object):
                         break
 
             if self.channel is None:
-                raise RuntimeError("Unable to find channel '%s'" % CHANNEL_NAME)
+                raise RuntimeError("Unable to find channel '%s'" % self.channel_name)
 
             self.guild_available.set()
 
@@ -99,7 +108,9 @@ class DiscordBot(object):
         self.client.run(self.token)
 
     def stop(self):
-        self.client.logout()
+        logger.info("Stopping")
+        asyncio.run(self.client.close())
+        self.cmdprocessor.close()
 
     def send_message(self, message):
         asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
