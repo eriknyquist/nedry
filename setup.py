@@ -6,9 +6,13 @@ from twitch_monitor_discord_bot import __version__
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 README = os.path.join(HERE, "README.rst")
+REQS = os.path.join(HERE, "requirements.txt")
 
 with open(README, 'r') as f:
     long_description = f.read()
+
+with open(REQS, 'r') as fh:
+    requirements = [r.strip() for r in fh.readlines()]
 
 setup(
     name='twitch_monitor_discord_bot',
@@ -24,10 +28,5 @@ setup(
     package_data={'twitch_monitor_discord_bot': [os.path.join('twitch_monitor_discord_bot', 'quotedb.json')]},
     include_package_data=True,
     zip_safe=False,
-
-    install_requires=[
-        'nltk',
-        'discord',
-        'python-twitch-client'
-    ]
+    install_requires=requirements
 )
