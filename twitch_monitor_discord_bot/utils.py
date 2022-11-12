@@ -1,10 +1,37 @@
+import datetime
+
 FMT_TOK_STREAMER_NAME = "streamer_name"
 FMT_TOK_STREAM_URL = "stream_url"
 
+FMT_TOK_DATE = "date"
+FMT_TOK_TIME = "time"
+FMT_TOK_DAY = "day"
+FMT_TOK_MONTH = "month"
+FMT_TOK_YEAR = "year"
+
+
 format_args = {
     FMT_TOK_STREAMER_NAME: None,
-    FMT_TOK_STREAM_URL: None
+    FMT_TOK_STREAM_URL: None,
+    FMT_TOK_DATE: None,
+    FMT_TOK_TIME: None,
+    FMT_TOK_DAY: None,
+    FMT_TOK_MONTH: None,
+    FMT_TOK_YEAR: None
 }
+
+def streamer_fmt_tokens(name, url):
+    return {FMT_TOK_STREAMER_NAME: name, FMT_TOK_STREAMER_URL: url}
+
+def datetime_fmt_tokens():
+    now = datetime.datetime.now()
+    return {
+        FMT_TOK_DATE: now.strftime("%d/%m/%Y"),
+        FMT_TOK_TIME: now.strftime("%H:%M:%S"),
+        FMT_TOK_DAY: now.strftime("%A"),
+        FMT_TOK_MONTH: now.strftime("%B"),
+        FMT_TOK_YEAR: now.strftime("%Y")
+    }
 
 def validate_format_tokens(phrase):
     try:

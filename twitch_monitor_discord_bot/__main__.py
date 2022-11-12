@@ -45,10 +45,10 @@ def check_streamers(config, monitor, bot):
         if c.name in streamers:
             if c.is_live and (not streamers[c.name].is_live):
                 logger.info("streamer %s went live" % c.name)
-                utils.format_args[utils.FMT_TOK_STREAMER_NAME] = c.name
-                utils.format_args[utils.FMT_TOK_STREAM_URL] = c.url
+                fmt_args = utils.streamer_fmt_tokens(c.name, c.url)
+                fmt_args.update(utils.datetime_fmt_tokens())
                 fmtstring = random.choice(config.stream_start_messages)
-                msgs.append(fmtstring.format(**utils.format_args))
+                msgs.append(fmtstring.format(**fmt_args))
 
         streamers[c.name] = c
 
@@ -58,7 +58,8 @@ def streamer_check_loop(config, monitor, bot):
     bot.guild_available.wait()
 
     if config.config.startup_message is not None:
-        bot.send_message(config.config.startup_message)
+        msg = config.config.startup_message.format(**utils.datetime_fmt_tokens())
+        bot.send_message(msg)
 
     while True:
         time.sleep(config.config.poll_period_seconds)

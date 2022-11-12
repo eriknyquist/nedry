@@ -123,6 +123,11 @@ tokens may be used within a phrase:
 
     {{streamer_name}} : replaced with the streamer's twitch name
     {{stream_url}}    : replaced with the stream URL on twitch.tv
+    {{date}}          : replaced with current date in DD/MM/YYY format
+    {{time}}          : replaced with current time in HH:MM:SS format
+    {{day}}           : replaced with the name of the current weekday (e.g. "Monday")
+    {{month}}         : replaced with the name of the current month (e.g. "January")
+    {{year}}          : replaced with the current year (e.g. "2022")
 
 Example:
 
@@ -384,7 +389,7 @@ def cmd_removestreamers(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.write_delay_seconds)
+                config.config.config_write_delay_seconds)
 
     twitch_monitor.remove_usernames(args)
 
@@ -424,7 +429,7 @@ def cmd_nocompetition(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.write_delay_seconds)
+                config.config.config_write_delay_seconds)
 
     val = True if val == "true" else False
 
@@ -450,7 +455,7 @@ def cmd_addphrase(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.write_delay_seconds)
+                config.config.config_write_delay_seconds)
 
     config.config.stream_start_messages.append(phrase)
     config.save_to_file()
@@ -475,7 +480,7 @@ def cmd_removephrase(proc, config, twitch_monitor, args):
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.write_delay_seconds)
+                config.config.config_write_delay_seconds)
 
     deleted = config.config.stream_start_messages[num - 1]
     del config.config.stream_start_messages[num - 1]

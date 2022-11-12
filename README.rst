@@ -143,14 +143,27 @@ Description of fields
   write changes to the bot config file here (makes it more difficult for someone with admin privileges to spam the disk).
 
 * ``startup_message``: Enter the message you would like the bot to send when it comes online after being started up here.
+  Message may contain the following format tokens:
+
+  * ``{date}`` : will be replaced with current date in DD/MM/YYY format
+  * ``{time}`` : will be replaced with current time in HH:MM:SS format
+  * ``{day}`` : will be replaced with the name of the current weekday (e.g. "Monday")
+  * ``{month}`` : will be replaced with the name of the current month (e.g. "January")
+  * ``{year}`` : will be replaced with the current year (e.g. "2022")
+
 
 * ``streamers_to_monitor``: Enter the list of streamer names to monitor here.
 
 * ``stream_start_messages``: Multiple messages can be defined here to be used as announcements
   for streamers going live. Messages may contain the following format tokens:
 
-  * ``{streamer_name}``: will be replaced with the name of the streamer
-  * ``{stream_url}``: will be replaced with the stream URL on twitch.com
+  * ``{streamer_name}`` : will be replaced with the name of the streamer
+  * ``{stream_url}`` : will be replaced with the stream URL on twitch.com
+  * ``{date}`` : will be replaced with current date in DD/MM/YYY format
+  * ``{time}`` : will be replaced with current time in HH:MM:SS format
+  * ``{day}`` : will be replaced with the name of the current weekday (e.g. "Monday")
+  * ``{month}`` : will be replaced with the name of the current month (e.g. "January")
+  * ``{year}`` : will be replaced with the current year (e.g. "2022")
 
 Bot command reference
 =====================
@@ -373,6 +386,11 @@ Command ``addphrase``
    
        {streamer_name} : replaced with the streamer's twitch name
        {stream_url}    : replaced with the stream URL on twitch.tv
+       {date}          : replaced with current date in DD/MM/YYY format
+       {time}          : replaced with current time in HH:MM:SS format
+       {day}           : replaced with the name of the current weekday (e.g. "Monday")
+       {month}         : replaced with the name of the current month (e.g. "January")
+       {year}          : replaced with the current year (e.g. "2022")
    
    Example:
    
