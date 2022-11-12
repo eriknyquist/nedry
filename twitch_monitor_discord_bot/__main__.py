@@ -38,6 +38,8 @@ def check_streamers(config, monitor, bot):
     # Check for any announcements that need to be made
     for c in channels:
         if c.user is None:
+            del monitor.usernames[c.username]
+            monitor.usernames[c.username] = False
             continue
 
         if c.name in streamers:

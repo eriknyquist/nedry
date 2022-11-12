@@ -330,7 +330,15 @@ def cmd_streamers(proc, config, twitch_monitor, args):
     if len(config.config.streamers_to_monitor) == 0:
         return "No streamers are currently being monitored."
 
-    return "Streamers being monitored:\n```\n%s```" % "\n".join(config.config.streamers_to_monitor)
+    lines = []
+    for n in twitch_monitor.usernames:
+        val = n
+        if twitch_monitor.usernames[n] is False:
+            val += " (unrecognized twitch username)"
+
+        lines.append(val)
+
+    return "Streamers being monitored:\n```\n%s```" % "\n".join(lines)
 
 def cmd_addstreamers(proc, config, twitch_monitor, args):
     if len(args) < 1:

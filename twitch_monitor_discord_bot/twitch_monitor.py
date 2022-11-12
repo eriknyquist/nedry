@@ -15,20 +15,21 @@ class TwitchChannel(object):
     """
     Holds all the bits of information we care about for a single twitch streamer
     """
-    def __init__(self, user):
+    def __init__(self, user, username):
         self.user = user
+        self.username = username
 
     @property
     def is_live(self):
-        return self.user.is_live
+        return False if self.user is None else self.user.is_live
 
     @property
     def name(self):
-        return self.user.display_name
+        return "Unknown" if self.user is None else self.user.display_name
 
     @property
     def url(self):
-        return "https://twitch.tv/" + self.user.display_name
+        return "Unknown" if self.user is None else "https://twitch.tv/" + self.user.display_name
 
 
 class TwitchMonitor(object):
@@ -40,16 +41,19 @@ class TwitchMonitor(object):
         self.helix = twitch.Helix(twitch_client_id, twitch_client_secret)
         self.client = None
         self.users = []
-        self.usernames = [x.lower() for x in usernames]
+        self.usernames = {x.lower(): (self.helix.user(x) is not None) for x in usernames}
 
     def add_usernames(self, names):
         lnames = [x.lower() for x in names]
+        names_to_add = {}
 
         for n in lnames:
             if self.helix.user(n) is None:
                 raise InvalidTwitchUser("Twitch user '%s' does not exist" % n)
 
-        self.usernames.extend(lnames)
+            names_to_add[n] = True
+
+        self.usernames.update(names_to_add)
 
     def remove_usernames(self, names):
         for name in names:
@@ -57,17 +61,17 @@ class TwitchMonitor(object):
             if lname not in self.usernames:
                 continue
 
-            self.usernames.remove(lname)
+            del self.usernames[lname]
 
     def clear_usernames(self):
-        self.usernames = []
+        self.usernames = {}
 
     def username_added(self, name):
-        return name in self.usernames
+        return name.lower() in self.usernames
 
     def read_streamer_info(self, username):
         user = self.helix.user(username)
-        return TwitchChannel(user)
+        return TwitchChannel(user, username)
 
     def read_all_streamer_info(self):
         return [self.read_streamer_info(u) for u in self.usernames]
