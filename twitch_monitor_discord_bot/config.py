@@ -20,7 +20,7 @@ class BotConfig(VersionedObject):
     streamers_to_monitor = []
     host_streamer = ""
     silent_when_host_streaming = False
-    poll_period_seconds = 60
+    poll_period_seconds = 600
     stream_start_messages = [
         '{streamer_name} just started streaming! Check them out here: {stream_url}'
     ]

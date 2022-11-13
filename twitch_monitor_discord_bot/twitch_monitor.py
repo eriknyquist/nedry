@@ -2,6 +2,10 @@
 # provide information about the status of streamers being monitored
 
 import twitch
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class InvalidTwitchUser(Exception):
@@ -15,21 +19,14 @@ class TwitchChannel(object):
     """
     Holds all the bits of information we care about for a single twitch streamer
     """
+    count = 0
+
     def __init__(self, user, username):
         self.user = user
         self.username = username
-
-    @property
-    def is_live(self):
-        return False if self.user is None else self.user.is_live
-
-    @property
-    def name(self):
-        return "Unknown" if self.user is None else self.user.display_name
-
-    @property
-    def url(self):
-        return "Unknown" if self.user is None else "https://twitch.tv/" + self.user.display_name
+        self.is_live = False if user is None else user.is_live
+        self.name = "Unknown" if user is None else user.display_name
+        self.url = "Unknown" if user is None else "https://twitch.tv/" + user.display_name
 
 
 class TwitchMonitor(object):

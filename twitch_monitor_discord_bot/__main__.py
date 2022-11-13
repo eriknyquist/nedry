@@ -22,6 +22,7 @@ DEFAULT_CONFIG_FILE = "default_bot_config.json"
 
 streamers = {}
 
+
 def check_streamers(config, monitor, bot):
     channels = monitor.read_all_streamer_info()
     msgs = []
@@ -43,13 +44,14 @@ def check_streamers(config, monitor, bot):
             continue
 
         if c.name in streamers:
-            if c.is_live and (not streamers[c.name].is_live):
-                logger.info("streamer %s went live" % c.name)
-                fmt_args = utils.streamer_fmt_tokens(c.name, c.url)
-                fmt_args.update(utils.bot_fmt_tokens(bot))
-                fmt_args.update(utils.datetime_fmt_tokens())
-                fmtstring = random.choice(config.stream_start_messages)
-                msgs.append(fmtstring.format(**fmt_args))
+            if c.is_live:
+                if not streamers[c.name].is_live:
+                    logger.info("streamer %s went live" % c.name)
+                    fmt_args = utils.streamer_fmt_tokens(c.name, c.url)
+                    fmt_args.update(utils.bot_fmt_tokens(bot))
+                    fmt_args.update(utils.datetime_fmt_tokens())
+                    fmtstring = random.choice(config.config.stream_start_messages)
+                    msgs.append(fmtstring.format(**fmt_args))
 
         streamers[c.name] = c
 
@@ -65,10 +67,7 @@ def streamer_check_loop(config, monitor, bot):
     while True:
         time.sleep(config.config.poll_period_seconds)
 
-        try:
-            msgs = check_streamers(config, monitor, bot)
-        except:
-            pass
+        msgs = check_streamers(config, monitor, bot)
 
         for msg in msgs:
             logger.debug("sending message to channel '%s'" % config.config.discord_channel_name)
