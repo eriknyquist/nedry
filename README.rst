@@ -1,5 +1,5 @@
-twitch_monitor_discord_bot
-==========================
+twitch_monitor_discord_bot 2.0.0
+================================
 
 This is a discord bot which will periodically check a list of twitch streamers,
 and post an announcement on a specific discord channel when a streamer goes live.
