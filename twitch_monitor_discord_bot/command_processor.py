@@ -642,6 +642,9 @@ def cmd_wiki(proc, config, twitch_monitor, args):
     if not result:
         return "No results found for %s, sorry :(" % search_text
 
+    if len(result) > 900:
+        result = result[:896] + " ..."
+
     return result
 
 def cmd_say(proc, config, twitch_monitor, args):
