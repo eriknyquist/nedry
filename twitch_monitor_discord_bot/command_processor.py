@@ -645,6 +645,9 @@ def cmd_wiki(proc, config, twitch_monitor, args):
     if len(result) > 900:
         result = result[:896] + " ..."
 
+    if result.endswith("may refer to:"):
+        return "Please be a bit more specific with your search terms"
+
     return result
 
 def cmd_say(proc, config, twitch_monitor, args):
