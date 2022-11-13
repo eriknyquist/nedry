@@ -5,6 +5,8 @@ This is a discord bot which will periodically check a list of twitch streamers,
 and post an announcement on a specific discord channel when a streamer goes live.
 It also does some other silly/fun things.
 
+.. contents:: **Table of Contents**
+
 Install
 =======
 
@@ -27,12 +29,12 @@ Initial configuration
 
        $ python -m twitch_monitor_discord_bot
 
-       [2021-09-19 16:44:40,468][INFO][config:141]: saving configuration to default_bot_config.json
        Created default config file 'default_bot_config.json', please add required parameters
 
 #. Most of the behaviours of this bot can be configured via discord messages while the
    bot is up and running, but there are a few parameters that need to be set in the configuration
-   file first, to get the bot talking. Populate these required parameters in the .json file:
+   file first, to get the bot talking to twitch and to your discord server. Populate these required
+   parameters in the .json file:
 
    #. ``twitch_client_id``: Twitch client ID must be entered here as a string.
       You must have a twitch account, and register an application to obtain a client ID for your application.
@@ -97,6 +99,7 @@ in the Quick Start section. The configuration file must be a .json file of the f
 
     {
         "twitch_client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "twitch_client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "discord_bot_api_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "discord_server_id": 123456789123456789,
         "discord_channel_name": "my-discord-channel",
