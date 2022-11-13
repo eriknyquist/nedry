@@ -304,6 +304,10 @@ Command ``listmocks``
 
    List the name & discord IDs of all users currently being mocked
 
+   Example:
+
+   @BotName !listmocks
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``mockson``
@@ -315,6 +319,10 @@ Command ``mockson``
    mockson
 
    Disable all mocking until 'mocksoff' command is sent
+
+   Example:
+
+   @BotName !mockson
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
@@ -328,6 +336,10 @@ Command ``mocksoff``
 
    Re-enable mocking after disabling
 
+   Example:
+
+   @BotName !mocksoff
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``clearmocks``
@@ -339,6 +351,10 @@ Command ``clearmocks``
    clearmocks
 
    Clear all users that are currently being mocked
+
+   Example:
+
+   @BotName !clearmocks
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
@@ -383,7 +399,7 @@ Command ``removestreamers``
 
    removestreamers [name] ...
 
-   Romoves one or more streamers from the  list of streamers being monitored. Replace [name]
+   Removes one or more streamers from the  list of streamers being monitored. Replace [name]
    with the twitch name(s) of the streamer(s) you want to remove.
 
    Example:
@@ -478,7 +494,9 @@ Command ``removephrase``
 
    Removes a phrase from the list of phrases being used for stream announcements.
    [number] must be replaced with the number for the desired phrase, as shown in the
-   numbered list produced by the 'addphrase' command.
+   numbered list produced by the 'phrases' command. In other words, in order to remove
+   a phrase, you must first look at the output of the "phrases" command to get the
+   number of the phrase you want to remove.
 
    Example:
 
@@ -500,9 +518,11 @@ Command ``nocompetition``
 
    (To check if nocompetition is enabled, run the command with no true/false argument)
 
-   Example:
+   Examples:
 
-   @BotName !nocompetition
+   @BotName !nocompetition true     (enable nocompetition)
+   @BotName !nocompetition false    (enable nocompetition)
+   @BotName !nocompetition          (check current state)
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
