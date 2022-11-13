@@ -633,15 +633,13 @@ def cmd_unmock(proc, config, twitch_monitor, args):
     if len(args) == 0:
         return "'unmock' requires more information, please mention the user you want to unmock"
 
-    print("I saw this mention: " + args[0])
-
     user_id = utils.parse_mention(args[0].strip())
     if user_id is None:
         return "Please mention the user you wish to unmock (e.g. '!unmock @eknyquist)"
 
     if user_id in proc.mocking_users:
         proc.mocking_users.remove(user_id)
-        return "OK, I will leave %s alone now." % mention
+        return "OK, I will leave %s alone now." % args[0].strip()
 
 def cmd_apologize(proc, config, twitch_monitor, args):
     if len(args) == 0:
@@ -652,7 +650,7 @@ def cmd_apologize(proc, config, twitch_monitor, args):
         return "Please mention the user you wish to apologise to (e.g. '!apologise @eknyquist)"
 
     return ("%s, I am truly, deeply sorry for mocking you just now. "
-            "I'm only a robot, you see. I have no free will." % mention)
+            "I'm only a robot, you see. I have no free will." % args[0].strip())
 
 def cmd_quote(proc, config, twitch_monitor, args):
     text, author = quotes.get_donk_quote()
