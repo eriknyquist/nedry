@@ -146,8 +146,10 @@ Description of fields
 * ``startup_message``: Enter the message you would like the bot to send when it comes online after being started up here.
   Message may contain the following format tokens:
 
+  * ``{botname}`` : replaced with bot name that is seen by other discord users
   * ``{date}`` : will be replaced with current date in DD/MM/YYY format
-  * ``{time}`` : will be replaced with current time in HH:MM:SS format
+  * ``{times}`` : will be replaced with current time in HH:MM:SS format
+  * ``{time}`` : will be replaced with current time in HH:MM format
   * ``{day}`` : will be replaced with the name of the current weekday (e.g. "Monday")
   * ``{month}`` : will be replaced with the name of the current month (e.g. "January")
   * ``{year}`` : will be replaced with the current year (e.g. "2022")
