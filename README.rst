@@ -44,6 +44,7 @@ Initial configuration
 
    #. ``discord_bot_api_token``: Discord bot API token must be entered here as a string.
       `Create a new bot application, and generate/copy token on the "Bot" page <https://discord.com/developers/applications>`_
+      (NOTE: make sure to enable all Privileged Gateway Intents for your bot application).
 
    #. ``discord_server_id``: Discord server ID (the server that you want the bot to
       connect to) must be entered here as an integer.

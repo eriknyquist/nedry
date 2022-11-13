@@ -492,13 +492,8 @@ def cmd_mock(proc, config, twitch_monitor, args):
     if len(args) == 0:
         return "'mock' requires more information, please mention the user you want to mock"
 
-    mention = args[0].strip()
-    if (not mention.startswith('<@')) or (not mention.endswith('>')):
-        return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
-
-    try:
-        user_id = int(mention[3:-1])
-    except ValueError:
+    user_id = utils.parse_mention(args[0].strip())
+    if user_id is None:
         return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
 
     if user_id not in proc.mocking_users:
@@ -539,7 +534,7 @@ def cmd_listmocks(proc, config, twitch_monitor, args):
         except:
             pass
 
-        if user:
+        if user is not None:
             user_desc = user.name
 
         names.append('%s (%d)' % (user_desc, user_id))
@@ -559,14 +554,11 @@ def cmd_unmock(proc, config, twitch_monitor, args):
     if len(args) == 0:
         return "'unmock' requires more information, please mention the user you want to unmock"
 
-    mention = args[0].strip()
-    if (not mention.startswith('<@!')) or (not mention.endswith('>')):
-        return "Please mention the user you wish to unmock (e.g. '!unmock @eknyquist)"
+    print("I saw this mention: " + args[0])
 
-    try:
-        user_id = int(mention[3:-1])
-    except ValueError:
-        return "Please mention the user you wish to unmock (e.g. '!mock @eknyquist)"
+    user_id = utils.parse_mention(args[0].strip())
+    if user_id is None:
+        return "Please mention the user you wish to unmock (e.g. '!unmock @eknyquist)"
 
     if user_id in proc.mocking_users:
         proc.mocking_users.remove(user_id)
@@ -576,14 +568,9 @@ def cmd_apologize(proc, config, twitch_monitor, args):
     if len(args) == 0:
         return "'apologise' requires more information, please mention the user you want to apologise to"
 
-    mention = args[0].strip()
-    if (not mention.startswith('<@!')) or (not mention.endswith('>')):
+    user_id = utils.parse_mention(args[0].strip())
+    if user_id is None:
         return "Please mention the user you wish to apologise to (e.g. '!apologise @eknyquist)"
-
-    try:
-        user_id = int(mention[3:-1])
-    except ValueError:
-        return "Please mention the user you wish to apologise (e.g. '!apologise @eknyquist)"
 
     return ("%s, I am truly, deeply sorry for mocking you just now. "
             "I'm only a robot, you see. I have no free will." % mention)

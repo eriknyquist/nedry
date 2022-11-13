@@ -69,3 +69,22 @@ def mockify_text(text):
         return None
 
     return ''.join([text[i] if i % 2 else text[i].upper() for i in range(len(text))])
+
+def parse_mention(mention):
+    ret = None
+
+    if mention.startswith('<@') and mention.endswith('>'):
+        # Mention of member without nickname
+        intval = mention[2:-1]
+    elif mention.startswith('<@!') and mention.endswith('>'):
+        # Mention of member with nickname
+        intval = mention[3:-1]
+    else:
+        return None
+
+    try:
+        ret = int(intval)
+    except ValueError:
+        return None
+
+    return ret

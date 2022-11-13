@@ -43,7 +43,7 @@ class DiscordBot(object):
         #intents.guilds = True
         #intents.guild_messages = True
         #self.client = discord.Client(intents=intents)
-        self.client = discord.Client()
+        self.client = discord.Client(intents=discord.Intents().all())
 
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
