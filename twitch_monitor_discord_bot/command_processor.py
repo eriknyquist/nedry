@@ -22,6 +22,21 @@ CMD_HELP_HELP = """
 
 Shows helpful information about the given command. Replace [command] with the
 command you want help with.
+
+Example:
+
+@BotName !help addphrase
+"""
+
+CMD_WIKI_HELP = """
+{0} [search text]
+
+Search the provided text using Wikipedia's public API, and return the summary text
+(generally the first paragraph) of the first page in the search results.
+
+Example:
+
+@BotName !wiki python programming language
 """
 
 CMD_MOCK_HELP = """
@@ -29,6 +44,10 @@ CMD_MOCK_HELP = """
 
 Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
 with a mention of the discord user you want to mock.
+
+Example:
+
+@BotName !mock @discord_user
 """
 
 CMD_UNMOCK_HELP = """
@@ -36,6 +55,10 @@ CMD_UNMOCK_HELP = """
 
 Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
 you want to stop mocking.
+
+Example:
+
+@BotName !unmock @discord_user
 """
 
 CMD_APOLOGIZE_HELP = """
@@ -43,12 +66,20 @@ CMD_APOLOGIZE_HELP = """
 
 Apologize to a specific user for having mocked them. Replace [mention]
 with a mention of the discord user you want to apologize to.
+
+Example:
+
+@BotName !apologize @discord_user
 """
 
 CMD_QUOTE_HELP = """
 {0}
 
 Displays a random famous quote
+
+Example:
+
+@BotName !quote
 """
 
 CMD_STREAMERS_HELP = """
@@ -605,6 +636,14 @@ def cmd_quote(proc, config, twitch_monitor, args):
     text, author = quotes.get_donk_quote()
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
 
+def cmd_wiki(proc, config, twitch_monitor, args):
+    search_text = ' '.join(args)
+    result = utils.get_wiki_summary(search_text)
+    if not result:
+        return "No results found for %s, sorry :(" % search_text
+
+    return result
+
 def cmd_say(proc, config, twitch_monitor, args):
     if len(args) < 1:
         return "You didn't write a message for me to say. So I'll say nothing."
@@ -621,6 +660,7 @@ twitch_monitor_bot_command_list = [
     Command("unmock", cmd_unmock, False, CMD_UNMOCK_HELP),
     Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
+    Command("wiki", cmd_wiki, False, CMD_WIKI_HELP),
 
     # Commands only available to admin users
     Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),

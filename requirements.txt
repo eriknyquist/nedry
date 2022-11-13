@@ -1,3 +1,4 @@
+requests
 twitch-python
 versionedobj>=2.0.0
 discord.py==1.7.3

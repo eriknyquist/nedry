@@ -1,3 +1,4 @@
+import requests
 import datetime
 
 FMT_TOK_STREAMER_NAME = "streamer_name"
@@ -99,3 +100,38 @@ def parse_mention(mention):
         return None
 
     return ret
+
+def get_wiki_summary(search_text):
+    url = 'https://en.wikipedia.org/w/api.php'
+    params = {
+            'action': 'query',
+            'format': 'json',
+            'list': 'search',
+            'utf8': 1,
+            'srsearch': search_text
+    }
+
+    # Use the search API to search for pages related to text
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    if not data['query']['search']:
+        # No results
+        return None
+
+    # Just take the 1st search result
+    page_title = data['query']['search'][0]['title']
+    params = {
+        'action': 'query',
+        'format': 'json',
+        'titles': page_title,
+        'prop': 'extracts',
+        'exintro': True,
+        'explaintext': True,
+    }
+
+    # Use the search API to search for pages related to text
+    response = requests.get(url, params=params)
+    data = response.json()
+    page = next(iter(data['query']['pages'].values()))
+    return page['extract']

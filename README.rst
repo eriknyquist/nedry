@@ -170,6 +170,7 @@ Description of fields
 
 Bot command reference
 =====================
+
 Command ``help``
 ----------------
 
@@ -180,6 +181,10 @@ Command ``help``
 
    Shows helpful information about the given command. Replace [command] with the
    command you want help with.
+
+   Example:
+
+   @BotName !help addphrase
 
    All discord users may use this command.
 
@@ -192,6 +197,10 @@ Command ``quote``
    quote
 
    Displays a random famous quote
+
+   Example:
+
+   @BotName !quote
 
    All discord users may use this command.
 
@@ -206,6 +215,10 @@ Command ``mock``
    Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
    with a mention of the discord user you want to mock.
 
+   Example:
+
+   @BotName !mock @discord_user
+
    All discord users may use this command.
 
 Command ``unmock``
@@ -218,6 +231,10 @@ Command ``unmock``
 
    Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
    you want to stop mocking.
+
+   Example:
+
+   @BotName !unmock @discord_user
 
    All discord users may use this command.
 
@@ -232,6 +249,10 @@ Command ``apologise``
    Apologize to a specific user for having mocked them. Replace [mention]
    with a mention of the discord user you want to apologize to.
 
+   Example:
+
+   @BotName !apologize @discord_user
+
    All discord users may use this command.
 
 Command ``apologize``
@@ -244,6 +265,27 @@ Command ``apologize``
 
    Apologize to a specific user for having mocked them. Replace [mention]
    with a mention of the discord user you want to apologize to.
+
+   Example:
+
+   @BotName !apologize @discord_user
+
+   All discord users may use this command.
+
+Command ``wiki``
+----------------
+
+::
+
+
+   wiki [search text]
+
+   Search the provided text using Wikipedia's public API, and return the summary text
+   (generally the first paragraph) of the first page in the search results.
+
+   Example:
+
+   @BotName !wiki python programming language
 
    All discord users may use this command.
 
