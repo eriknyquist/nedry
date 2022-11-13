@@ -160,6 +160,7 @@ Description of fields
 
   * ``{streamer_name}`` : will be replaced with the name of the streamer
   * ``{stream_url}`` : will be replaced with the stream URL on twitch.com
+  * ``{botname}`` : replaced with bot name that is seen by other discord users
   * ``{date}`` : will be replaced with current date in DD/MM/YYY format
   * ``{times}`` : will be replaced with current time in HH:MM:SS format
   * ``{time}`` : will be replaced with current time in HH:MM format
@@ -169,18 +170,17 @@ Description of fields
 
 Bot command reference
 =====================
-
 Command ``help``
 ----------------
 
 ::
 
-   
+
    help [command]
-   
+
    Shows helpful information about the given command. Replace [command] with the
    command you want help with.
-   
+
    All discord users may use this command.
 
 Command ``quote``
@@ -188,11 +188,11 @@ Command ``quote``
 
 ::
 
-   
+
    quote
-   
+
    Displays a random famous quote
-   
+
    All discord users may use this command.
 
 Command ``mock``
@@ -200,12 +200,12 @@ Command ``mock``
 
 ::
 
-   
+
    mock [mention]
-   
+
    Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
    with a mention of the discord user you want to mock.
-   
+
    All discord users may use this command.
 
 Command ``unmock``
@@ -213,12 +213,12 @@ Command ``unmock``
 
 ::
 
-   
+
    unmock [mention]
-   
+
    Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
    you want to stop mocking.
-   
+
    All discord users may use this command.
 
 Command ``apologise``
@@ -226,12 +226,12 @@ Command ``apologise``
 
 ::
 
-   
+
    apologise [mention]
-   
+
    Apologize to a specific user for having mocked them. Replace [mention]
    with a mention of the discord user you want to apologize to.
-   
+
    All discord users may use this command.
 
 Command ``apologize``
@@ -239,12 +239,12 @@ Command ``apologize``
 
 ::
 
-   
+
    apologize [mention]
-   
+
    Apologize to a specific user for having mocked them. Replace [mention]
    with a mention of the discord user you want to apologize to.
-   
+
    All discord users may use this command.
 
 Command ``listmocks``
@@ -252,11 +252,11 @@ Command ``listmocks``
 
 ::
 
-   
+
    listmocks
-   
+
    List the name & discord IDs of all users currently being mocked
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``mockson``
@@ -264,11 +264,11 @@ Command ``mockson``
 
 ::
 
-   
+
    mockson
-   
+
    Disable all mocking until 'mocksoff' command is sent
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``mocksoff``
@@ -276,11 +276,11 @@ Command ``mocksoff``
 
 ::
 
-   
+
    mocksoff
-   
+
    Re-enable mocking after disabling
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``clearmocks``
@@ -288,11 +288,11 @@ Command ``clearmocks``
 
 ::
 
-   
+
    clearmocks
-   
+
    Clear all users that are currently being mocked
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``streamers``
@@ -300,15 +300,15 @@ Command ``streamers``
 
 ::
 
-   
+
    streamers
-   
+
    Shows a list of streamers currently being monitored.
-   
+
    Example:
-   
+
    @BotName !streamers
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``addstreamers``
@@ -316,16 +316,16 @@ Command ``addstreamers``
 
 ::
 
-   
+
    addstreamers [name] ...
-   
+
    Adds one or more new streamers to list of streamers being monitored. Replace
    [name] with the twitch name(s) of the streamer(s) you want to monitor.
-   
+
    Example:
-   
+
    @BotName !addstreamers streamer1 streamer2 streamer3
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``removestreamers``
@@ -333,16 +333,16 @@ Command ``removestreamers``
 
 ::
 
-   
+
    removestreamers [name] ...
-   
+
    Romoves one or more streamers from the  list of streamers being monitored. Replace [name]
    with the twitch name(s) of the streamer(s) you want to remove.
-   
+
    Example:
-   
+
    @BotName !removestreamers streamer1 streamer2 streamer3
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``clearallstreamers``
@@ -350,15 +350,15 @@ Command ``clearallstreamers``
 
 ::
 
-   
+
    clearallstreamers
-   
+
    Clears the list of streamers currently being monitored.
-   
+
    Example:
-   
+
    @BotName !clearallstreamers
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``phrases``
@@ -366,13 +366,32 @@ Command ``phrases``
 
 ::
 
-   
+
    phrases
-   
+
    Shows a numbered list of phrases currently in use for stream announcements.
-   
+
+   Example:
+
    @BotName !phrases
-   
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``testphrases``
+-----------------------
+
+::
+
+
+   testphrases
+
+   Shows all phrases currently in use for stream announcements, with the format tokens
+   populated, so you can see what they will look like when posted to the discord channel.
+
+   Example:
+
+   @BotName !testphrases
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``addphrase``
@@ -380,24 +399,26 @@ Command ``addphrase``
 
 ::
 
-   
+
    addphrase [phrase]
-   
+
    Adds a new phrase to be used for stream annnouncements. The following format
    tokens may be used within a phrase:
-   
+
        {streamer_name} : replaced with the streamer's twitch name
        {stream_url}    : replaced with the stream URL on twitch.tv
+       {botname}       : replaced with bot name that is seen by other discord users
        {date}          : replaced with current date in DD/MM/YYY format
-       {time}          : replaced with current time in HH:MM:SS format
+       {times}         : replaced with current time in HH:MM:SS format
+       {time}          : replaced with current time in HH:MM format
        {day}           : replaced with the name of the current weekday (e.g. "Monday")
        {month}         : replaced with the name of the current month (e.g. "January")
        {year}          : replaced with the current year (e.g. "2022")
-   
+
    Example:
-   
+
    @BotName !addphrase "{streamer_name} is now streaming at {stream_url}!"
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``removephrase``
@@ -405,17 +426,17 @@ Command ``removephrase``
 
 ::
 
-   
+
    removephrase [number]
-   
+
    Removes a phrase from the list of phrases being used for stream announcements.
    [number] must be replaced with the number for the desired phrase, as shown in the
    numbered list produced by the 'addphrase' command.
-   
+
    Example:
-   
+
    @BotName !removephrase 4
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``nocompetition``
@@ -423,19 +444,19 @@ Command ``nocompetition``
 
 ::
 
-   
+
    nocompetition [enabled]
-   
+
    [enabled] must be replaced with either 'true' or 'false'. If true, then no
    announcements about other streams will be made while the host streamer is streaming.
    If false, then announcements will always be made, even if the host streamer is streaming.
-   
+
    (To check if nocompetition is enabled, run the command with no true/false argument)
-   
+
    Example:
-   
+
    @BotName !nocompetition
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
 Command ``say``
@@ -443,15 +464,15 @@ Command ``say``
 
 ::
 
-   
+
    say [stuff to say]
-   
+
    Causes the bot to send a message in the announcements channel, immediately, containing
    whatever you type in place of [stuff to say].
-   
+
    Example:
-   
+
    @BotName !say Good morning
-   
+
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 

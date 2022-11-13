@@ -10,15 +10,19 @@ FMT_TOK_DAY = "day"
 FMT_TOK_MONTH = "month"
 FMT_TOK_YEAR = "year"
 
+FMT_TOK_BOT_NAME = "botname"
+
 
 format_args = {
     FMT_TOK_STREAMER_NAME: None,
     FMT_TOK_STREAM_URL: None,
     FMT_TOK_DATE: None,
     FMT_TOK_TIME: None,
+    FMT_TOK_TIMES: None,
     FMT_TOK_DAY: None,
     FMT_TOK_MONTH: None,
-    FMT_TOK_YEAR: None
+    FMT_TOK_YEAR: None,
+    FMT_TOK_BOT_NAME: None
 }
 
 def streamer_fmt_tokens(name, url):
@@ -33,6 +37,11 @@ def datetime_fmt_tokens():
         FMT_TOK_DAY: now.strftime("%A"),
         FMT_TOK_MONTH: now.strftime("%B"),
         FMT_TOK_YEAR: now.strftime("%Y")
+    }
+
+def bot_fmt_tokens(bot):
+    return {
+        FMT_TOK_BOT_NAME: bot.client.user.name
     }
 
 def validate_format_tokens(phrase):

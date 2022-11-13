@@ -136,6 +136,7 @@ tokens may be used within a phrase:
 
     {{streamer_name}} : replaced with the streamer's twitch name
     {{stream_url}}    : replaced with the stream URL on twitch.tv
+    {{botname}}       : replaced with bot name that is seen by other discord users
     {{date}}          : replaced with current date in DD/MM/YYY format
     {{times}}         : replaced with current time in HH:MM:SS format
     {{time}}          : replaced with current time in HH:MM format
@@ -461,6 +462,7 @@ def cmd_phrases(proc, config, twitch_monitor, args):
 
 def cmd_testphrases(proc, config, twitch_monitor, args):
     fmt_args = utils.streamer_fmt_tokens("JohnSmith", "https://twitch.tv/JohnSmith")
+    fmt_args.update(utils.bot_fmt_tokens(proc.bot))
     fmt_args.update(utils.datetime_fmt_tokens())
 
     lines = []
