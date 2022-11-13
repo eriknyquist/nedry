@@ -116,7 +116,7 @@ Example:
 CMD_REMOVESTREAMERS_HELP = """
 {0} [name] ...
 
-Romoves one or more streamers from the  list of streamers being monitored. Replace [name]
+Removes one or more streamers from the  list of streamers being monitored. Replace [name]
 with the twitch name(s) of the streamer(s) you want to remove.
 
 Example:
@@ -133,9 +133,11 @@ If false, then announcements will always be made, even if the host streamer is s
 
 (To check if nocompetition is enabled, run the command with no true/false argument)
 
-Example:
+Examples:
 
-@BotName !nocompetition
+@BotName !nocompetition true     (enable nocompetition)
+@BotName !nocompetition false    (enable nocompetition)
+@BotName !nocompetition          (check current state)
 """
 
 CMD_PHRASES_HELP = """
@@ -185,7 +187,9 @@ CMD_REMOVEPHRASE_HELP = """
 
 Removes a phrase from the list of phrases being used for stream announcements.
 [number] must be replaced with the number for the desired phrase, as shown in the
-numbered list produced by the 'addphrase' command.
+numbered list produced by the 'phrases' command. In other words, in order to remove
+a phrase, you must first look at the output of the "phrases" command to get the
+number of the phrase you want to remove.
 
 Example:
 
@@ -207,24 +211,40 @@ CMD_MOCKSON_HELP = """
 {0}
 
 Disable all mocking until 'mocksoff' command is sent
+
+Example:
+
+@BotName !mockson
 """
 
 CMD_MOCKSOFF_HELP = """
 {0}
 
 Re-enable mocking after disabling
+
+Example:
+
+@BotName !mocksoff
 """
 
 CMD_CLEARMOCKS_HELP = """
 {0}
 
 Clear all users that are currently being mocked
+
+Example:
+
+@BotName !clearmocks
 """
 
 CMD_MOCKLIST_HELP = """
 {0}
 
 List the name & discord IDs of all users currently being mocked
+
+Example:
+
+@BotName !listmocks
 """
 
 
@@ -363,10 +383,12 @@ def _list_to_english(words):
 # All command handlers, for all commands, follow...
 
 def cmd_help(proc, config, twitch_monitor, args):
+    bot_name = proc.bot.client.user.name
+
     if len(args) == 0:
-        return ("See list of available commands below. Use the help command again "
-                "and write another command word after 'help' (e.g. `@BotName !help mock`) "
-                "to get help with a specific command.\n" + proc.help())
+        return (("See list of available commands below. Use the help command again "
+                "and write another command word after 'help' (e.g. `@%s !help addphrase`) "
+                "to get help with a specific command.\n" % bot_name) + proc.help())
 
     cmd = args[0].strip()
     if cmd.startswith(COMMAND_PREFIX):
@@ -375,7 +397,7 @@ def cmd_help(proc, config, twitch_monitor, args):
     if cmd not in proc.cmds:
         return "No command '%s' to get help for" % cmd
 
-    return proc.cmds[cmd].help()
+    return proc.cmds[cmd].help().replace('BotName', bot_name)
 
 def cmd_streamers(proc, config, twitch_monitor, args):
     if len(config.config.streamers_to_monitor) == 0:

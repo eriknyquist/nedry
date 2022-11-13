@@ -10,11 +10,11 @@ It also does some other silly/fun things.
 Install
 =======
 
-Install for Python3 using ``pip``:
+Install for Python (3x only) using ``pip``:
 
 ::
 
-    python3 -m pip install twitch_monitor_discord_bot
+    python -m pip install twitch_monitor_discord_bot
 
 Quick start
 ===========
