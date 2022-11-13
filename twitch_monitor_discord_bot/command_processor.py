@@ -112,7 +112,20 @@ CMD_PHRASES_HELP = """
 
 Shows a numbered list of phrases currently in use for stream announcements.
 
+Example:
+
 @BotName !phrases
+"""
+
+CMD_TESTPHRASES_HELP ="""
+{0}
+
+Shows all phrases currently in use for stream announcements, with the format tokens
+populated, so you can see what they will look like when posted to the discord channel.
+
+Example:
+
+@BotName !testphrases
 """
 
 CMD_ADDPHRASE_HELP = """
@@ -124,7 +137,8 @@ tokens may be used within a phrase:
     {{streamer_name}} : replaced with the streamer's twitch name
     {{stream_url}}    : replaced with the stream URL on twitch.tv
     {{date}}          : replaced with current date in DD/MM/YYY format
-    {{time}}          : replaced with current time in HH:MM:SS format
+    {{times}}         : replaced with current time in HH:MM:SS format
+    {{time}}          : replaced with current time in HH:MM format
     {{day}}           : replaced with the name of the current weekday (e.g. "Monday")
     {{month}}         : replaced with the name of the current month (e.g. "January")
     {{year}}          : replaced with the current year (e.g. "2022")
@@ -443,7 +457,17 @@ def cmd_nocompetition(proc, config, twitch_monitor, args):
 def cmd_phrases(proc, config, twitch_monitor, args):
     msgs = config.config.stream_start_messages
     lines = ["%d. %s" % (i + 1, msgs[i]) for i in range(len(msgs))]
-    return "Phrases currently in use:\n```\n%s```" % "\n".join(lines)
+    return "Phrases currently in use:\n```\n%s```" % "\n\n".join(lines)
+
+def cmd_testphrases(proc, config, twitch_monitor, args):
+    fmt_args = utils.streamer_fmt_tokens("JohnSmith", "https://twitch.tv/JohnSmith")
+    fmt_args.update(utils.datetime_fmt_tokens())
+
+    lines = []
+    for p in config.config.stream_start_messages:
+        lines.append(p.format(**fmt_args))
+
+    return "Phrases currently in use (with format tokens populated):\n```\n%s```" % "\n\n".join(lines)
 
 def cmd_addphrase(proc, config, twitch_monitor, args):
     if len(args) < 1:
@@ -606,6 +630,7 @@ twitch_monitor_bot_command_list = [
     Command("removestreamers", cmd_removestreamers, True, CMD_REMOVESTREAMERS_HELP),
     Command("clearallstreamers", cmd_clearallstreamers, True, CMD_CLEARALLSTREAMERS_HELP),
     Command("phrases", cmd_phrases, True, CMD_PHRASES_HELP),
+    Command("testphrases", cmd_testphrases, True, CMD_TESTPHRASES_HELP),
     Command("addphrase", cmd_addphrase, True, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
     Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),

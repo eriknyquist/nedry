@@ -161,7 +161,8 @@ Description of fields
   * ``{streamer_name}`` : will be replaced with the name of the streamer
   * ``{stream_url}`` : will be replaced with the stream URL on twitch.com
   * ``{date}`` : will be replaced with current date in DD/MM/YYY format
-  * ``{time}`` : will be replaced with current time in HH:MM:SS format
+  * ``{times}`` : will be replaced with current time in HH:MM:SS format
+  * ``{time}`` : will be replaced with current time in HH:MM format
   * ``{day}`` : will be replaced with the name of the current weekday (e.g. "Monday")
   * ``{month}`` : will be replaced with the name of the current month (e.g. "January")
   * ``{year}`` : will be replaced with the current year (e.g. "2022")

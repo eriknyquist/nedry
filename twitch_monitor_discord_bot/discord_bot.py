@@ -119,7 +119,7 @@ class DiscordBot(object):
         pass
 
     def on_member_join(self, member):
-        pass
+        logger.info("%s joined the server" % member.name)
 
     def on_message(self, message):
         resp = self.cmdprocessor.process_message(message.author, message.content)
