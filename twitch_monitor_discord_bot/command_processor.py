@@ -39,6 +39,16 @@ Example:
 @BotName !wiki python programming language
 """
 
+CMD_RANDWIKI_HELP = """
+{0}
+
+Return the summary text (generally the first paragraph) of a random Wikipedia page.
+
+Example:
+
+@BotName !randwiki
+"""
+
 CMD_MOCK_HELP = """
 {0} [mention]
 
@@ -681,13 +691,19 @@ def cmd_wiki(proc, config, twitch_monitor, args, author):
     if not result:
         return "No results found for %s, sorry :(" % search_text
 
-    if len(result) > 900:
-        result = result[:896] + " ..."
+    result = utils.truncate_text(result, 900)
 
     if result.endswith("may refer to:"):
         return "Please be a bit more specific with your search terms"
 
     return result
+
+def cmd_randwiki(proc, config, twitch_monitor, args, author):
+    result = utils.get_random_wiki_summary()
+    if not result:
+        return "Sorry, something went wrong :("
+
+    return utils.truncate_text(result, 900)
 
 def cmd_say(proc, config, twitch_monitor, args, author):
     if len(args) < 1:
@@ -706,6 +722,7 @@ twitch_monitor_bot_command_list = [
     Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("wiki", cmd_wiki, False, CMD_WIKI_HELP),
+    Command("randwiki", cmd_randwiki, False, CMD_RANDWIKI_HELP),
 
     # Commands only available to admin users
     Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),
