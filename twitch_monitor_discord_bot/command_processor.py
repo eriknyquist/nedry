@@ -658,7 +658,10 @@ def cmd_quote(proc, config, twitch_monitor, args):
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
 
 def cmd_wiki(proc, config, twitch_monitor, args):
-    search_text = ' '.join(args)
+    search_text = ' '.join(args).strip()
+    if not search_text:
+        return "Please provide some text after the command, to tell me what to search for"
+
     result = utils.get_wiki_summary(search_text)
     if not result:
         return "No results found for %s, sorry :(" % search_text
