@@ -29,6 +29,18 @@ Example:
 @BotName !help wiki
 """
 
+CMD_CMDHISTORY_HELP = """
+{0} [entry_count]
+
+Show the last few entries in the command log file. If no count is given then the
+last 25 entries are shown.
+
+Examples:
+
+@BotName !{0}     (show last 25 entries)
+@BotName !{0} 5   (show last 5 entries)
+"""
+
 CMD_WIKI_HELP = """
 {0} [search text]
 
@@ -36,7 +48,7 @@ Search the provided text using Wikipedia's public API, and return the summary te
 (generally the first paragraph) of the first page in the search results. If no search
 text is provided, then a random Wikipedia article will be selected instead.
 
-Example:
+Examples:
 
 @BotName !wiki python language   (Show summary of wiki page for Python programming language)
 @BotName !wiki                   (Show summary of a random wiki page)
@@ -326,6 +338,23 @@ class CommandProcessor(object):
         msg = "[%s (%d)] %s" % (author.name, author.id, command_text)
         self._log_command_event(msg)
 
+    def command_history(self, last=25):
+        if not self.log_filename:
+            return None
+
+        if not os.path.isfile(self.log_filename):
+            return None
+
+        if len(self.command_log_buf) >= last:
+            # All requested lines are in memory
+            return "\n".join(self.command_log_buf[-last:])
+
+        with open(self.log_filename, 'r') as fh:
+            lines = [l.strip() for l in fh.readlines()]
+
+        lines.extend(self.command_log_buf)
+        return "\n".join(lines)
+
     def help(self, include_admin=True):
         """
         Get the text for a discord message showing all available commands
@@ -416,6 +445,17 @@ def cmd_help(proc, config, twitch_monitor, args, author):
         return "No command '%s' to get help for" % cmd
 
     return proc.cmds[cmd].help().replace('BotName', bot_name)
+
+def cmd_cmdhistory(proc, config, twitch_monitor, args, author):
+    if len(args) == 0:
+        count = 25
+    else:
+        try:
+            count = int(args[0])
+        except ValueError:
+            return "Command expects an integer, cannot convert '%s' to an integer" % args[0]
+
+    return "Last %s commands:\n```\n%s```" % (count, proc.command_history(count))
 
 def cmd_streamers(proc, config, twitch_monitor, args, author):
     if len(config.config.streamers_to_monitor) == 0:
@@ -725,5 +765,6 @@ twitch_monitor_bot_command_list = [
     Command("addphrase", cmd_addphrase, True, CMD_ADDPHRASE_HELP),
     Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
     Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),
+    Command("cmdhistory", cmd_cmdhistory, True, CMD_CMDHISTORY_HELP),
     Command("say", cmd_say, True, CMD_SAY_HELP)
 ]

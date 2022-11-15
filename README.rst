@@ -290,7 +290,7 @@ Command ``wiki``
    (generally the first paragraph) of the first page in the search results. If no search
    text is provided, then a random Wikipedia article will be selected instead.
 
-   Example:
+   Examples:
 
    @BotName !wiki python language   (Show summary of wiki page for Python programming language)
    @BotName !wiki                   (Show summary of a random wiki page)
@@ -526,6 +526,24 @@ Command ``nocompetition``
    @BotName !nocompetition true     (enable nocompetition)
    @BotName !nocompetition false    (enable nocompetition)
    @BotName !nocompetition          (check current state)
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``cmdhistory``
+----------------------
+
+::
+
+
+   cmdhistory [entry_count]
+
+   Show the last few entries in the command log file. If no count is given then the
+   last 25 entries are shown.
+
+   Examples:
+
+   @BotName !cmdhistory     (show last 25 entries)
+   @BotName !cmdhistory 5   (show last 5 entries)
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
