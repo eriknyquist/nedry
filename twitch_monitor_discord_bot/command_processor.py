@@ -528,7 +528,8 @@ def cmd_addphrase(proc, config, twitch_monitor, args):
     if len(args) < 1:
         return "'addphrase' requires an argument, please provide the text for the phrase you want to add"
 
-    phrase = " ".join(args)
+    phrase = utils.clean_outer_quotes(" ".join(args))
+
     if not utils.validate_format_tokens(phrase):
         return "There's an invalid format token in the phrase you provided"
 

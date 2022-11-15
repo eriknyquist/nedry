@@ -26,6 +26,22 @@ format_args = {
     FMT_TOK_BOT_NAME: None
 }
 
+def clean_outer_quotes(text):
+    text = text.strip()
+    fields = []
+
+    if text.startswith('"') and text.endswith('"'):
+        fields = text.split('"')
+    elif text.startswith("'") and text.endswith("'"):
+        fields = text.split("'")
+    else:
+        return text
+
+    if len(fields) > 3:
+        return text
+
+    return text[1:-1]
+
 def streamer_fmt_tokens(name, url):
     return {FMT_TOK_STREAMER_NAME: name, FMT_TOK_STREAM_URL: url}
 
