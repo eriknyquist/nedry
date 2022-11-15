@@ -23,6 +23,7 @@ CMD_HELP_HELP = """
 Shows helpful information about the given command. Replace [command] with the
 command you want help with.
 
+
 Example:
 
 @BotName !help wiki
@@ -32,21 +33,13 @@ CMD_WIKI_HELP = """
 {0} [search text]
 
 Search the provided text using Wikipedia's public API, and return the summary text
-(generally the first paragraph) of the first page in the search results.
+(generally the first paragraph) of the first page in the search results. If no search
+text is provided, then a random Wikipedia article will be selected instead.
 
 Example:
 
-@BotName !wiki python programming language
-"""
-
-CMD_RANDWIKI_HELP = """
-{0}
-
-Return the summary text (generally the first paragraph) of a random Wikipedia page.
-
-Example:
-
-@BotName !randwiki
+@BotName !wiki python language   (Show summary of wiki page for Python programming language)
+@BotName !wiki                   (Show summary of a random wiki page)
 """
 
 CMD_MOCK_HELP = """
@@ -382,7 +375,7 @@ class CommandProcessor(object):
         author_data = AuthorData(author, author.id in self.config.config.discord_admin_users)
 
         if command in self.cmds:
-            if self.cmds[command].admin_only and author_data.is_admin:
+            if self.cmds[command].admin_only and not author_data.is_admin:
                 return "Sorry %s, this command can only be used by admin users" % author.mention
 
             # Log received command
@@ -685,11 +678,13 @@ def cmd_quote(proc, config, twitch_monitor, args, author):
 def cmd_wiki(proc, config, twitch_monitor, args, author):
     search_text = ' '.join(args).strip()
     if not search_text:
-        return "Please provide some text after the command, to tell me what to search for"
+        # If no search text provided, just get a random wiki page
+        result = utils.get_random_wiki_summary()
+    else:
+        result = utils.get_wiki_summary(search_text)
 
-    result = utils.get_wiki_summary(search_text)
     if not result:
-        return "No results found for %s, sorry :(" % search_text
+        return "No results found, sorry :("
 
     result = utils.truncate_text(result, 900)
 
@@ -697,13 +692,6 @@ def cmd_wiki(proc, config, twitch_monitor, args, author):
         return "Please be a bit more specific with your search terms"
 
     return result
-
-def cmd_randwiki(proc, config, twitch_monitor, args, author):
-    result = utils.get_random_wiki_summary()
-    if not result:
-        return "Sorry, something went wrong :("
-
-    return utils.truncate_text(result, 900)
 
 def cmd_say(proc, config, twitch_monitor, args, author):
     if len(args) < 1:
@@ -722,7 +710,6 @@ twitch_monitor_bot_command_list = [
     Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("wiki", cmd_wiki, False, CMD_WIKI_HELP),
-    Command("randwiki", cmd_randwiki, False, CMD_RANDWIKI_HELP),
 
     # Commands only available to admin users
     Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),

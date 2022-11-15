@@ -187,9 +187,10 @@ Command ``help``
    Shows helpful information about the given command. Replace [command] with the
    command you want help with.
 
+
    Example:
 
-   @BotName !help addphrase
+   @BotName !help wiki
 
    All discord users may use this command.
 
@@ -286,11 +287,13 @@ Command ``wiki``
    wiki [search text]
 
    Search the provided text using Wikipedia's public API, and return the summary text
-   (generally the first paragraph) of the first page in the search results.
+   (generally the first paragraph) of the first page in the search results. If no search
+   text is provided, then a random Wikipedia article will be selected instead.
 
    Example:
 
-   @BotName !wiki python programming language
+   @BotName !wiki python language   (Show summary of wiki page for Python programming language)
+   @BotName !wiki                   (Show summary of a random wiki page)
 
    All discord users may use this command.
 
