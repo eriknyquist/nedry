@@ -327,7 +327,7 @@ class CommandProcessor(object):
         if self.log_filename is None:
             return
 
-        timestamp = datetime.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S.%f")[:-3]
+        timestamp = datetime.datetime.utcnow().strftime("%m/%d/%Y %H:%M:%S")
         msg_to_write = "[%s] %s" % (timestamp, message)
         self.command_log_buf.append(msg_to_write)
 
@@ -347,13 +347,14 @@ class CommandProcessor(object):
 
         if len(self.command_log_buf) >= last:
             # All requested lines are in memory
-            return "\n".join(self.command_log_buf[-last:])
+            return self.command_log_buf[-last:]
+
+        lines_in_file = last - len(self.command_log_buf)
 
         with open(self.log_filename, 'r') as fh:
             lines = [l.strip() for l in fh.readlines()]
 
-        lines.extend(self.command_log_buf)
-        return "\n".join(lines)
+        return lines[-lines_in_file:] + self.command_log_buf
 
     def help(self, include_admin=True):
         """
@@ -399,7 +400,7 @@ class CommandProcessor(object):
             return None
 
         words = text.lstrip(COMMAND_PREFIX).split()
-        command = words[0].lower()
+        command = words[0].lower().strip()
 
         author_data = AuthorData(author, author.id in self.config.config.discord_admin_users)
 
@@ -408,7 +409,8 @@ class CommandProcessor(object):
                 return "Sorry %s, this command can only be used by admin users" % author.mention
 
             # Log received command
-            self._log_valid_command(author, text)
+            if command != 'cmdhistory':
+                self._log_valid_command(author, text)
 
             # Run command handler
             return self.cmds[command].handler(self, self.config, self.twitch_monitor, words[1:], author_data)
@@ -447,15 +449,39 @@ def cmd_help(proc, config, twitch_monitor, args, author):
     return proc.cmds[cmd].help().replace('BotName', bot_name)
 
 def cmd_cmdhistory(proc, config, twitch_monitor, args, author):
+    default_count = False
+
     if len(args) == 0:
         count = 25
+        default_count = True
     else:
         try:
             count = int(args[0])
         except ValueError:
             return "Command expects an integer, cannot convert '%s' to an integer" % args[0]
 
-    return "Last %s commands:\n```\n%s```" % (count, proc.command_history(count))
+    # HTTP request can't be larger than 2000 bytes
+    max_len = 1600
+    ret = ""
+    history = proc.command_history(count)
+    actual_count = 0
+
+    history.reverse()
+    for line in history:
+        if (len(line) + 1 + len(ret)) > max_len:
+            break
+
+        ret = line + "\n" + ret
+        actual_count += 1
+
+    truncated = actual_count < count
+
+    firstline = "Last %s commands" % (actual_count if default_count else count)
+
+    if truncated and not default_count:
+        firstline += " (exceeded max. message size so only showing last %d)" % actual_count
+
+    return "%s:\n```\n%s```" % (firstline, ret)
 
 def cmd_streamers(proc, config, twitch_monitor, args, author):
     if len(config.config.streamers_to_monitor) == 0:
