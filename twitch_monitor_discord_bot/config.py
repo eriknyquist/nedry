@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 class BotConfig(VersionedObject):
-    version = "1.1"
+    version = "1.2"
     twitch_client_id = ""
     twitch_client_secret = ""
     discord_bot_api_token = ""
@@ -28,6 +28,7 @@ class BotConfig(VersionedObject):
     discord_admin_users = []
     config_write_delay_seconds = 15
     command_log_file = None
+    jokes = []
 
 @migration(BotConfig, None, "1.0")
 def migrate_none_to_10(attrs):
@@ -36,6 +37,11 @@ def migrate_none_to_10(attrs):
 @migration(BotConfig, "1.0", "1.1")
 def migrate_none_10_to_11(attrs):
     attrs["twitch_client_secret"] = ""
+    return attrs
+
+@migration(BotConfig, "1.1", "1.2")
+def migrate_none_11_to_12(attrs):
+    attrs["jokes"] = []
     return attrs
 
 

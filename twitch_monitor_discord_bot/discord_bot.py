@@ -122,7 +122,7 @@ class DiscordBot(object):
         logger.info("%s joined the server" % member.name)
 
     def on_message(self, message):
-        resp = self.cmdprocessor.process_message(message.author, message.content)
+        resp = self.cmdprocessor.process_message(message)
 
         if resp is not None:
             return MessageResponse(resp, channel=message.channel)
@@ -131,7 +131,7 @@ class DiscordBot(object):
 
     def on_mention(self, message):
         msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
-        resp = self.cmdprocessor.process_command(message.author, msg)
+        resp = self.cmdprocessor.process_command(message.channel, message.author, msg)
 
         if resp is not None:
             return MessageResponse(resp, channel=message.channel)

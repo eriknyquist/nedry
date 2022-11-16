@@ -3,6 +3,7 @@
 #
 # All of the handler functions for commands are also implemented here.
 
+import random
 import datetime
 import os
 import logging
@@ -285,6 +286,23 @@ class AuthorData(object):
         self.author = author
         self.is_admin = is_admin
 
+class KnockKnockJoke(object):
+    """
+    Represents a knock knock joke, either being told to the bot by a discord user,
+    or being told TO a discord user from the config file
+    """
+    def __init__(self, joke, telling):
+        self.joke = joke
+        self.telling = telling
+
+
+class ChannelData(object):
+    """
+    Holds information we need to track on a per-discord-channel basis
+    """
+    def __init__(self):
+        self.joke_in_progress = None
+
 
 class CommandProcessor(object):
     """
@@ -300,8 +318,8 @@ class CommandProcessor(object):
         self.mocking_users = []
         self.command_log_buf = []
         self.mocking_enabled = True
-
         self.log_filename = None
+        self.channel_data = {}
 
         try:
             # Check if command log file path is accessible
@@ -367,16 +385,44 @@ class CommandProcessor(object):
 
         return "Available commands:\n```%s```" % "\n".join(cmd_names)
 
-    def process_message(self, author, text):
+    def handle_knock_knock_joke(self, text, channel):
+        ret = None
+        joke_in_progress = None
+        chanid = channel.id
+
+        # Figure out the current knock-knock-joke state on the message channel
+        if chanid in self.channel_data:
+            joke_in_progress = self.channel_data[chanid].joke_in_progress
+
+        if joke_in_progress is not None:
+            # Looking for response, e.g. "xx who?"
+            cleaned = ' '.join(text.split()).lower()
+            expected_response = "%s who" % joke_in_progress[0].lower()
+
+            if expected_response in text:
+                ret = joke_in_progress[1]
+                self.channel_data[chanid].joke_in_progress = None
+        else:
+            cleaned = ''.join(text.split()).lower()
+            if cleaned.startswith('knockknock'):
+                # Someone is telling us a joke
+                self.channel_data[chanid] = ChannelData()
+                self.channel_data[chanid].joke_in_progress = []
+                self.channel_data[chanid].telling = False
+                ret = new_joke[0]
+
+        return ret
+
+    def process_message(self, message):
         """
         Called for any old message (not a command for the bot)
-
-        :param author: User object from discord.py, the user who wrote the message
-        :param str text: Message text
 
         :return: Response to send back to discord
         :rtype: str
         """
+        author = message.author
+        text = message.content
+
         self.last_msg_by_user[author.id] = text
 
         if self.mocking_enabled and (author.id in self.mocking_users):
@@ -384,11 +430,12 @@ class CommandProcessor(object):
 
         return None
 
-    def process_command(self, author, text):
+    def process_command(self, channel, author, text):
         """
         Parse some text containing a command and run the handler, if there is an
         appropriate one
 
+        :param channel: Discord channel object
         :param author: User object from discord.py, the user who wrote the message
         :param str text: Command text to parse
 
@@ -397,7 +444,8 @@ class CommandProcessor(object):
         """
         text = text.strip()
         if not text.startswith(COMMAND_PREFIX):
-            return None
+            resp = self.handle_knock_knock_joke(text, channel)
+            return resp
 
         words = text.lstrip(COMMAND_PREFIX).split()
         command = words[0].lower().strip()
