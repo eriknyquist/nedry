@@ -26,6 +26,7 @@ class BotConfig(VersionedObject):
     ]
     startup_message = None
     discord_admin_users = []
+    discord_joke_tellers = []
     config_write_delay_seconds = 15
     command_log_file = None
     jokes = []
@@ -42,6 +43,7 @@ def migrate_none_10_to_11(attrs):
 @migration(BotConfig, "1.1", "1.2")
 def migrate_none_11_to_12(attrs):
     attrs["jokes"] = []
+    attrs["discord_joke_tellers"] = []
     return attrs
 
 

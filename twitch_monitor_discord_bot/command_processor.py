@@ -11,6 +11,8 @@ import logging
 from twitch_monitor_discord_bot import quotes
 from twitch_monitor_discord_bot import utils
 from twitch_monitor_discord_bot.twitch_monitor import InvalidTwitchUser
+from twitch_monitor_discord_bot.jokes import KnockKnockJoke
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -28,6 +30,22 @@ command you want help with.
 Example:
 
 @BotName !help wiki
+"""
+
+CMD_JOKE_HELP = """
+{0}
+
+Tells an interactive knock-knock joke.
+
+You can also *tell* knock-knock jokes to the bot, and it will remember new jokes
+to tell them back to you later when you send this command.
+
+Any discord users can tell jokes to the bot, but only jokes told by users listed
+in 'discord_joke_tellers' in the configuration file will be remembered.
+
+Example:
+
+@BotName !joke
 """
 
 CMD_CMDHISTORY_HELP = """
@@ -278,22 +296,14 @@ class Command(object):
         return "```%s```" % self.helptext.format(self.word)
 
 
-class AuthorData(object):
+class MessageData(object):
     """
-    Represents all required data related to the author of a received command
+    Represents all required data related to the author and channel of a received command
     """
-    def __init__(self, author, is_admin):
+    def __init__(self, channel, author, is_admin):
+        self.channel = channel
         self.author = author
         self.is_admin = is_admin
-
-class KnockKnockJoke(object):
-    """
-    Represents a knock knock joke, either being told to the bot by a discord user,
-    or being told TO a discord user from the config file
-    """
-    def __init__(self, joke, telling):
-        self.joke = joke
-        self.telling = telling
 
 
 class ChannelData(object):
@@ -385,7 +395,7 @@ class CommandProcessor(object):
 
         return "Available commands:\n```%s```" % "\n".join(cmd_names)
 
-    def handle_knock_knock_joke(self, text, channel):
+    def handle_knock_knock_joke(self, text, channel, author):
         ret = None
         joke_in_progress = None
         chanid = channel.id
@@ -395,21 +405,19 @@ class CommandProcessor(object):
             joke_in_progress = self.channel_data[chanid].joke_in_progress
 
         if joke_in_progress is not None:
-            # Looking for response, e.g. "xx who?"
-            cleaned = ' '.join(text.split()).lower()
-            expected_response = "%s who" % joke_in_progress[0].lower()
-
-            if expected_response in text:
-                ret = joke_in_progress[1]
+            ret = joke_in_progress.parse(text)
+            if joke_in_progress.complete:
                 self.channel_data[chanid].joke_in_progress = None
         else:
             cleaned = ''.join(text.split()).lower()
             if cleaned.startswith('knockknock'):
                 # Someone is telling us a joke
-                self.channel_data[chanid] = ChannelData()
-                self.channel_data[chanid].joke_in_progress = []
-                self.channel_data[chanid].telling = False
-                ret = new_joke[0]
+                if chanid not in self.channel_data:
+                    self.channel_data[chanid] = ChannelData()
+
+                new_joke = KnockKnockJoke(self.config, False, author)
+                self.channel_data[chanid].joke_in_progress = new_joke
+                ret = "%s who's there?" % author.mention
 
         return ret
 
@@ -444,16 +452,16 @@ class CommandProcessor(object):
         """
         text = text.strip()
         if not text.startswith(COMMAND_PREFIX):
-            resp = self.handle_knock_knock_joke(text, channel)
+            resp = self.handle_knock_knock_joke(text, channel, author)
             return resp
 
         words = text.lstrip(COMMAND_PREFIX).split()
         command = words[0].lower().strip()
 
-        author_data = AuthorData(author, author.id in self.config.config.discord_admin_users)
+        msg_data = MessageData(channel, author, author.id in self.config.config.discord_admin_users)
 
         if command in self.cmds:
-            if self.cmds[command].admin_only and not author_data.is_admin:
+            if self.cmds[command].admin_only and not msg_data.is_admin:
                 return "Sorry %s, this command can only be used by admin users" % author.mention
 
             # Log received command
@@ -461,7 +469,7 @@ class CommandProcessor(object):
                 self._log_valid_command(author, text)
 
             # Run command handler
-            return self.cmds[command].handler(self, self.config, self.twitch_monitor, words[1:], author_data)
+            return self.cmds[command].handler(self, self.config, self.twitch_monitor, words[1:], msg_data)
 
         return "Sorry, I don't recognize the command '%s'" % command
 
@@ -479,13 +487,13 @@ def _list_to_english(words):
 
 # All command handlers, for all commands, follow...
 
-def cmd_help(proc, config, twitch_monitor, args, author):
+def cmd_help(proc, config, twitch_monitor, args, msg):
     bot_name = proc.bot.client.user.name
 
     if len(args) == 0:
         return (("See list of available commands below. Use the help command again "
                 "and write another command word after 'help' (e.g. `@%s !help wiki`) "
-                "to get help with a specific command.\n" % bot_name) + proc.help(include_admin=author.is_admin))
+                "to get help with a specific command.\n" % bot_name) + proc.help(include_admin=msg.is_admin))
 
     cmd = args[0].strip()
     if cmd.startswith(COMMAND_PREFIX):
@@ -496,7 +504,7 @@ def cmd_help(proc, config, twitch_monitor, args, author):
 
     return proc.cmds[cmd].help().replace('BotName', bot_name)
 
-def cmd_cmdhistory(proc, config, twitch_monitor, args, author):
+def cmd_cmdhistory(proc, config, twitch_monitor, args, msg):
     default_count = False
 
     if len(args) == 0:
@@ -531,7 +539,7 @@ def cmd_cmdhistory(proc, config, twitch_monitor, args, author):
 
     return "%s:\n```\n%s```" % (firstline, ret)
 
-def cmd_streamers(proc, config, twitch_monitor, args, author):
+def cmd_streamers(proc, config, twitch_monitor, args, message):
     if len(config.config.streamers_to_monitor) == 0:
         return "No streamers are currently being monitored."
 
@@ -545,7 +553,7 @@ def cmd_streamers(proc, config, twitch_monitor, args, author):
 
     return "Streamers being monitored:\n```\n%s```" % "\n".join(lines)
 
-def cmd_addstreamers(proc, config, twitch_monitor, args, author):
+def cmd_addstreamers(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "'addstreamers' requires an argument, please provide the name(s) of the streamer(s) you want to add"
 
@@ -583,7 +591,7 @@ def cmd_addstreamers(proc, config, twitch_monitor, args, author):
     else:
         return "OK! Streamers %s are now being monitored" % _list_to_english(args)
 
-def cmd_removestreamers(proc, config, twitch_monitor, args, author):
+def cmd_removestreamers(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "'removestreamers' requires an argument, please provide the name(s) of the streamer(s) you want to remove"
 
@@ -613,13 +621,13 @@ def cmd_removestreamers(proc, config, twitch_monitor, args, author):
     else:
         return "OK! Streamers %s are no longer being monitored" % _list_to_english(args)
 
-def cmd_clearallstreamers(proc, config, twitch_monitor, args, author):
+def cmd_clearallstreamers(proc, config, twitch_monitor, args, message):
     twitch_monitor.clear_usernames()
     config.confing.streamers_to_monitor.clear()
 
     return "OK, no streamers are being monitored any more."
 
-def cmd_nocompetition(proc, config, twitch_monitor, args, author):
+def cmd_nocompetition(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "nocompetition is %s" % ("enabled" if config.config.silent_when_host_streaming else "disabled")
 
@@ -640,12 +648,12 @@ def cmd_nocompetition(proc, config, twitch_monitor, args, author):
     return ("OK! nocompetition %s. announcements will %sbe made during host's stream" %
             ("enabled" if val else "disabled", "not " if val else ""))
 
-def cmd_phrases(proc, config, twitch_monitor, args, author):
+def cmd_phrases(proc, config, twitch_monitor, args, message):
     msgs = config.config.stream_start_messages
     lines = ["%d. %s" % (i + 1, msgs[i]) for i in range(len(msgs))]
     return "Phrases currently in use:\n```\n%s```" % "\n\n".join(lines)
 
-def cmd_testphrases(proc, config, twitch_monitor, args, author):
+def cmd_testphrases(proc, config, twitch_monitor, args, message):
     fmt_args = utils.streamer_fmt_tokens("JohnSmith", "https://twitch.tv/JohnSmith")
     fmt_args.update(utils.bot_fmt_tokens(proc.bot))
     fmt_args.update(utils.datetime_fmt_tokens())
@@ -656,7 +664,7 @@ def cmd_testphrases(proc, config, twitch_monitor, args, author):
 
     return "Phrases currently in use (with format tokens populated):\n```\n%s```" % "\n\n".join(lines)
 
-def cmd_addphrase(proc, config, twitch_monitor, args, author):
+def cmd_addphrase(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "'addphrase' requires an argument, please provide the text for the phrase you want to add"
 
@@ -674,7 +682,7 @@ def cmd_addphrase(proc, config, twitch_monitor, args, author):
 
     return "OK! added the following phrase:\n```%s```" % phrase
 
-def cmd_removephrase(proc, config, twitch_monitor, args, author):
+def cmd_removephrase(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "'removephrase' requires an argument, please provide the number for the phrase you want to remove"
 
@@ -700,7 +708,7 @@ def cmd_removephrase(proc, config, twitch_monitor, args, author):
 
     return "OK! Removed the following phrase:\n```%s```" % deleted
 
-def cmd_mock(proc, config, twitch_monitor, args, author):
+def cmd_mock(proc, config, twitch_monitor, args, message):
     if len(args) == 0:
         return "'mock' requires more information, please mention the user you want to mock"
 
@@ -717,25 +725,25 @@ def cmd_mock(proc, config, twitch_monitor, args, author):
     else:
         return "Mocking has been disabled by an admin user, but I have remembered your request"
 
-def cmd_mockson(proc, config, twitch_monitor, args, author):
+def cmd_mockson(proc, config, twitch_monitor, args, message):
     if proc.mocking_enabled:
         return "Mocking is already enabled"
 
     proc.mocking_enabled = True
     return "OK, mocking is enabled now!"
 
-def cmd_mocksoff(proc, config, twitch_monitor, args, author):
+def cmd_mocksoff(proc, config, twitch_monitor, args, message):
     if not proc.mocking_enabled:
         return "Mocking is already disabled"
 
     proc.mocking_enabled = False
     return "OK, mocking is disabled now!"
 
-def cmd_clearmocks(proc, config, twitch_monitor, args, author):
+def cmd_clearmocks(proc, config, twitch_monitor, args, message):
     proc.mocking_users = []
     return "OK, I have forgotten about everyone I was supposed to mock!"
 
-def cmd_listmocks(proc, config, twitch_monitor, args, author):
+def cmd_listmocks(proc, config, twitch_monitor, args, message):
     names = []
 
     for user_id in proc.mocking_users:
@@ -762,7 +770,7 @@ def cmd_listmocks(proc, config, twitch_monitor, args, author):
 
     return ret
 
-def cmd_unmock(proc, config, twitch_monitor, args, author):
+def cmd_unmock(proc, config, twitch_monitor, args, message):
     if len(args) == 0:
         return "'unmock' requires more information, please mention the user you want to unmock"
 
@@ -774,7 +782,7 @@ def cmd_unmock(proc, config, twitch_monitor, args, author):
         proc.mocking_users.remove(user_id)
         return "OK, I will leave %s alone now." % args[0].strip()
 
-def cmd_apologize(proc, config, twitch_monitor, args, author):
+def cmd_apologize(proc, config, twitch_monitor, args, message):
     if len(args) == 0:
         return "'apologise' requires more information, please mention the user you want to apologise to"
 
@@ -785,11 +793,19 @@ def cmd_apologize(proc, config, twitch_monitor, args, author):
     return ("%s, I am truly, deeply sorry for mocking you just now. "
             "I'm only a robot, you see. I have no free will." % args[0].strip())
 
-def cmd_quote(proc, config, twitch_monitor, args, author):
+def cmd_quote(proc, config, twitch_monitor, args, message):
     text, author = quotes.get_donk_quote()
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
 
-def cmd_wiki(proc, config, twitch_monitor, args, author):
+def cmd_joke(proc, config, twitch_monitor, args, message):
+    chanid = message.channel.id
+    if chanid not in proc.channel_data:
+        proc.channel_data[chanid] = ChannelData()
+
+    proc.channel_data[chanid].joke_in_progress = KnockKnockJoke(config, True, message.author)
+    return "%s knock knock!" % message.author.mention
+
+def cmd_wiki(proc, config, twitch_monitor, args, message):
     search_text = ' '.join(args).strip()
     if not search_text:
         # If no search text provided, just get a random wiki page
@@ -807,7 +823,7 @@ def cmd_wiki(proc, config, twitch_monitor, args, author):
 
     return result
 
-def cmd_say(proc, config, twitch_monitor, args, author):
+def cmd_say(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "You didn't write a message for me to say. So I'll say nothing."
 
@@ -824,6 +840,7 @@ twitch_monitor_bot_command_list = [
     Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("wiki", cmd_wiki, False, CMD_WIKI_HELP),
+    Command("joke", cmd_joke, False, CMD_JOKE_HELP),
 
     # Commands only available to admin users
     Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),

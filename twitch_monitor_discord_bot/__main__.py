@@ -100,6 +100,7 @@ def main():
         logger.info("migrated config file from version %s to version %s" % (result.old_version, result.version_reached))
         config.save_to_file()
 
+    random.seed(time.time())
 
     # Make sure stream start messages are valid
     for m in config.config.stream_start_messages:
