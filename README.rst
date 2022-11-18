@@ -6,12 +6,37 @@ and post an announcement on a specific discord channel when a streamer goes live
 It also does some other silly/fun things, like tell knock-knock jokes (and remember
 jokes that you tell to it), or look something up on wikipedia for you.
 
+.. contents:: **Table of Contents**
+
+Sample bot interactions
+=======================
+
 Announcements for when a twitch streamer goes live
 --------------------------------------------------
 
-.. image:: images/stream_announcements.png
+.. image:: images/stream_announcement.PNG
 
-.. contents:: **Table of Contents**
+
+Requesting a knock-knock joke from the bot
+------------------------------------------
+
+.. image:: images/tell_joke.PNG
+
+Telling a knock-knock joke for the bot to remember
+--------------------------------------------------
+
+.. image:: images/remember_joke.PNG
+
+Asking the bot to do a wikipedia search
+---------------------------------------
+
+.. image:: images/wiki.png
+
+Limitations
+===========
+
+Currently does not support being invited to multiple discord servers at once--
+you must run one instance per discord server, and you must run it yourself.
 
 Install
 =======
@@ -151,6 +176,8 @@ Description of fields
 * ``discord_joke_tellers``: Multiple discord user ID numbers can be added here. Any knock-knock
   jokes told to the bot by discord users in this list, will be "remembered" (stored in the "jokes"
   list), and can be told back to other discord users later when a joke is requested.
+
+* ``jokes``: Any jokes remembered by the bot from discord users will be stored here.
 
 * ``command_log_file``: Enter desired filename to log commands received from discord messages.
   Set to "null" if you don't want to log commands.
