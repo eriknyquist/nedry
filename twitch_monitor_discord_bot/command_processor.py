@@ -244,7 +244,7 @@ Example:
 CMD_MOCKSON_HELP = """
 {0}
 
-Disable all mocking until 'mocksoff' command is sent
+Re-enable mocking after disabling
 
 Example:
 
@@ -254,7 +254,8 @@ Example:
 CMD_MOCKSOFF_HELP = """
 {0}
 
-Re-enable mocking after disabling
+Disable all mocking until 'mockson' command is sent. Current list of mocked
+users will be remembered.
 
 Example:
 
