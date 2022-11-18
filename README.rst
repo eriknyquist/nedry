@@ -32,6 +32,11 @@ Asking the bot to do a wikipedia search
 
 .. image:: images/wiki.png
 
+Asking the bot to make fun of the last thing someone said
+---------------------------------------------------------
+
+.. image:: images/mocking.PNG
+
 Limitations
 ===========
 
