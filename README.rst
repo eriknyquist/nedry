@@ -3,7 +3,13 @@ twitch_monitor_discord_bot 2.0.0
 
 This is a discord bot which will periodically check a list of twitch streamers,
 and post an announcement on a specific discord channel when a streamer goes live.
-It also does some other silly/fun things.
+It also does some other silly/fun things, like tell knock-knock jokes (and remember
+jokes that you tell to it), or look something up on wikipedia for you.
+
+Announcements for when a twitch streamer goes live
+--------------------------------------------------
+
+.. image:: images/stream_announcements.png
 
 .. contents:: **Table of Contents**
 
@@ -108,6 +114,8 @@ in the Quick Start section. The configuration file must be a .json file of the f
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
         "discord_admin_users" : [422222187366187010, 487222187346187011],
+        "discord_joke_tellers" : [422222187366187010, 487222187346187011],
+        "jokes": [],
         "command_log_file" : "/home/user/twitch_monitor_bot_command_log.txt",
         "startup_message": "Hello! I am a bot who can monitor twitch streams for you.",
         "streamers_to_monitor": [
@@ -139,6 +147,10 @@ Description of fields
 
 * ``discord_admin_users``: Multiple discord user ID numbers can be added here. Users added
   here will be allowed to configure the bot by sending commands in discord.
+
+* ``discord_joke_tellers``: Multiple discord user ID numbers can be added here. Any knock-knock
+  jokes told to the bot by discord users in this list, will be "remembered" (stored in the "jokes"
+  list), and can be told back to other discord users later when a joke is requested.
 
 * ``command_log_file``: Enter desired filename to log commands received from discord messages.
   Set to "null" if you don't want to log commands.
@@ -297,6 +309,28 @@ Command ``wiki``
 
    All discord users may use this command.
 
+Command ``joke``
+----------------
+
+::
+
+
+   joke
+
+   Tells an interactive knock-knock joke.
+
+   You can also *tell* knock-knock jokes to the bot, and it will remember new jokes
+   to tell them back to you later when you send this command.
+
+   Any discord users can tell jokes to the bot, but only jokes told by users listed
+   in 'discord_joke_tellers' in the configuration file will be remembered.
+
+   Example:
+
+   @BotName !joke
+
+   All discord users may use this command.
+
 Command ``listmocks``
 ---------------------
 
@@ -321,7 +355,7 @@ Command ``mockson``
 
    mockson
 
-   Disable all mocking until 'mocksoff' command is sent
+   Re-enable mocking after disabling
 
    Example:
 
@@ -337,7 +371,8 @@ Command ``mocksoff``
 
    mocksoff
 
-   Re-enable mocking after disabling
+   Disable all mocking until 'mockson' command is sent. Current list of mocked
+   users will be remembered.
 
    Example:
 
