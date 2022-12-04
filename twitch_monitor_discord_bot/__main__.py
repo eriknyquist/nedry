@@ -62,7 +62,7 @@ def streamer_check_loop(config, monitor, bot):
 
     if config.config.startup_message is not None:
         msg = config.config.startup_message.format(**utils.datetime_fmt_tokens())
-        bot.send_message(msg)
+        bot.send_stream_announcement(msg)
 
     while True:
         time.sleep(config.config.poll_period_seconds)
@@ -71,7 +71,7 @@ def streamer_check_loop(config, monitor, bot):
 
         for msg in msgs:
             logger.debug("sending message to channel '%s'" % config.config.discord_channel_name)
-            bot.send_message(msg)
+            bot.send_stream_announcement(msg)
 
 def main():
     parser = argparse.ArgumentParser()

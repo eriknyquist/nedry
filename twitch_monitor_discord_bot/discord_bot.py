@@ -8,6 +8,9 @@ import logging
 import threading
 
 from twitch_monitor_discord_bot.command_processor import CommandProcessor, twitch_monitor_bot_command_list
+from twitch_monitor_discord_bot.event_types import EventType
+from twitch_monitor_discord_bot import events
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -112,7 +115,10 @@ class DiscordBot(object):
         asyncio.run(self.client.close())
         self.cmdprocessor.close()
 
-    def send_message(self, message):
+    def send_message(self, channel, message):
+        asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
+
+    def send_stream_announcement(self, message):
         asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
 
     def on_connect(self):
@@ -122,6 +128,8 @@ class DiscordBot(object):
         logger.info("%s joined the server" % member.name)
 
     def on_message(self, message):
+        events.emit(EventType.DISCORD_MESSAGE_RECEIVED, message)
+
         resp = self.cmdprocessor.process_message(message)
 
         if resp is not None:
@@ -131,6 +139,8 @@ class DiscordBot(object):
 
     def on_mention(self, message):
         msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
+        events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
+
         resp = self.cmdprocessor.process_command(message.channel, message.author, msg)
 
         if resp is not None:

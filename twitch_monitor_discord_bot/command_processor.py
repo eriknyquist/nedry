@@ -828,7 +828,7 @@ def cmd_say(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "You didn't write a message for me to say. So I'll say nothing."
 
-    proc.bot.send_message(" ".join(args))
+    proc.bot.send_stream_announcement(" ".join(args))
     return "OK! message sent to channel '%s'" % config.config.discord_channel_name
 
 
