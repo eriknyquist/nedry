@@ -8,10 +8,10 @@ import datetime
 import os
 import logging
 
-from twitch_monitor_discord_bot import quotes
-from twitch_monitor_discord_bot import utils
-from twitch_monitor_discord_bot.twitch_monitor import InvalidTwitchUser
-from twitch_monitor_discord_bot.jokes import KnockKnockJoke
+from nedry import quotes
+from nedry import utils
+from nedry.twitch_monitor import InvalidTwitchUser
+from nedry.jokes import KnockKnockJoke
 
 
 logger = logging.getLogger(__name__)
@@ -32,21 +32,6 @@ Example:
 @BotName !help wiki
 """
 
-CMD_JOKE_HELP = """
-{0}
-
-Tells an interactive knock-knock joke.
-
-You can also *tell* knock-knock jokes to the bot, and it will remember new jokes
-to tell them back to you later when you send this command.
-
-Any discord users can tell jokes to the bot, but only jokes told by users listed
-in 'discord_joke_tellers' in the configuration file will be remembered.
-
-Example:
-
-@BotName !joke
-"""
 
 CMD_CMDHISTORY_HELP = """
 {0} [entry_count]
@@ -288,7 +273,7 @@ class Command(object):
     Represents all data required to handle a single command
     """
     def __init__(self, word, handler, admin_only, helptext):
-        self.word = word
+        self.word = word.lower()
         self.handler = handler
         self.helptext = helptext
         self.admin_only = admin_only
@@ -339,6 +324,22 @@ class CommandProcessor(object):
             pass
         else:
             self.log_filename = config.config.command_log_file
+
+    def get_channel_data(self, channel_id, ident):
+        if channel_id not in self.channel_data:
+            return None
+
+        if ident not in self.channel_data[channel_id]:
+            return None
+
+        return self.channel_data[channel_id][ident]
+
+    def add_command(self, cmd_word, cmd_handler, admin_only, helptext):
+        cmd = Command(cmd_word, cmd_handler, admin_only, helptext)
+        if cmd.word in self.cmds:
+            raise ValueError("Command '%s' already exists" % cmd.word)
+
+        self.cmds[cmd.word] = cmd
 
     def close(self):
         logger.info("Stopping")
@@ -396,32 +397,6 @@ class CommandProcessor(object):
 
         return "Available commands:\n```%s```" % "\n".join(cmd_names)
 
-    def handle_knock_knock_joke(self, text, channel, author):
-        ret = None
-        joke_in_progress = None
-        chanid = channel.id
-
-        # Figure out the current knock-knock-joke state on the message channel
-        if chanid in self.channel_data:
-            joke_in_progress = self.channel_data[chanid].joke_in_progress
-
-        if joke_in_progress is not None:
-            ret = joke_in_progress.parse(text)
-            if joke_in_progress.complete:
-                self.channel_data[chanid].joke_in_progress = None
-        else:
-            cleaned = ''.join(text.split()).lower()
-            if cleaned.startswith('knockknock'):
-                # Someone is telling us a joke
-                if chanid not in self.channel_data:
-                    self.channel_data[chanid] = ChannelData()
-
-                new_joke = KnockKnockJoke(self.config, False, author)
-                self.channel_data[chanid].joke_in_progress = new_joke
-                ret = "%s who's there?" % author.mention
-
-        return ret
-
     def process_message(self, message):
         """
         Called for any old message (not a command for the bot)
@@ -453,8 +428,8 @@ class CommandProcessor(object):
         """
         text = text.strip()
         if not text.startswith(COMMAND_PREFIX):
-            resp = self.handle_knock_knock_joke(text, channel, author)
-            return resp
+            # Not a command, do nothing
+            return None
 
         words = text.lstrip(COMMAND_PREFIX).split()
         command = words[0].lower().strip()
@@ -798,14 +773,6 @@ def cmd_quote(proc, config, twitch_monitor, args, message):
     text, author = quotes.get_donk_quote()
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
 
-def cmd_joke(proc, config, twitch_monitor, args, message):
-    chanid = message.channel.id
-    if chanid not in proc.channel_data:
-        proc.channel_data[chanid] = ChannelData()
-
-    proc.channel_data[chanid].joke_in_progress = KnockKnockJoke(config, True, message.author)
-    return "%s knock knock!" % message.author.mention
-
 def cmd_wiki(proc, config, twitch_monitor, args, message):
     search_text = ' '.join(args).strip()
     if not search_text:
@@ -841,7 +808,6 @@ twitch_monitor_bot_command_list = [
     Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("wiki", cmd_wiki, False, CMD_WIKI_HELP),
-    Command("joke", cmd_joke, False, CMD_JOKE_HELP),
 
     # Commands only available to admin users
     Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),

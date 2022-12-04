@@ -1,4 +1,9 @@
-from twitch_monitor_discord_bot.event_types import EventType
+import logging
+
+from nedry.event_types import EventType
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class Event(object):
@@ -10,8 +15,8 @@ class Event(object):
         self._handlers = []
 
     def add_handler(self, handler):
-        if handler not in self._handlers():
-            self._handlers.append()
+        if handler not in self._handlers:
+            self._handlers.append(handler)
 
         return self
 
@@ -54,4 +59,5 @@ def emit(event_type, *event_args, **event_kwargs):
     if event_type not in _events:
         raise ValueError("Invalid event type (%d)" % event_type)
 
+    logger.debug("event(%d), %s, %s" % (event_type, event_args, event_kwargs))
     _events[event_type].emit(*event_args, **event_kwargs)

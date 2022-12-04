@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 class BotConfig(VersionedObject):
-    version = "1.2"
+    version = "1.3"
     twitch_client_id = ""
     twitch_client_secret = ""
     discord_bot_api_token = ""
     discord_server_id = 0
     discord_channel_name = ""
+    plugin_directories = []
     streamers_to_monitor = []
     host_streamer = ""
     silent_when_host_streaming = False
@@ -44,6 +45,11 @@ def migrate_none_10_to_11(attrs):
 def migrate_none_11_to_12(attrs):
     attrs["jokes"] = []
     attrs["discord_joke_tellers"] = []
+    return attrs
+
+@migration(BotConfig, "1.2", "1.3")
+def migrate_none_12_to_13(attrs):
+    attrs["plugin_directories"] = []
     return attrs
 
 

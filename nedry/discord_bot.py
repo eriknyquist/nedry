@@ -7,9 +7,9 @@ import asyncio
 import logging
 import threading
 
-from twitch_monitor_discord_bot.command_processor import CommandProcessor, twitch_monitor_bot_command_list
-from twitch_monitor_discord_bot.event_types import EventType
-from twitch_monitor_discord_bot import events
+from nedry.command_processor import CommandProcessor, twitch_monitor_bot_command_list
+from nedry.event_types import EventType
+from nedry import events
 
 
 logger = logging.getLogger(__name__)
@@ -98,6 +98,9 @@ class DiscordBot(object):
                 raise RuntimeError("malformed response: either member or "
                                    "channel must be set")
 
+    def add_command(self, cmd_word, cmd_handler, admin_only, helptext):
+        self.cmdprocessor.add_command(cmd_word, cmd_handler, admin_only, helptext)
+
     def mention(self):
         """
         Returns the text for a mention of the bot
@@ -138,12 +141,12 @@ class DiscordBot(object):
         return None
 
     def on_mention(self, message):
-        msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '')
+        msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '').strip()
         events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
 
         resp = self.cmdprocessor.process_command(message.channel, message.author, msg)
 
         if resp is not None:
-            return MessageResponse(resp, channel=message.channel)
+             return MessageResponse(resp, channel=message.channel)
 
         return None

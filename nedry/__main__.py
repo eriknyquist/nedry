@@ -8,10 +8,11 @@ import random
 import os
 import logging
 
-from twitch_monitor_discord_bot import utils
-from twitch_monitor_discord_bot.discord_bot import DiscordBot
-from twitch_monitor_discord_bot.twitch_monitor import TwitchMonitor
-from twitch_monitor_discord_bot.config import BotConfigManager
+from nedry import utils
+from nedry.discord_bot import DiscordBot
+from nedry.twitch_monitor import TwitchMonitor
+from nedry.config import BotConfigManager
+from nedry.plugin import PluginModuleManager
 
 
 logger = logging.getLogger(__name__)
@@ -111,6 +112,10 @@ def main():
     monitor = TwitchMonitor(config.config.twitch_client_id, config.config.twitch_client_secret, config.config.streamers_to_monitor)
 
     bot = DiscordBot(config, monitor)
+
+    plugin_manager = PluginModuleManager(bot, config.config.plugin_directories)
+    plugin_manager.load_plugins_from_directories()
+    plugin_manager.open_plugins()
 
     _ = check_streamers(config, monitor, bot)
     thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot))
