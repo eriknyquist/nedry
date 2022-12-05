@@ -153,6 +153,24 @@ The following steps are required to enable twitch stream announcements:
    The client ID and client secret you provide with this command is saved in the config file,
    so there is no need to re-send this every time you start the bot.
 
+Writing and using plugins
+=========================
+
+* In order to use plugins, you must add at least one directory path to the ``plugin_directories``
+  list in the configuration file. Plugins are installed by placing the python file(s) directly
+  in the top-level of this directory (not in a subdirectory!). If any valid plugins exist in
+  this directory when the bot starts up, they will be loaded and available for use.
+
+* All loaded plugins are enabled by default. To see a list of all plugins, enabled and
+  disabled, use the ``!plugins`` command. To disable/enable a plugin, use the
+  ``!plugson`` and ``!plugsoff`` commands. For example, to disable the built-in
+  ``knock_knock_jokes`` plugin, use ``@BotName !plugsoff knock_knock_jokes``.
+
+* To get started with writing plugins, see `this sample plugin <https://github.com/eriknyquist/twitch_monitor_discord_bot/blob/nedry/example_plugins/echo_dm_example.py>`_.
+
+  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/twitch_monitor_discord_bot/blob/nedry/nedry/builtin_plugins/knock_knock_jokes.py>`_
+
+
 Misc. sample bot interactions
 =============================
 
@@ -200,6 +218,7 @@ in the Quick Start section. The configuration file must be a .json file of the f
         "config_write_delay_seconds": 60,
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
+        "plugin_directories" : ["/home/user/nedry_plugins"],
         "discord_admin_users" : [422222187366187010, 487222187346187011],
         "discord_joke_tellers" : [422222187366187010, 487222187346187011],
         "jokes": [],
@@ -231,6 +250,8 @@ Description of fields
 * ``host_streamer``: Enter the name of your own twitch channel here (optional).
 
 * ``silent_when_host_streaming``: If true, no announcements about other streams will be made when host streamer is live.
+
+* ``plugin_directories``: List of directory names to search for plugins to load on startup
 
 * ``discord_admin_users``: Multiple discord user ID numbers can be added here. Users added
   here will be allowed to configure the bot by sending commands in discord.
