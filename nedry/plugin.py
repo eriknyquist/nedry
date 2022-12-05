@@ -47,13 +47,22 @@ class PluginModuleManager(object):
         self._plugin_modules = {}
         self._discord_bot = discord_bot
 
-    def check_and_load_object(self, obj, filepath):
-        if inspect.isclass(obj) and issubclass(obj, PluginModule) and (obj != PluginModule):
-            if obj.plugin_name in self._plugin_modules:
-                raise NameError("Plugin name %s already exists" % obj.plugin_name)
+    def add_plugin_class(self, cls):
+        name = cls.plugin_name.lower()
+        if name in self._plugin_modules:
+            raise NameError("Plugin name %s already exists" % name)
 
-            self._plugin_modules[obj.plugin_name.lower()] = obj(self._discord_bot)
-            logger.info("%s %s loaded from %s" % (obj.plugin_name, obj.plugin_version, filepath))
+        self._plugin_modules[name] = cls(self._discord_bot)
+        logger.info("loaded built-in %s %s" % (cls.plugin_name, cls.plugin_version))
+
+    def check_and_load_object(self, obj, filepath):
+        name = obj.plugin_name.lower()
+        if inspect.isclass(obj) and issubclass(obj, PluginModule) and (obj != PluginModule):
+            if name in self._plugin_modules:
+                raise NameError("Plugin name %s already exists" % name)
+
+            self._plugin_modules[name] = obj(self._discord_bot)
+            logger.info("%s %s loaded from %s" % (name, obj.plugin_version, filepath))
 
     def load_plugins_from_file(self, filepath):
         spec = importlib.util.spec_from_file_location("Plugin%d" % len(self._plugin_modules),

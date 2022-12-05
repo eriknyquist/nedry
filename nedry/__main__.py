@@ -15,6 +15,9 @@ from nedry.twitch_monitor import TwitchMonitor
 from nedry.config import BotConfigManager
 from nedry.plugin import PluginModuleManager
 
+# Import built-in plugin modules
+from nedry.builtin_plugins.knock_knock_jokes import KnockKnockJokes
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -72,7 +75,13 @@ def main():
     bot = DiscordBot(config, monitor)
 
     plugin_manager = PluginModuleManager(bot, config.config.plugin_directories)
+
+    # Load plugins from external directories
     plugin_manager.load_plugins_from_directories()
+
+    # Load built-in plugins
+    plugin_manager.add_plugin_class(KnockKnockJokes)
+
     plugin_manager.enable_plugins()
     bot.plugin_manager = plugin_manager
 
