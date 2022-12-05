@@ -124,11 +124,18 @@ class DiscordBot(object):
     def send_stream_announcement(self, message):
         asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
 
+    async def _send_dm_async(self, member, message):
+        channel = await member.create_dm()
+        await channel.send(message)
+
+    def send_dm(self, member, message):
+        asyncio.run_coroutine_threadsafe(self._send_dm_async(member, message), main_event_loop)
+
     def on_connect(self):
         pass
 
     def on_member_join(self, member):
-        logger.info("%s joined the server" % member.name)
+        events.emit(EventType.NEW_DISCORD_MEMBER, member)
 
     def on_message(self, message):
         events.emit(EventType.DISCORD_MESSAGE_RECEIVED, message)

@@ -20,11 +20,15 @@ class EventType(object):
     
     # Events 1000 through 1999 are reserved for twitch-related events
 
+    # Monitored twitch stream started
     TWITCH_STREAM_STARTED = 1000
 
+    # Monitored twitch stream started
+    TWITCH_STREAM_ENDED = 1001
+
     # Host twitch streamer started streaming
-    HOST_STREAM_STARTED = 1001
+    HOST_STREAM_STARTED = 1002
 
     # Host twitch streamer stopped streaming
-    HOST_STREAM_ENDED = 1002
+    HOST_STREAM_ENDED = 1003
 

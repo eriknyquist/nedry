@@ -8,7 +8,7 @@ import random
 import os
 import logging
 
-from nedry import utils
+from nedry import utils, events
 from nedry.discord_bot import DiscordBot
 from nedry.twitch_monitor import TwitchMonitor
 from nedry.config import BotConfigManager
@@ -21,21 +21,35 @@ logger.setLevel(logging.INFO)
 
 DEFAULT_CONFIG_FILE = "default_bot_config.json"
 
-streamers = {}
+
+class RuntimeData(object):
+    last_host_obj = None
+    streamers = {}
 
 
 def check_streamers(config, monitor, bot):
     channels = monitor.read_all_streamer_info()
     msgs = []
 
+    # See if host stream status changed state
+    host_is_streaming = False
+    if config.config.host_streamer is not None:
+        host = monitor.read_streamer_info(config.config.host_streamer)
+        host_is_streaming = host.is_live
+        if RuntimeData.last_host_obj is not None:
+            if RuntimeData.last_host_obj.is_live != host.is_live:
+                if host.is_live:
+                    events.emit(EventType.HOST_STREAM_STARTED)
+                    host_stream_started = True
+                else:
+                    events.emit(EventType.HOST_STREAM_ENDED)
+
     # If configured, check whether host is streaming before
     # making any announcements
     if config.config.silent_when_host_streaming:
-        if config.config.host_streamer is not None:
-            host = monitor.read_streamer_info(config.config.host_streamer)
-            if host.is_live:
-                # Host is streaming, make no announcements
-                return []
+        if host_is_streaming:
+            # Host is streaming, make no announcements
+            return []
 
     # Check for any announcements that need to be made
     for c in channels:
@@ -44,17 +58,21 @@ def check_streamers(config, monitor, bot):
             monitor.usernames[c.username] = False
             continue
 
-        if c.name in streamers:
-            if c.is_live:
-                if not streamers[c.name].is_live:
+        if c.name in RuntimeData.streamers:
+            if c.is_live != RuntimeData.streamers[c.name].is_live:
+                if c.is_live:
                     logger.info("streamer %s went live" % c.name)
                     fmt_args = utils.streamer_fmt_tokens(c.name, c.url)
                     fmt_args.update(utils.bot_fmt_tokens(bot))
                     fmt_args.update(utils.datetime_fmt_tokens())
                     fmtstring = random.choice(config.config.stream_start_messages)
                     msgs.append(fmtstring.format(**fmt_args))
+                    events.emit(EventType.TWITCH_STREAM_STARTED, c.name)
+                else:
+                    logger.info("streamer %s is no longer live" % c.name)
+                    events.emit(EventType.TWITCH_STREAM_ENDED, c.name)
 
-        streamers[c.name] = c
+        RuntimeData.streamers[c.name] = c
 
     return msgs
 

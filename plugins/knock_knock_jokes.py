@@ -156,12 +156,11 @@ class KnockKnockJokes(PluginModule):
         :param bot: discord bot object, which allows you to send messages to discord channels,\
             among other things
         """
-        super(KnockKnockJokesPluginModule, self).__init__(discord_bot)
+        super(KnockKnockJokes, self).__init__(discord_bot)
         
         discord_bot.add_command("joke", handler, False, HELPTEXT)
 
     def _on_mention(self, message, text_without_mention):
-        logger.info("got mention: " + text_without_mention)
         ret = None
         joke_in_progress = None
         chanid = message.channel.id
