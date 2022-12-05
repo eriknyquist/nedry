@@ -1,5 +1,5 @@
 .. image:: images/dennis.png
-  :align: center
+   :align: center
 
 nedry discord bot 2.1.0
 =======================
