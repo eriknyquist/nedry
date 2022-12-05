@@ -7,7 +7,7 @@ Nedry discord bot 2.1.0
 
 Nedry is a self-hosted discord bot with a modular plugin system. Lots of useful
 behaviour is available out-of-the-box, but you can also install plugins to extend
-Nedry's behaviour. or even write your own plugins.
+Nedry's behaviour, or even write your own plugins.
 
 Some out-of-the-box features include:
 
@@ -39,8 +39,8 @@ Install for Python (3x only) using ``pip``:
 Quick start
 ===========
 
-Creating the config file
-------------------------
+Creating the config file and starting the bot
+---------------------------------------------
 
 #. Run the package as a module with no arguments, which will create an empty configuration
    file called ``default_bot_config.json`` in your current directory and exit immediately.
