@@ -33,6 +33,9 @@ BUILTIN_JOKES = [
 ]
 
 class JokeState(object):
+    """
+    Enumerates all states we can be in while telling a joke or listening to one
+    """
     TELLING_1 = 1     # Joke requested, and we have sent 'knock knock'
     TELLING_2 = 2     # 'whos there' received, and we have sent response
     LISTENING_1 = 3   # 'knock knock' seen, and we have sent 'whos there'
@@ -40,6 +43,11 @@ class JokeState(object):
 
 
 def joke_exists(joke, config):
+    """
+    Check if a joke that we heard is *similar* (but not exactly the same, a-la difflib)
+    to one that we already know. WOuld be a shame to have 3 copies of the same joke
+    because somebody mispelled a word.
+    """
     joke_concat = ' '.join(joke)
     available_jokes = BUILTIN_JOKES + config.config.jokes
 
@@ -54,6 +62,12 @@ def joke_exists(joke, config):
 
 
 class KnockKnockJoke(object):
+    """
+    Represents a single joke interaction in a single channel, both telling jokes (triggered by !joke
+    command) and listening to jokes (triggered by '@BotName knock knock').
+
+    Either one of those triggers creates a new KnockKnockJoke object for the channel it was triggered on.
+    """
     def __init__(self, config, telling, author):
         self.complete = False
         self.config = config
@@ -69,6 +83,12 @@ class KnockKnockJoke(object):
             self.joke_in_progress = [chosen_joke[0], chosen_joke[1]]
 
     def parse(self, text):
+        """
+        Handle a bot mention on a channel with a knock-knock joke in progress
+
+
+        :param str text: message text with the bot mention stripped out
+        """
         ret = None
 
         if self.state == JokeState.TELLING_1:
@@ -137,15 +157,20 @@ Example:
 channel_data = {}
 
 
-def handler(proc, config, twitch_monitor, args, message):
+def joke_command_handler(proc, config, twitch_monitor, args, message):
+    """
+    Handler for !joke command
+    """
     channel_data[message.channel.id] = KnockKnockJoke(config, True, message.author)
     return "%s knock knock!" % message.author.mention
 
 
 class KnockKnockJokes(PluginModule):
     """
-    Abstract implementation of a PluginModule class that represents a
-    modular / pluggable behaviour of the bot
+    Plugin for interactive knock-knock jokes. Adds a new "!joke" command, which
+    prompts the bot to tell a randomly-selected knock knock joke. You can also
+    *tell* jokes to the bot, by saying "@BotName knock knock", and the bot will
+    remember any new jokes it sees, and tell them back to you later.
     """
     plugin_name = "knock_knock_jokes"
     plugin_version = "1.0.0"
@@ -181,7 +206,7 @@ class KnockKnockJokes(PluginModule):
         Enables plugin operation; subscribe to events and/or initialize things here
         """
         events.subscribe(EventType.DISCORD_BOT_MENTION, self._on_mention)
-        self.discord_bot.add_command("joke", handler, False, HELPTEXT)
+        self.discord_bot.add_command("joke", joke_command_handler, False, HELPTEXT)
 
     def close(self):
         """
