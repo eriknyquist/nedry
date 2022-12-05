@@ -232,10 +232,10 @@ Example:
 @BotName !addphrase \"{{streamer_name}} is now streaming at {{stream_url}}!\"
 """
 
-CMD_REMOVEPHRASE_HELP = """
-{0} [number]
+CMD_REMOVEPHRASES_HELP = """
+{0} [number] [number] ...
 
-Removes a phrase from the list of phrases being used for stream announcements.
+Removes one or more phrases from the list of phrases being used for stream announcements.
 [number] must be replaced with the number for the desired phrase, as shown in the
 numbered list produced by the 'phrases' command. In other words, in order to remove
 a phrase, you must first look at the output of the "phrases" command to get the
@@ -243,7 +243,7 @@ number of the phrase you want to remove.
 
 Example:
 
-@BotName !removephrase 4
+@BotName !removephrases 3 4 5
 """
 
 CMD_SAY_HELP = """
@@ -684,6 +684,9 @@ def cmd_addphrase(proc, config, twitch_monitor, args, message):
     if not utils.validate_format_tokens(phrase):
         return "There's an invalid format token in the phrase you provided"
 
+    if phrase in config.config.stream_start_messages:
+        return "This phrase already exists"
+
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
                 config.config.config_write_delay_seconds)
@@ -693,31 +696,36 @@ def cmd_addphrase(proc, config, twitch_monitor, args, message):
 
     return "OK! added the following phrase:\n```%s```" % phrase
 
-def cmd_removephrase(proc, config, twitch_monitor, args, message):
+def cmd_removephrases(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
-        return "'removephrase' requires an argument, please provide the number for the phrase you want to remove"
+        return "Please provide the number(s) for the phrase(s) you want to remove"
 
     size = len(config.config.stream_start_messages)
     if size == 0:
         return "No phrases to remove"
 
-    try:
-        num = int(args[0])
-    except ValueError:
-        return "Uuh, '%s' is not a number" % args[0]
+    phrases_to_remove = []
+    for a in args:
+        try:
+            num = int(a.strip())
+        except ValueError:
+            return "Uuh, '%s' is not a number" % a
 
-    if (num < 1) or (num > size):
-        return "There is no phrase number %d, valid phrases numbers are 1-%d" % (num, size)
+        if (num < 1) or (num > size):
+            return "There is no phrase number %d, valid phrases numbers are 1-%d" % (num, size)
+
+        phrases_to_remove.append(config.config.stream_start_messages[num - 1])
 
     if not config.write_allowed():
         return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
                 config.config.config_write_delay_seconds)
 
-    deleted = config.config.stream_start_messages[num - 1]
-    del config.config.stream_start_messages[num - 1]
+    for p in phrases_to_remove:
+        config.config.stream_start_messages.remove(p)
+
     config.save_to_file()
 
-    return "OK! Removed the following phrase:\n```%s```" % deleted
+    return "OK! Removed the following phrases:\n```%s```" % '\n'.join(phrases_to_remove)
 
 def cmd_mock(proc, config, twitch_monitor, args, message):
     if len(args) == 0:
@@ -905,7 +913,7 @@ twitch_monitor_bot_command_list = [
     Command("phrases", cmd_phrases, True, CMD_PHRASES_HELP),
     Command("testphrases", cmd_testphrases, True, CMD_TESTPHRASES_HELP),
     Command("addphrase", cmd_addphrase, True, CMD_ADDPHRASE_HELP),
-    Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
+    Command("removephrases", cmd_removephrases, True, CMD_REMOVEPHRASES_HELP),
     Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),
     Command("cmdhistory", cmd_cmdhistory, True, CMD_CMDHISTORY_HELP),
     Command("say", cmd_say, True, CMD_SAY_HELP),
