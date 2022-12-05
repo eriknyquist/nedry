@@ -1,8 +1,8 @@
 .. raw:: html
 
-   <img src="images/dennis.png" align="center" width="600px" alt="Dennis Nedry from Jurassic Park">
+   <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-nedry discord bot 2.1.0
+Nedry discord bot 2.1.0
 =======================
 
 Nedry is a self-hosted discord bot with a modular plugin system. Lots of useful
