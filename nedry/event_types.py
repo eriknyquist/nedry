@@ -17,7 +17,10 @@ class EventType(object):
     # New member joined the discord server
     NEW_DISCORD_MEMBER = 2
 
+    # Connected to discord server (this sometimes takes a few seconds after startup)
+    DISCORD_CONNECTED = 3
     
+
     # Events 1000 through 1999 are reserved for twitch-related events
 
     # Monitored twitch stream started

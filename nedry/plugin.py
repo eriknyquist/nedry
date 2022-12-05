@@ -53,7 +53,7 @@ class PluginModuleManager(object):
                 raise NameError("Plugin name %s already exists" % obj.plugin_name)
 
             self._plugin_modules[obj.plugin_name.lower()] = obj(self._discord_bot)
-            logger.info("Loaded %s plugin from %s" % (obj.__name__, filepath))
+            logger.info("%s %s loaded from %s" % (obj.plugin_name, obj.plugin_version, filepath))
 
     def load_plugins_from_file(self, filepath):
         spec = importlib.util.spec_from_file_location("Plugin%d" % len(self._plugin_modules),

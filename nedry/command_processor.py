@@ -32,6 +32,18 @@ Example:
 @BotName !help wiki
 """
 
+CMD_TWITCHCLIENTID_HELP = """
+{0} [client_id_string] [client_secret_string]
+
+Sets the client ID and client secret used to interact with the Twitch API.
+Replace [client_id_string] with the client ID string for your twitch application.
+Replace [client_secret_string] with the client secret string for your twitch application.
+
+Example:
+
+@BotName !help twitchclientid XXXXXXXXXXXX YYYYYYYYYYYY
+"""
+
 CMD_PLUGINS_HELP = """
 {0}
 
@@ -890,6 +902,25 @@ def cmd_plugsoff(proc, config, twitch_monitor, args, message):
     proc.bot.plugin_manager.disable_plugins(args)
     return "OK, the following plugins are disabled: %s" % ''.join(args)
 
+def cmd_twitchclientid(proc, config, twitch_monitor, args, message):
+    if len(args) != 2:
+        return "Please provide 2 strings, twitch client ID & twitch client secret"
+
+    new_client_id = args[0].strip()
+    new_client_secret = args[1].strip()
+
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.config.config_write_delay_seconds)
+
+    if not twitch_monitor.reconnect(new_client_id, new_client_secret):
+        return "Unable to connect to twitch using that client ID/secret, are you sure they're right?"
+
+    config.config.twitch_client_id = new_client_id
+    config.config.twitch_client_secret = new_client_secret
+    config.save_to_file()
+
+    return "OK! successfully connected to twitch with your new client ID/secret"
 
 twitch_monitor_bot_command_list = [
     # Commands available to everyone
@@ -920,4 +951,5 @@ twitch_monitor_bot_command_list = [
     Command("plugins", cmd_plugins, True, CMD_PLUGINS_HELP),
     Command("plugson", cmd_plugson, True, CMD_PLUGSON_HELP),
     Command("plugsoff", cmd_plugsoff, True, CMD_PLUGSOFF_HELP),
+    Command("twitchclientid", cmd_twitchclientid, True, CMD_TWITCHCLIENTID_HELP),
 ]

@@ -5,11 +5,12 @@ import os
 import discord
 import asyncio
 import logging
+import random
 import threading
 
 from nedry.command_processor import CommandProcessor, twitch_monitor_bot_command_list
 from nedry.event_types import EventType
-from nedry import events
+from nedry import events, utils
 
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,12 @@ class DiscordBot(object):
         self.guild_available = threading.Event()
         self.channel = None
         self.plugin_manager = None
+
+        events.subscribe(EventType.TWITCH_STREAM_STARTED, self._on_twitch_stream_started)
+        events.subscribe(EventType.HOST_STREAM_STARTED, self._on_host_stream_started)
+        events.subscribe(EventType.HOST_STREAM_ENDED, self._on_host_stream_ended)
+
+        self._host_streaming = False
 
         @self.client.event
         async def on_guild_available(guild):
@@ -98,6 +105,24 @@ class DiscordBot(object):
             else:
                 raise RuntimeError("malformed response: either member or "
                                    "channel must be set")
+
+    def _on_twitch_stream_started(self, name, url):
+        if self.config.config.silent_when_host_streaming:
+            if self._host_streaming:
+                # Don't send stream announcements if host is streaming
+                return
+
+        fmt_args = utils.streamer_fmt_tokens(name, url)
+        fmt_args.update(utils.bot_fmt_tokens(self))
+        fmt_args.update(utils.datetime_fmt_tokens())
+        fmtstring = random.choice(self.config.config.stream_start_messages)
+        self.send_stream_announcement(fmtstring.format(**fmt_args))
+
+    def _on_host_stream_started(self):
+        self._host_streaming = True
+
+    def _on_host_stream_ended(self):
+        self._host_streaming = False
 
     def add_command(self, cmd_word, cmd_handler, admin_only, helptext):
         self.cmdprocessor.add_command(cmd_word, cmd_handler, admin_only, helptext)
