@@ -68,14 +68,12 @@ class TwitchMonitor(object):
         self.discord_connected.set()
 
     def reconnect(self, client_id, client_secret):
-        logger.info(client_id)
-        logger.info(client_secret)
         self.request_complete.wait()
 
-        #try:
-        new_helix = twitch.Helix(client_id, client_secret)
-        #except:
-        #    return False
+        try:
+            new_helix = twitch.Helix(client_id, client_secret)
+        except:
+            return False
 
         usernames = self.config.config.streamers_to_monitor
         self.helix = new_helix
@@ -83,9 +81,9 @@ class TwitchMonitor(object):
         logger.info("Connected to twitch")
 
         if not self.thread_running:
-            logger.info("starting twitch monitor thread")
             self.thread.start()
             self.thread_running = True
+            logger.info("Started twitch monitor thread")
 
         return True
 
