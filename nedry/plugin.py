@@ -12,7 +12,8 @@ class PluginModule(object):
     Abstract implementation of a PluginModule class that represents a
     modular / pluggable behaviour of the bot
     """
-    plugin_name = ""
+    plugin_name = "should_be_short_and_easy_to_copy_paste"
+    plugin_version = "whatever"
     plugin_short_description = "Short description of the plugin, no line breaks"
     plugin_long_description = "Longer description, as many line breaks as you like"
 
@@ -22,6 +23,7 @@ class PluginModule(object):
             among other things
         """
         self.discord_bot = discord_bot
+        self.enabled = False
 
     def open(self):
         """
@@ -50,7 +52,7 @@ class PluginModuleManager(object):
             if obj.plugin_name in self._plugin_modules:
                 raise NameError("Plugin name %s already exists" % obj.plugin_name)
 
-            self._plugin_modules[obj.plugin_name] = obj(self._discord_bot)
+            self._plugin_modules[obj.plugin_name.lower()] = obj(self._discord_bot)
             logger.info("Loaded %s plugin from %s" % (obj.__name__, filepath))
 
     def load_plugins_from_file(self, filepath):
@@ -82,20 +84,59 @@ class PluginModuleManager(object):
 
         return [self._plugin_modules[n] for n in plugin_names if n in self._plugin_modules]
 
-    def open_plugins(self, plugin_names=None):
+    def is_valid_plugin_name(self, name):
+        return name.lower() in self._plugin_modules
+
+    def enable_plugins(self, plugin_names=None):
         """
         Call open method on multiple specific plugins by name
 
         :param plugin_names: names of plugins to open. If unset, all plugins will be opened.
         """
         for plugin in self._plugins_by_name(plugin_names):
-            plugin.open()
+            if plugin.enabled:
+                # Plugin is already enabled
+                continue
 
-    def close_plugins(self, plugin_names=None):
+            plugin.open()
+            plugin.enabled = True
+
+    def disable_plugins(self, plugin_names=None):
         """
         Call close method on multiple specific plugins by name
 
         :param plugin_names: names of plugins to close. If unset, all plugins will be opened.
         """
         for plugin in self._plugins_by_name(plugin_names):
+            if not plugin.enabled:
+                # Plugin is already disabled
+                continue
+
             plugin.close()
+            plugin.enabled = False
+
+    def enabled_plugins(self):
+        """
+        Return a list of all plugin module instances that are currently enabled
+
+        :return: list of enabled PluginModule instances
+        """
+        ret = []
+        for i in self._plugin_modules:
+            if self._plugin_modules[i].enabled:
+                ret.append(self._plugin_modules[i])
+
+        return ret
+
+    def disabled_plugins(self):
+        """
+        Return a list of all plugin module instances that are currently disabled
+
+        :return: list of enabled PluginModule instances
+        """
+        ret = []
+        for i in self._plugin_modules:
+            if not self._plugin_modules[i].enabled:
+                ret.append(self._plugin_modules[i])
+
+        return ret

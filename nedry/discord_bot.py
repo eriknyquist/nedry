@@ -51,6 +51,7 @@ class DiscordBot(object):
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
         self.channel = None
+        self.plugin_manager = None
 
         @self.client.event
         async def on_guild_available(guild):
@@ -100,6 +101,9 @@ class DiscordBot(object):
 
     def add_command(self, cmd_word, cmd_handler, admin_only, helptext):
         self.cmdprocessor.add_command(cmd_word, cmd_handler, admin_only, helptext)
+
+    def remove_command(self, cmd_word):
+        self.cmdprocessor.remove_command(cmd_word)
 
     def mention(self):
         """

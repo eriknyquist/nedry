@@ -32,6 +32,37 @@ Example:
 @BotName !help wiki
 """
 
+CMD_PLUGINS_HELP = """
+{0}
+
+Show all loaded plugins, and show which ones are currently enabled
+
+Example:
+
+@BotName !help wiki
+"""
+
+CMD_PLUGSON_HELP = """
+{0} [plugin_name] [plugin_name] ...
+
+Enable / turn on one or more plugins by name (plugin names can be seen in the
+output of the 'plugins' command, surrounded by square braces e.g. "[]").
+
+Example:
+
+@BotName !pluginon knock_knock_jokes other_plugin
+"""
+
+CMD_PLUGSOFF_HELP = """
+{0} [plugin_name] [plugin_name] ...
+
+Disable / turn off one or more plugins by name (plugin names can be seen in the
+output of the 'plugins' command, surrounded by square braces e.g. "[]").
+
+Example:
+
+@BotName !pluginoff knock_knock_jokes other_plugin
+"""
 
 CMD_CMDHISTORY_HELP = """
 {0} [entry_count]
@@ -340,6 +371,10 @@ class CommandProcessor(object):
             raise ValueError("Command '%s' already exists" % cmd.word)
 
         self.cmds[cmd.word] = cmd
+
+    def remove_command(self, cmd_word):
+        if cmd_word in self.cmds:
+            del self.cmds[cmd_word]
 
     def close(self):
         logger.info("Stopping")
@@ -798,6 +833,55 @@ def cmd_say(proc, config, twitch_monitor, args, message):
     proc.bot.send_stream_announcement(" ".join(args))
     return "OK! message sent to channel '%s'" % config.config.discord_channel_name
 
+def cmd_plugins(proc, config, twitch_monitor, args, message):
+    enabled = proc.bot.plugin_manager.enabled_plugins()
+    disabled = proc.bot.plugin_manager.disabled_plugins()
+
+    if (not enabled) and (not disabled):
+        return "No plugins are loaded"
+
+    enabled_desc = ["[%s %s] %s" % (x.plugin_name, x.plugin_version, x.plugin_short_description) for x in enabled]
+    disabled_desc = ["[%s %s] %s" % (x.plugin_name, x.plugin_version, x.plugin_short_description) for x in disabled]
+    ret = ""
+
+    if enabled:
+        ret += "The following plugins are enabled:\n"
+        ret += "```%s```" % '\n'.join(enabled_desc)
+    else:
+        ret += "No plugins are enabled.\n"
+
+    if disabled:
+        ret += "The following plugins are disabled:\n"
+        ret += "```%s```" % '\n'.join(disabled_desc)
+    else:
+        ret += "No plugins are disabled.\n"
+
+    return ret
+
+def cmd_plugson(proc, config, twitch_monitor, args, message):
+    if len(args) == 0:
+        return "Please provide the name(s) of one or more plugin(s) you want to enable"
+
+    args = [x.strip() for x in args]
+    for n in args:
+        if not proc.bot.plugin_manager.is_valid_plugin_name(n):
+            return "%s is not a valid plugin name" % n
+
+    proc.bot.plugin_manager.enable_plugins(args)
+    return "OK, the following plugins are enabled: %s" % ''.join(args)
+
+def cmd_plugsoff(proc, config, twitch_monitor, args, message):
+    if len(args) == 0:
+        return "Please provide the name(s) of one or more plugin(s) you want to disable"
+
+    args = [x.strip() for x in args]
+    for n in args:
+        if not proc.bot.plugin_manager.is_valid_plugin_name(n):
+            return "%s is not a valid plugin name" % n
+
+    proc.bot.plugin_manager.disable_plugins(args)
+    return "OK, the following plugins are disabled: %s" % ''.join(args)
+
 
 twitch_monitor_bot_command_list = [
     # Commands available to everyone
@@ -824,5 +908,8 @@ twitch_monitor_bot_command_list = [
     Command("removephrase", cmd_removephrase, True, CMD_REMOVEPHRASE_HELP),
     Command("nocompetition", cmd_nocompetition, True, CMD_NOCOMPETITION_HELP),
     Command("cmdhistory", cmd_cmdhistory, True, CMD_CMDHISTORY_HELP),
-    Command("say", cmd_say, True, CMD_SAY_HELP)
+    Command("say", cmd_say, True, CMD_SAY_HELP),
+    Command("plugins", cmd_plugins, True, CMD_PLUGINS_HELP),
+    Command("plugson", cmd_plugson, True, CMD_PLUGSON_HELP),
+    Command("plugsoff", cmd_plugsoff, True, CMD_PLUGSOFF_HELP),
 ]

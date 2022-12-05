@@ -5,8 +5,13 @@ from nedry.plugin import PluginModule
 
 class EchoDmExample(PluginModule):
     """
+    Simple plugin that subscribes to the EventType.DISCORD_BOT_MENTION event,
+    and whenever a message starting with a bot mention is seen in any public channel
+    on discord, sends a DM to the author of the message containing whataver text
+    they typed after the mention.
     """
     plugin_name = "Example plugin"
+    plugin_version = "1.0.0"
     plugin_short_description = "Simple example illustrating the plugin system"
     plugin_long_description = ""
 

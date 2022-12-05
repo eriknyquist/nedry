@@ -147,18 +147,10 @@ class KnockKnockJokes(PluginModule):
     Abstract implementation of a PluginModule class that represents a
     modular / pluggable behaviour of the bot
     """
-    plugin_name = "Knock-knock jokes"
+    plugin_name = "knock_knock_jokes"
+    plugin_version = "1.0.0"
     plugin_short_description = "Tell knock-knock jokes, and remember jokes told by others"
     plugin_long_description = ""
-
-    def __init__(self, discord_bot):
-        """
-        :param bot: discord bot object, which allows you to send messages to discord channels,\
-            among other things
-        """
-        super(KnockKnockJokes, self).__init__(discord_bot)
-        
-        discord_bot.add_command("joke", handler, False, HELPTEXT)
 
     def _on_mention(self, message, text_without_mention):
         ret = None
@@ -189,9 +181,12 @@ class KnockKnockJokes(PluginModule):
         Enables plugin operation; subscribe to events and/or initialize things here
         """
         events.subscribe(EventType.DISCORD_BOT_MENTION, self._on_mention)
+        self.discord_bot.add_command("joke", handler, False, HELPTEXT)
 
     def close(self):
         """
         Disables plugin operation; unsubscribe from events and/or tear down things here
         """
         events.unsubscribe(EventType.DISCORD_BOT_MENTION, self._on_mention)
+        self.discord_bot.remove_command("joke")
+        channel_data.clear()

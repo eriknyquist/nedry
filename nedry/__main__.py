@@ -133,7 +133,8 @@ def main():
 
     plugin_manager = PluginModuleManager(bot, config.config.plugin_directories)
     plugin_manager.load_plugins_from_directories()
-    plugin_manager.open_plugins()
+    plugin_manager.enable_plugins()
+    bot.plugin_manager = plugin_manager
 
     _ = check_streamers(config, monitor, bot)
     thread = threading.Thread(target=streamer_check_loop, args=(config, monitor, bot))
