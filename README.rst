@@ -17,8 +17,144 @@ Some out-of-the-box features include:
 
 .. contents:: **Table of Contents**
 
-Sample bot interactions
-=======================
+Limitations
+===========
+
+* Nedry currently does not support being invited to multiple discord servers at once--
+  you must run one instance per discord server.
+
+* Nedry is a self-hosted bot-- this means you have to run the python program
+  yourself on a machine that you control, and configure it to connect specifically
+  to your discord server.
+
+Install
+=======
+
+Install for Python (3x only) using ``pip``:
+
+::
+
+    python -m pip install twitch_monitor_discord_bot
+
+Quick start
+===========
+
+Creating the config file
+########################
+
+#. Run the package as a module with no arguments, which will create an empty configuration
+   file called ``default_bot_config.json`` in your current directory and exit immediately.
+
+   ::
+
+       $ python -m twitch_monitor_discord_bot
+
+       Created default config file 'default_bot_config.json', please add required parameters
+
+#. Most of the behaviours of this bot can be configured via discord messages while the
+   bot is up and running, but there are a few parameters that need to be set in the configuration
+   file first, to get the bot talking to twitch and to your discord server. Populate these required
+   parameters in the .json file:
+
+   #. ``discord_bot_api_token``: Discord bot API token must be entered here as a string.
+      `Create a new bot application, and generate/copy token on the "Bot" page <https://discord.com/developers/applications>`_
+      (NOTE: make sure to enable all Privileged Gateway Intents for your bot application).
+
+   #. ``discord_server_id``: Discord server ID (the server that you want the bot to
+      connect to) must be entered here as an integer.
+      `How to find discord user/server/message IDs <https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID->`_
+
+   #. ``discord_admin_users``: A list of discord user IDs as integers may be  entered here.
+      Admin users have access to the full set of discord commands that the bot can accept.
+      At the very least, you'll probably want to add your own discord user ID here so that
+      you have full control of the bot.
+      `How to find discord user/server/message IDs <https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID->`_
+
+#. Once all required parameters have been set in the .json file, run the package as a module
+   again, but this time pass your configuration file as an argument:
+
+   ::
+
+       $ python -m twitch_monitor_discord_bot default_bot_config.json
+
+
+   If configured correctly, then the bot should now connect to your discord server. You're done editing the config file!
+
+
+Further initial configuration: interacting with the bot on discord
+##################################################################
+
+Whenever your bot is online in the discord server, you can issue commands to the bot
+by putting a mention of the bot's discord name at the beginning of the message, either
+in a DM or in any channel the bot has access to, e.g. ``@BotName !command``. The only
+command you *really* need to know is the ``help`` command;
+if you say ``@BotName !help``, then the bot will show you what commands are available
+and show you how to get more specific help with individual commands.
+
+Aside from the first 3 things you set in the bot's configuration file in the previous section,
+everything else about the bot's behaviour can be configured by sending messages/commands to
+the bot on discord. One thing you might want configure in this way, is how twitch streamers
+are monitored for stream announcements.
+
+The following steps are required to enable twitch stream announcements:
+
+#. **Setting which twitch streamers to monitor**
+
+   Send the "addstreamers" command, with one or more arguments, each of which must
+   be the name of an existing twitch channel. e.g. "@BotName !addstreamers channel1 channel2":
+
+   .. image:: images/addstreamers.png
+
+   Changes to the list of streamers are saved in the configuration file.
+
+   For information about how to view the list of streamers being monitored, and how to
+   remove a streamer from the list, use the "@BotName !help streamers" and "@BotName !help removestreamers"
+   commands.
+
+#. **Setting the discord channel for stream announcements**
+
+   Send the "announcechannel" command with one argument, which should be the name of the discord
+   channel you would like stream announcements to be sent to. e.g. "@BotName !announcechannel channel-name":
+
+   .. image:: images/set_channel.png
+
+   The stream announcement channel name is saved in the configuration file.
+
+#. **Setting custom phrases for stream announcements**
+
+   This is optional, but there is only 1 default stream announcement phrase, so
+   you might want to add some of your own. Each time a streamer goes live, one
+   of phrases is picked randomly for the announcement. Phrases may contain format tokens (see
+   the "@BotName !help addphrase" command for more information about format tokens). e.g.
+   "@BotName !addphrase some custom phrase":
+
+   .. image:: images/add_phrase.png
+
+   For reference, the phrase from the previous image produces the following stream announcement
+   when a streamer named "OhmLab" starts streaming on a Wednesday:
+
+   .. image:: images/stream_announcement.png
+
+   All stream announcement phrases are saved in the configuration file.
+
+#. **Setting twitch client ID and client secret**
+
+   in a DM with the bot in discord, or in any public channel, send the "twitchclientid"
+   command with two arguments, e.g. "@BotName !twitchclientid xxxx yyyy".
+
+   Replace "xxxx" with your twitch client ID, and replace "yyyy" with  your twitch client
+   secret. You must have a twitch account, and register an application, to obtain a
+   client ID and client secret for your application. `instructions here <https://dev.twitch.tv/docs/authentication/register-app>`_.
+
+   .. image:: images/set_twitchclientid.png
+
+
+   You can change the client ID and client secret at any time, using the same command.
+   The client ID and client secret you provide with this command is saved in the config file,
+   so there is no need to re-send this every time you start the bot.
+
+Misc. sample bot interactions
+=============================
 
 Announcements for when a twitch streamer goes live
 --------------------------------------------------
@@ -45,94 +181,6 @@ Asking the bot to make fun of the last thing someone said
 ---------------------------------------------------------
 
 .. image:: images/mocking.PNG
-
-Limitations
-===========
-
-Currently does not support being invited to multiple discord servers at once--
-you must run one instance per discord server, and you must run it yourself.
-
-Install
-=======
-
-Install for Python (3x only) using ``pip``:
-
-::
-
-    python -m pip install twitch_monitor_discord_bot
-
-Quick start
-===========
-
-Initial configuration
----------------------
-
-#. Run the package as a module with no arguments, which will create an empty configuration
-   file called ``default_bot_config.json`` in your current directory and exit immediately.
-
-   ::
-
-       $ python -m twitch_monitor_discord_bot
-
-       Created default config file 'default_bot_config.json', please add required parameters
-
-#. Most of the behaviours of this bot can be configured via discord messages while the
-   bot is up and running, but there are a few parameters that need to be set in the configuration
-   file first, to get the bot talking to twitch and to your discord server. Populate these required
-   parameters in the .json file:
-
-   #. ``twitch_client_id``: Twitch client ID must be entered here as a string.
-      You must have a twitch account, and register an application to obtain a client ID for your application.
-      `instructions here <https://dev.twitch.tv/docs/authentication/register-app>`_.
-
-   #. ``twitch_client_secret``: Twitch client secret must be entered here as a string.
-      You must have a twitch account, and register an application to obtain a client secret for your application.
-      `instructions here <https://dev.twitch.tv/docs/authentication/register-app>`_.
-
-   #. ``discord_bot_api_token``: Discord bot API token must be entered here as a string.
-      `Create a new bot application, and generate/copy token on the "Bot" page <https://discord.com/developers/applications>`_
-      (NOTE: make sure to enable all Privileged Gateway Intents for your bot application).
-
-   #. ``discord_server_id``: Discord server ID (the server that you want the bot to
-      connect to) must be entered here as an integer.
-      `How to find discord user/server/message IDs <https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID->`_
-
-   #. ``discord_server_channel_name``: Discord channel name (the channel within the discord
-      server where the bot should post updates about twitch streamers that are being monitored)
-      must be entered here as a string.
-
-   #. ``discord_admin_users``: A list of discord user IDs as integers may be  entered here.
-      Admin users have access to the full set of discord commands that the bot can accept.
-      At the very least, you'll probably want to add your own discord user ID here so that
-      you have full control of the bot.
-      `How to find discord user/server/message IDs <https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID->`_
-
-   #. ``host_streamer``: If you are a streamer yourself, enter your twitch name here as a string,
-      so that the bot can avoid posting notifications about other streamers when you are live.
-      (NOTE: this is optional, you may set this to null or an empty string if desired)
-
-#. Once all required parameters have been set in the .json file, run the package as a module
-   again, but this time pass your configuration file as an argument:
-
-   ::
-
-       $ python -m twitch_monitor_discord_bot default_bot_config.json
-
-
-   If configured correctly, then the bot should now connect to your discord server.
-
-Interacting with the bot on discord
------------------------------------
-
-Whenever your bot is online in the discord server, you can issue commands to the bot
-by putting a mention of the bot's discord name at the beginning of the message, e.g.
-``@BotName !command``. The only command you really need to know is the ``help`` command;
-if you say ``@BotName !help``, then the bot will show you what commands are available
-and show you how to get help with individual commands.
-
-The first thing you'll probably want to do is add some twitch streamers to monitor--
-there's a command for that! Try ``@BotName !help addstreamers`` to learn how to do that.
-
 
 Configuration file details
 ==========================
