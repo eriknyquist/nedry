@@ -1,6 +1,6 @@
 import unittest
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 from nedry import __version__
 
@@ -23,7 +23,7 @@ setup(
     author='Erik Nyquist',
     author_email='eknyquist@gmail.com',
     license='Apache 2.0',
-    packages=['nedry'],
+    packages=find_packages(),
     package_dir={'nedry': 'nedry'},
     package_data={'nedry': [os.path.join('nedry', 'quotedb.json')]},
     include_package_data=True,
