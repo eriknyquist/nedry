@@ -1,5 +1,6 @@
-.. image:: images/dennis.png
-   :align: center
+.. raw:: html
+
+   <img src="images/dennis.png" align="center" width="600px" alt="Dennis Nedry from Jurassic Park">
 
 nedry discord bot 2.1.0
 =======================
