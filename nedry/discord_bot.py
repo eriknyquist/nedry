@@ -48,7 +48,7 @@ class DiscordBot(object):
         #intents.guild_messages = True
         #self.client = discord.Client(intents=intents)
         self.client = discord.Client(intents=discord.Intents().all())
-
+        self.guild = None
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
         self.guild_available = threading.Event()
         self.channel = None
@@ -65,13 +65,12 @@ class DiscordBot(object):
             logger.info("connected to guild \"%s\"", guild.name)
 
             if self.guild_id == guild.id:
-                for c in guild.text_channels:
-                    if c.name == self.channel_name:
-                        self.channel = c
-                        break
+                self.guild = guild
+
+                self.channel = self._get_channel_by_name(guild, self.channel_name)
 
             if self.channel is None:
-                raise RuntimeError("Unable to find channel '%s'" % self.channel_name)
+                logger.error("Unable to find discord channel '%s'" % self.channel_name)
 
             self.guild_available.set()
 
@@ -105,6 +104,23 @@ class DiscordBot(object):
             else:
                 raise RuntimeError("malformed response: either member or "
                                    "channel must be set")
+
+    def _get_channel_by_name(self, guild, name):
+        for c in guild.text_channels:
+            if c.name == name:
+                return c
+
+        return None
+
+    def change_channel(self, new_channel_name):
+        name = new_channel_name.strip()
+        chan = self._get_channel_by_name(self.guild, name)
+        if chan is None:
+            return False
+
+        self.channel_name = name
+        self.channel = chan
+        return True
 
     def _on_twitch_stream_started(self, name, url):
         if self.config.config.silent_when_host_streaming:

@@ -32,6 +32,19 @@ Example:
 @BotName !help wiki
 """
 
+CMD_ANNOUNCECHANNEL_HELP = """
+{0} [discord_channel_name]
+
+Sets the discord channel where stream announcements will be posted. If no discord
+channel name is provided, then the name of the current stream announcements channel
+will be returned.
+
+Example:
+
+@BotName !announcechannel                # Query current channel name
+@BotName !announcechannel my-channel     # Set announcements channel to 'my-channel'
+"""
+
 CMD_TWITCHCLIENTID_HELP = """
 {0} [client_id_string] [client_secret_string]
 
@@ -860,8 +873,11 @@ def cmd_plugins(proc, config, twitch_monitor, args, message):
     if (not enabled) and (not disabled):
         return "No plugins are loaded"
 
-    enabled_desc = ["[%s %s] %s" % (x.plugin_name, x.plugin_version, x.plugin_short_description) for x in enabled]
-    disabled_desc = ["[%s %s] %s" % (x.plugin_name, x.plugin_version, x.plugin_short_description) for x in disabled]
+    def format_plugin_list(plugins):
+        return["[%s] version %s: %s" % (x.plugin_name, x.plugin_version, x.plugin_short_description) for x in plugins]
+
+    enabled_desc = format_plugin_list(enabled)
+    disabled_desc = format_plugin_list(disabled)
     ret = ""
 
     if enabled:
@@ -922,6 +938,25 @@ def cmd_twitchclientid(proc, config, twitch_monitor, args, message):
 
     return "OK! successfully connected to twitch with your new client ID/secret"
 
+def cmd_announcechannel(proc, config, twitch_monitor, args, message):
+    if len(args) == 0:
+        return "Current stream announcements channel is ```%s```" % config.config.discord_channel_name
+
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.config.config_write_delay_seconds)
+
+    channel_name = args[0].strip()
+    if not proc.bot.change_channel(channel_name):
+        return ("Couldn't find a discord channel called '%s' in '%s', "
+                "are you sure that's the right name?" % (channel_name, proc.bot.guild.name))
+
+    config.config.discord_channel_name = channel_name
+    config.save_to_file()
+
+    return "OK! stream announcements will now be sent to the '%s' channel" % channel_name
+
+
 twitch_monitor_bot_command_list = [
     # Commands available to everyone
     Command("help", cmd_help, False, CMD_HELP_HELP),
@@ -952,4 +987,5 @@ twitch_monitor_bot_command_list = [
     Command("plugson", cmd_plugson, True, CMD_PLUGSON_HELP),
     Command("plugsoff", cmd_plugsoff, True, CMD_PLUGSOFF_HELP),
     Command("twitchclientid", cmd_twitchclientid, True, CMD_TWITCHCLIENTID_HELP),
+    Command("announcechannel", cmd_announcechannel, True, CMD_ANNOUNCECHANNEL_HELP),
 ]
