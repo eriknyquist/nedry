@@ -1,10 +1,17 @@
-twitch_monitor_discord_bot 2.0.0
-================================
+.. image:: images/dennis.png
 
-This is a discord bot which will periodically check a list of twitch streamers,
-and post an announcement on a specific discord channel when a streamer goes live.
-It also does some other silly/fun things, like tell knock-knock jokes (and remember
-jokes that you tell to it), or look something up on wikipedia for you.
+nedry discord bot 2.1.0
+=======================
+
+Nedry is a self-hosted discord bot with a modular plugin system. Lots of useful
+behaviour is available out-of-the-box, but you can also install plugins to extend
+Nedry's behaviour. or even write your own plugins.
+
+Some out-of-the-box features include:
+
+* Stream announcements for twitch streamers (your own stream or any other streams)
+* Tell knock-knock jokes (and remember jokes that you tell to it)
+* Look something up on wikipedia for you (or provide a summary of a random wikipedia article)
 
 .. contents:: **Table of Contents**
 
