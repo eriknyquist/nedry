@@ -8,7 +8,7 @@ import logging
 import random
 import threading
 
-from nedry.command_processor import CommandProcessor, twitch_monitor_bot_command_list
+from nedry.command_processor import CommandProcessor, nedry_command_list
 from nedry.event_types import EventType
 from nedry import events, utils
 
@@ -50,7 +50,7 @@ class DiscordBot(object):
         #self.client = discord.Client(intents=intents)
         self.client = discord.Client(intents=discord.Intents().all())
         self.guild = None
-        self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, twitch_monitor_bot_command_list)
+        self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, nedry_command_list)
         self.guild_available = threading.Event()
         self.channel = None
         self.plugin_manager = None

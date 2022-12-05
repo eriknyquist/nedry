@@ -1,8 +1,8 @@
-from twitch_monitor_discord_bot.command_processor import twitch_monitor_bot_command_list
+from nedry.command_processor import nedry_command_list
 
 CMD_TITLE_UNDERLINE_CHAR = '-'
 
-for cmd in twitch_monitor_bot_command_list:
+for cmd in nedry_command_list:
     # Print title
     title = "Command ``%s``" % cmd.word
     print(title)

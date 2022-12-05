@@ -979,7 +979,7 @@ def cmd_announcechannel(proc, config, twitch_monitor, args, message):
     return "OK! stream announcements will now be sent to the '%s' channel" % channel_name
 
 
-twitch_monitor_bot_command_list = [
+nedry_command_list = [
     # Commands available to everyone
     Command("help", cmd_help, False, CMD_HELP_HELP),
     Command("quote", cmd_quote, False, CMD_QUOTE_HELP),

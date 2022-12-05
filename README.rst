@@ -419,28 +419,6 @@ Command ``wiki``
 
    All discord users may use this command.
 
-Command ``joke``
-----------------
-
-::
-
-
-   joke
-
-   Tells an interactive knock-knock joke.
-
-   You can also *tell* knock-knock jokes to the bot, and it will remember new jokes
-   to tell them back to you later when you send this command.
-
-   Any discord users can tell jokes to the bot, but only jokes told by users listed
-   in 'discord_joke_tellers' in the configuration file will be remembered.
-
-   Example:
-
-   @BotName !joke
-
-   All discord users may use this command.
-
 Command ``listmocks``
 ---------------------
 
@@ -632,15 +610,15 @@ Command ``addphrase``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
-Command ``removephrase``
-------------------------
+Command ``removephrases``
+-------------------------
 
 ::
 
 
-   removephrase [number]
+   removephrases [number] [number] ...
 
-   Removes a phrase from the list of phrases being used for stream announcements.
+   Removes one or more phrases from the list of phrases being used for stream announcements.
    [number] must be replaced with the number for the desired phrase, as shown in the
    numbered list produced by the 'phrases' command. In other words, in order to remove
    a phrase, you must first look at the output of the "phrases" command to get the
@@ -648,7 +626,7 @@ Command ``removephrase``
 
    Example:
 
-   @BotName !removephrase 4
+   @BotName !removephrases 3 4 5
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
@@ -706,6 +684,93 @@ Command ``say``
    Example:
 
    @BotName !say Good morning
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``plugins``
+-------------------
+
+::
+
+
+   plugins
+
+   Show all loaded plugins, and show which ones are currently enabled
+
+   Example:
+
+   @BotName !help wiki
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``plugson``
+-------------------
+
+::
+
+
+   plugson [plugin_name] [plugin_name] ...
+
+   Enable / turn on one or more plugins by name (plugin names can be seen in the
+   output of the 'plugins' command, surrounded by square braces e.g. "[]").
+
+   Example:
+
+   @BotName !pluginon knock_knock_jokes other_plugin
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``plugsoff``
+--------------------
+
+::
+
+
+   plugsoff [plugin_name] [plugin_name] ...
+
+   Disable / turn off one or more plugins by name (plugin names can be seen in the
+   output of the 'plugins' command, surrounded by square braces e.g. "[]").
+
+   Example:
+
+   @BotName !pluginoff knock_knock_jokes other_plugin
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``twitchclientid``
+--------------------------
+
+::
+
+
+   twitchclientid [client_id_string] [client_secret_string]
+
+   Sets the client ID and client secret used to interact with the Twitch API.
+   Replace [client_id_string] with the client ID string for your twitch application.
+   Replace [client_secret_string] with the client secret string for your twitch application.
+
+   Example:
+
+   @BotName !help twitchclientid XXXXXXXXXXXX YYYYYYYYYYYY
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+Command ``announcechannel``
+---------------------------
+
+::
+
+
+   announcechannel [discord_channel_name]
+
+   Sets the discord channel where stream announcements will be posted. If no discord
+   channel name is provided, then the name of the current stream announcements channel
+   will be returned.
+
+   Example:
+
+   @BotName !announcechannel                # Query current channel name
+   @BotName !announcechannel my-channel     # Set announcements channel to 'my-channel'
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
