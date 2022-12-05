@@ -40,7 +40,7 @@ Quick start
 ===========
 
 Creating the config file
-########################
+------------------------
 
 #. Run the package as a module with no arguments, which will create an empty configuration
    file called ``default_bot_config.json`` in your current directory and exit immediately.
@@ -82,7 +82,7 @@ Creating the config file
 
 
 Further initial configuration: interacting with the bot on discord
-##################################################################
+------------------------------------------------------------------
 
 Whenever your bot is online in the discord server, you can issue commands to the bot
 by putting a mention of the bot's discord name at the beginning of the message, either
