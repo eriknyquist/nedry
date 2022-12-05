@@ -35,6 +35,7 @@ class DiscordBot(object):
     CommandProcessor when commands are received from discord messages
     """
     def __init__(self, config, twitch_monitor):
+        self.message_limit = 1600
         self.token = config.config.discord_bot_api_token
         self.guild_id = config.config.discord_server_id
         self.channel_name = config.config.discord_channel_name
@@ -96,11 +97,10 @@ class DiscordBot(object):
 
             if resp.member is not None:
                 # Response should be sent in a DM to given member
-                await message.author.create_dm()
-                await message.author.dm_channel.send(resp.response_data)
+                self._dm_response(message, resp)
             elif resp.channel is not None:
                 # Response should be sent on the given channel
-                await resp.channel.send(resp.response_data)
+                self._channel_response(resp.channel, resp)
             else:
                 raise RuntimeError("malformed response: either member or "
                                    "channel must be set")
@@ -111,6 +111,38 @@ class DiscordBot(object):
                 return c
 
         return None
+
+    def _dm_response(self, message, resp):
+        self.send_dm(message.author, resp.response_data)
+
+    def _channel_response(self, channel, resp):
+        self.send_message(channel, resp.response_data)
+
+    def _split_message_on_limit(self, message):
+        msgs = []
+        code_marker_count = 0
+        current_message = ""
+
+        for line in message.split("\n"):
+            if len(current_message) + len(line) > self.message_limit:
+                # This line would exceed message limit, time for a new message
+                inside_code_marker = (code_marker_count % 6) != 0
+                code_marker_count = 0
+
+                if inside_code_marker:
+                    current_message += '```'
+
+                msgs.append(current_message)
+                current_message = '```' if inside_code_marker else ''
+                continue
+
+            code_marker_count += line.count('```')
+            current_message += line + "\n"
+
+        if current_message:
+            msgs.append(current_message)
+
+        return msgs
 
     def change_channel(self, new_channel_name):
         name = new_channel_name.strip()
@@ -164,7 +196,9 @@ class DiscordBot(object):
         self.cmdprocessor.close()
 
     def send_message(self, channel, message):
-        asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
+        messages = self._split_message_on_limit(message)
+        for message in messages:
+            asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
 
     def send_stream_announcement(self, message):
         asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
@@ -174,7 +208,9 @@ class DiscordBot(object):
         await channel.send(message)
 
     def send_dm(self, member, message):
-        asyncio.run_coroutine_threadsafe(self._send_dm_async(member, message), main_event_loop)
+        messages = self._split_message_on_limit(message)
+        for message in messages:
+            asyncio.run_coroutine_threadsafe(self._send_dm_async(member, message), main_event_loop)
 
     def on_connect(self):
         pass

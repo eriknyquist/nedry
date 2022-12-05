@@ -337,6 +337,28 @@ class Command(object):
     def help(self):
         return "```%s```" % self.helptext.format(self.word)
 
+    def help_oneline(self):
+        lines = []
+        empty_lines_seen = 0
+        for line in self.helptext.split('\n'):
+            line = line.strip()
+            if line:
+                lines.append(line)
+                empty_lines_seen += 1
+
+            if empty_lines_seen > 1:
+                break
+
+        if len(self.word) < 20:
+            num_spaces = 20 - len(self.word)
+        else:
+            num_spaces = 1
+
+        ret = self.word + (" " * num_spaces) + " : " + ' '.join(lines[1:])
+        if len(ret) > 80:
+            ret = ret[:76] + ' ...'
+
+        return ret
 
 class MessageData(object):
     """
@@ -451,9 +473,9 @@ class CommandProcessor(object):
         Get the text for a discord message showing all available commands
         """
         if include_admin:
-            cmd_names = self.cmds.keys()
+            cmd_names = [self.cmds[x].help_oneline() for x in self.cmds]
         else:
-            cmd_names = [x for x in self.cmds.keys() if not self.cmds[x].admin_only]
+            cmd_names = [self.cmds[x].help_oneline() for x in self.cmds if not self.cmds[x].admin_only]
 
         return "Available commands:\n```%s```" % "\n".join(cmd_names)
 
