@@ -1,4 +1,3 @@
-import requests
 import datetime
 
 FMT_TOK_STREAMER_NAME = "streamer_name"
@@ -12,8 +11,6 @@ FMT_TOK_MONTH = "month"
 FMT_TOK_YEAR = "year"
 
 FMT_TOK_BOT_NAME = "botname"
-
-WIKI_URL = 'https://en.wikipedia.org/w/api.php'
 
 format_args = {
     FMT_TOK_STREAMER_NAME: None,
@@ -117,70 +114,6 @@ def parse_mention(mention):
         return None
 
     return ret
-
-def _wiki_summary_by_page_title(title):
-    params = {
-        'action': 'query',
-        'format': 'json',
-        'titles': title,
-        'prop': 'extracts',
-        'exintro': True,
-        'explaintext': True,
-    }
-
-    # Use the search API to search for pages related to text
-    try:
-        response = requests.get(WIKI_URL, params=params)
-    except:
-        return None
-
-    data = response.json()
-    page = next(iter(data['query']['pages'].values()))
-    return page['extract'].strip()
-
-def get_wiki_summary(search_text):
-    params = {
-            'action': 'query',
-            'format': 'json',
-            'list': 'search',
-            'utf8': 1,
-            'srsearch': search_text
-    }
-
-    # Use the search API to search for pages related to text
-    try:
-        response = requests.get(WIKI_URL, params=params)
-    except:
-        return None
-
-    data = response.json()
-
-    if not data['query']['search']:
-        # No results
-        return None
-
-    # Just take the 1st search result
-    return _wiki_summary_by_page_title(data['query']['search'][0]['title'])
-
-def get_random_wiki_summary():
-    url = 'https://en.wikipedia.org/w/api.php'
-    params = {
-            'action': 'query',
-            'format': 'json',
-            'list': 'random',
-            'utf8': 1,
-            'rnnamespace': 0,
-            'rnlimit': 1
-    }
-
-    try:
-        response = requests.get(url, params=params)
-    except:
-        return None
-
-    data = response.json()
-
-    return _wiki_summary_by_page_title(data['query']['random'][0]['title'])
 
 def truncate_text(text, size=80):
     if len(text) > size:

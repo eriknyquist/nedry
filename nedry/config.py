@@ -11,13 +11,14 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 class BotConfig(VersionedObject):
-    version = "1.3"
+    version = "1.4"
     twitch_client_id = ""
     twitch_client_secret = ""
     discord_bot_api_token = ""
     discord_server_id = 0
     discord_channel_name = ""
     plugin_directories = []
+    enabled_plugins = []
     streamers_to_monitor = []
     host_streamer = ""
     silent_when_host_streaming = False
@@ -50,6 +51,11 @@ def migrate_none_11_to_12(attrs):
 @migration(BotConfig, "1.2", "1.3")
 def migrate_none_12_to_13(attrs):
     attrs["plugin_directories"] = []
+    return attrs
+
+@migration(BotConfig, "1.3", "1.4")
+def migrate_none_13_to_14(attrs):
+    attrs["enabled_plugins"] = []
     return attrs
 
 

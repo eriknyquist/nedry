@@ -11,7 +11,6 @@ import logging
 from nedry import quotes
 from nedry import utils
 from nedry.twitch_monitor import InvalidTwitchUser
-from nedry.jokes import KnockKnockJoke
 
 
 logger = logging.getLogger(__name__)
@@ -99,19 +98,6 @@ Examples:
 
 @BotName !{0}     (show last 25 entries)
 @BotName !{0} 5   (show last 5 entries)
-"""
-
-CMD_WIKI_HELP = """
-{0} [search text]
-
-Search the provided text using Wikipedia's public API, and return the summary text
-(generally the first paragraph) of the first page in the search results. If no search
-text is provided, then a random Wikipedia article will be selected instead.
-
-Examples:
-
-@BotName !wiki python language   (Show summary of wiki page for Python programming language)
-@BotName !wiki                   (Show summary of a random wiki page)
 """
 
 CMD_MOCK_HELP = """
@@ -863,24 +849,6 @@ def cmd_quote(proc, config, twitch_monitor, args, message):
     text, author = quotes.get_donk_quote()
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
 
-def cmd_wiki(proc, config, twitch_monitor, args, message):
-    search_text = ' '.join(args).strip()
-    if not search_text:
-        # If no search text provided, just get a random wiki page
-        result = utils.get_random_wiki_summary()
-    else:
-        result = utils.get_wiki_summary(search_text)
-
-    if not result:
-        return "No results found, sorry :("
-
-    result = utils.truncate_text(result, 900)
-
-    if result.endswith("may refer to:"):
-        return "Please be a bit more specific with your search terms"
-
-    return result
-
 def cmd_say(proc, config, twitch_monitor, args, message):
     if len(args) < 1:
         return "You didn't write a message for me to say. So I'll say nothing."
@@ -987,7 +955,6 @@ nedry_command_list = [
     Command("unmock", cmd_unmock, False, CMD_UNMOCK_HELP),
     Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
     Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
-    Command("wiki", cmd_wiki, False, CMD_WIKI_HELP),
 
     # Commands only available to admin users
     Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),

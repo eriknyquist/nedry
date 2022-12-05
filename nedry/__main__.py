@@ -16,7 +16,7 @@ from nedry.config import BotConfigManager
 from nedry.plugin import PluginModuleManager
 
 # Import built-in plugin modules
-from nedry.builtin_plugins.knock_knock_jokes import KnockKnockJokes
+from nedry.builtin_plugins import builtin_plugin_modules
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ def main():
         if os.path.isfile(DEFAULT_CONFIG_FILE):
             config = b
         else:
+            b.config.enabled_plugins = [x.plugin_name for x in builtin_plugin_modules]
             b.save_to_file()
             print("Created default config file '%s', please add required parameters" %
                   DEFAULT_CONFIG_FILE)
@@ -80,9 +81,11 @@ def main():
     plugin_manager.load_plugins_from_directories()
 
     # Load built-in plugins
-    plugin_manager.add_plugin_class(KnockKnockJokes)
+    for plugin in builtin_plugin_modules:
+        plugin_manager.add_plugin_class(plugin)
 
-    plugin_manager.enable_plugins()
+    plugin_manager.enable_plugins(config.config.enabled_plugins)
+
     bot.plugin_manager = plugin_manager
 
 
