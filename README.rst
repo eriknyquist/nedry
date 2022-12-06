@@ -133,7 +133,7 @@ The following steps are required to enable twitch stream announcements:
    For reference, the phrase from the previous image produces the following stream announcement
    when a streamer named "OhmLab" starts streaming on a Wednesday:
 
-   .. image:: images/stream_announcement.png
+   .. image:: images/stream_announcement.PNG
 
    All stream announcement phrases are saved in the configuration file.
 
