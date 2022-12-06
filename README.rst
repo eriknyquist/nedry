@@ -2,8 +2,10 @@
 
    <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-Nedry discord bot 2.1.0 (formerly "twitch_monitor_discord_bot")
-===============================================================
+Nedry discord bot 2.1.0
+=======================
+
+(formerly "twitch_monitor_discord_bot")
 
 Nedry is a self-hosted discord bot with a modular plugin system. Lots of useful
 behaviour is available out-of-the-box, but you can also install plugins to extend
