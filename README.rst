@@ -2,8 +2,8 @@
 
    <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-Nedry discord bot 2.1.0
-=======================
+Nedry discord bot 2.1.0 (formerly "twitch_monitor_discord_bot")
+===============================================================
 
 Nedry is a self-hosted discord bot with a modular plugin system. Lots of useful
 behaviour is available out-of-the-box, but you can also install plugins to extend
@@ -27,6 +27,19 @@ Limitations
   yourself on a machine that you control, and configure it to connect specifically
   to your discord server.
 
+Migrating from "twitch_monitor_discord_bot"
+===========================================
+
+The project name changed, but all the features that were present in "twitch_monitor_discord_bot"
+are still present in "nedry". The following steps will be necessary to switch to "nedry":
+
+* Un-install the "twitch_monitor_discord_bot" package, and install the "nedry" package
+* Replace all "twitch_monitor_discord_bot" references to "nedry" (e.g. if you have a
+  script or another program which runs the bot). Your existing bot configuration file for
+  "twitch_monitor_discord_bot" will still work with nedry.
+
+That's it!
+
 Install
 =======
 
@@ -34,7 +47,7 @@ Install for Python (3x only) using ``pip``:
 
 ::
 
-    python -m pip install twitch_monitor_discord_bot
+    python -m pip install nedry
 
 Quick start
 ===========
@@ -47,7 +60,7 @@ Creating the config file and starting the bot
 
    ::
 
-       $ python -m twitch_monitor_discord_bot
+       $ python -m nedry
 
        Created default config file 'default_bot_config.json', please add required parameters
 
@@ -75,7 +88,7 @@ Creating the config file and starting the bot
 
    ::
 
-       $ python -m twitch_monitor_discord_bot default_bot_config.json
+       $ python -m nedry default_bot_config.json
 
 
    If configured correctly, then the bot should now connect to your discord server. You're done editing the config file!
@@ -166,9 +179,9 @@ Writing and using plugins
   ``!plugson`` and ``!plugsoff`` commands. For example, to disable the built-in
   ``knock_knock_jokes`` plugin, use ``@BotName !plugsoff knock_knock_jokes``.
 
-* To get started with writing plugins, see `this sample plugin <https://github.com/eriknyquist/twitch_monitor_discord_bot/blob/nedry/example_plugins/echo_dm_example.py>`_.
+* To get started with writing plugins, see `this sample plugin <https://github.com/eriknyquist/nedry/blob/nedry/example_plugins/echo_dm_example.py>`_.
 
-  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/twitch_monitor_discord_bot/blob/nedry/nedry/builtin_plugins/knock_knock_jokes.py>`_
+  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/nedry/blob/nedry/nedry/builtin_plugins/knock_knock_jokes.py>`_
 
 
 Misc. sample bot interactions
