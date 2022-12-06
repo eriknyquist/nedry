@@ -319,7 +319,7 @@ This section enumerates al available event types in ``nedry.event_types.events``
 with their expected arguments and a brief description:
 
 .. list-table:: nedry.event_types.EventType
-   :widths: 50 50 50
+   :widths: 30 30 30
    :header-rows: 1
 
    * - Event
