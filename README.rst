@@ -329,14 +329,16 @@ with their expected arguments and a brief description:
    * - DISCORD_MESSAGE_RECEIVED
      - (message)
 
-       "message" is the discord.py message object (see https://discordpy.readthedocs.io/en/stable/api.html#discord.Message)
+       "message" is the discord.py message object (see
+       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`_)
      - Emitted whenever any discord message is received, either in a public channel
        which the bot has access to, or in a DM with the bot.
 
    * - DISCORD_BOT_MENTION
      - (message, text_without_mention)
 
-       "message" is the discord.py message object (see https://discordpy.readthedocs.io/en/stable/api.html#discord.Message).
+       "message" is the discord.py message object (see
+       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`_).
        "text_without_mention" is the message text with the bot mention stripped out.
      - Emitted whenever any discord message that starts with a mention of the bots
        discord name is received, either in a public channel which the bot has access
@@ -346,7 +348,7 @@ with their expected arguments and a brief description:
      - (member)
 
        "member" is the discord.py User object of the member who joined
-       (see https://discordpy.readthedocs.io/en/stable/api.html#discord.User).
+       (see `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.User>`_).
      - Emitted whenever a new user joins the discord server.
 
    * - DISCORD_CONNECTED
