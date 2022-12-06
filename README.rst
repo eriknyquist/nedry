@@ -310,7 +310,72 @@ Description of fields
   * ``{month}`` : will be replaced with the name of the current month (e.g. "January")
   * ``{year}`` : will be replaced with the current year (e.g. "2022")
 
-Bot command reference
+Event reference for plugins
+===========================
+
+If you are writing a plugin, you probably need to subscribe to some events (as shown
+in `this example plugin <https://github.com/eriknyquist/nedry/blob/master/example_plugins/echo_dm_example.py>`_).
+This section enumerates al available event types in ``nedry.event_types.events``, along
+with their expected arguments and a brief description:
+
+.. list-table:: nedry.event_types.EventType
+   :widths: 50 50 50
+   :header-rows: 1
+
+   * - Event
+     - Event arguments
+     - Event description
+
+   * - DISCORD_MESSAGE_RECEIVED
+     - (message)
+
+       "message" is the discord.py message object (see https://discordpy.readthedocs.io/en/stable/api.html#discord.Message)
+     - Emitted whenever any discord message is received, either in a public channel
+       which the bot has access to, or in a DM with the bot.
+
+   * - DISCORD_BOT_MENTION
+     - (message, text_without_mention)
+
+       "message" is the discord.py message object (see https://discordpy.readthedocs.io/en/stable/api.html#discord.Message).
+       "text_without_mention" is the message text with the bot mention stripped out.
+     - Emitted whenever any discord message that starts with a mention of the bots
+       discord name is received, either in a public channel which the bot has access
+       to, or in a DM with the bot.
+
+   * - NEW_DISCORD_MEMBER
+     - (member)
+
+       "member" is the discord.py User object of the member who joined
+       (see https://discordpy.readthedocs.io/en/stable/api.html#discord.User).
+     - Emitted whenever a new user joins the discord server.
+
+   * - DISCORD_CONNECTED
+     - No arguments
+     - Emmitted whenever the bot is connected to the configured discord server
+       (this can take up to a few seconds after startup)
+
+   * - TWITCH_STREAM_STARTED
+     - (name, url)
+
+       "name" is the Twitch name of the streamer who started streaming.
+       "url" is the Twitch URL of the stream that started.
+     - Emitted whenever one of the streamers configured for monitoring starts streaming.
+
+   * - TWITCH_STREAM_ENDED
+     - (name, url)
+
+       "name" is the Twitch name of the streamer who stopped streaming.
+       "url" is the Twitch URL of the stream that ended.
+     - Emitted whenever one of the streamers configured for monitoring stops streaming.
+
+   * - HOST_STREAM_STARTED
+     - No arguments
+     - Emitted when the configured host streamer starts streaming
+
+   * - HOST_STREAM_ENDED
+     - No arguments
+     - Emitted when the configured host streamer stops streaming
+
 =====================
 
 Command ``help``
