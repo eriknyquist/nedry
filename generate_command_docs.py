@@ -1,4 +1,5 @@
 from nedry.command_processor import nedry_command_list
+from nedry.builtin_plugins import builtin_plugin_modules
 
 CMD_TITLE_UNDERLINE_CHAR = '-'
 

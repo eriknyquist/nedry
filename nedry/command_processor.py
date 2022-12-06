@@ -893,7 +893,18 @@ def cmd_plugson(proc, config, twitch_monitor, args, message):
         if not proc.bot.plugin_manager.is_valid_plugin_name(n):
             return "%s is not a valid plugin name" % n
 
-    proc.bot.plugin_manager.enable_plugins(args)
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.config.config_write_delay_seconds)
+
+    proc.bot.plugin_manager.enable_plugins(plugin_names=args)
+
+    enabled_plugins = [x.plugin_name.lower() for x in proc.bot.plugin_manager.enabled_plugins()]
+    if set(enabled_plugins) != set(config.config.enabled_plugins):
+        # If enabled plugins changed, save changes to config file
+        config.config.enabled_plugins = enabled_plugins
+        config.save_to_file()
+
     return "OK, the following plugins are enabled: %s" % ''.join(args)
 
 def cmd_plugsoff(proc, config, twitch_monitor, args, message):
@@ -905,7 +916,18 @@ def cmd_plugsoff(proc, config, twitch_monitor, args, message):
         if not proc.bot.plugin_manager.is_valid_plugin_name(n):
             return "%s is not a valid plugin name" % n
 
-    proc.bot.plugin_manager.disable_plugins(args)
+    if not config.write_allowed():
+        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
+                config.config.config_write_delay_seconds)
+
+    proc.bot.plugin_manager.disable_plugins(plugin_names=args)
+
+    enabled_plugins = [x.plugin_name.lower() for x in proc.bot.plugin_manager.enabled_plugins()]
+    if set(enabled_plugins) != set(config.config.enabled_plugins):
+        # If enabled plugins changed, save changes to config file
+        config.config.enabled_plugins = enabled_plugins
+        config.save_to_file()
+
     return "OK, the following plugins are disabled: %s" % ''.join(args)
 
 def cmd_twitchclientid(proc, config, twitch_monitor, args, message):
