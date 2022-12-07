@@ -103,6 +103,8 @@ class TwitchMonitor(object):
                     else:
                         events.emit(EventType.HOST_STREAM_ENDED)
 
+            self.last_host_obj = host
+
         # Check for any announcements that need to be made
         for c in channels:
             if c.user is None:
