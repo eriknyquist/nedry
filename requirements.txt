@@ -1,6 +1,6 @@
 requests
 twitch-python
-versionedobj>=2.0.0
+versionedobj>=2.0.1
 discord.py==1.7.3
 discord==1.7.3
 nltk

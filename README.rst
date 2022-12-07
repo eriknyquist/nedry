@@ -173,8 +173,9 @@ Writing and using plugins
 
 * In order to use plugins, you must add at least one directory path to the ``plugin_directories``
   list in the configuration file. Plugins are installed by placing the python file(s) directly
-  in the top-level of this directory (not in a subdirectory!). If any valid plugins exist in
-  this directory when the bot starts up, they will be loaded and available for use.
+  in the top level of any directory listed in ``plugin_directories`` (not in a subdirectory!).
+  If any valid plugins exist in any the directories listed in ``plugin_directories`` when the
+  bot starts up, they will be loaded and available for use.
 
 * All loaded plugins are enabled by default. To see a list of all plugins, enabled and
   disabled, use the ``!plugins`` command. To disable/enable a plugin, use the
@@ -378,6 +379,7 @@ with their expected arguments and a brief description:
      - No arguments
      - Emitted when the configured host streamer stops streaming
 
+Bot command reference
 =====================
 
 Command ``help``
@@ -479,25 +481,6 @@ Command ``apologize``
    Example:
 
    @BotName !apologize @discord_user
-
-   All discord users may use this command.
-
-Command ``wiki``
-----------------
-
-::
-
-
-   wiki [search text]
-
-   Search the provided text using Wikipedia's public API, and return the summary text
-   (generally the first paragraph) of the first page in the search results. If no search
-   text is provided, then a random Wikipedia article will be selected instead.
-
-   Examples:
-
-   @BotName !wiki python language   (Show summary of wiki page for Python programming language)
-   @BotName !wiki                   (Show summary of a random wiki page)
 
    All discord users may use this command.
 
@@ -856,3 +839,39 @@ Command ``announcechannel``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+Command ``wiki``
+----------------
+
+::
+
+
+   Search the provided text using Wikipedia's public API, and return the summary text
+   (generally the first paragraph) of the first page in the search results. If no search
+   text is provided, then a random Wikipedia article will be selected instead.
+
+   Examples:
+
+   @Mr Stream !wiki python language   (Show summary of wiki page for Python programming language)
+   @Mr Stream !wiki                   (Show summary of a random wiki page)
+
+   All discord users may use this command.
+
+Command ``joke``
+----------------
+
+::
+
+
+   Tells an interactive knock-knock joke.
+
+   You can also *tell* knock-knock jokes to the bot, and it will remember new jokes
+   to tell them back to you later when you send this command.
+
+   Any discord users can tell jokes to the bot, but only jokes told by users listed
+   in 'discord_joke_tellers' in the configuration file will be remembered.
+
+   Example:
+
+   @Mr Stream !joke
+
+   All discord users may use this command.
