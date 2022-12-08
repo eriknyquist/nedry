@@ -68,7 +68,7 @@ class DiscordBot(object):
             if self.guild_id == guild.id:
                 self.guild = guild
 
-                self.channel = self._get_channel_by_name(guild, self.channel_name)
+                self.channel = self.get_channel_by_name(self.channel_name)
 
             if self.channel is None:
                 logger.error("Unable to find discord channel '%s'" % self.channel_name)
@@ -78,6 +78,10 @@ class DiscordBot(object):
         @self.client.event
         async def on_connect():
             self.on_connect()
+
+        @self.client.event
+        async def on_disconnect():
+            self.on_disconnect()
 
         @self.client.event
         async def on_member_join(member):
@@ -105,8 +109,11 @@ class DiscordBot(object):
                 raise RuntimeError("malformed response: either member or "
                                    "channel must be set")
 
-    def _get_channel_by_name(self, guild, name):
-        for c in guild.text_channels:
+    def get_channel_by_name(self, name):
+        if self.guild is None:
+            return None
+
+        for c in self.guild.text_channels:
             if c.name == name:
                 return c
 
@@ -146,7 +153,7 @@ class DiscordBot(object):
 
     def change_channel(self, new_channel_name):
         name = new_channel_name.strip()
-        chan = self._get_channel_by_name(self.guild, name)
+        chan = self.get_channel_by_name(name)
         if chan is None:
             return False
 
@@ -214,6 +221,9 @@ class DiscordBot(object):
 
     def on_connect(self):
         pass
+
+    def on_disconnect(self):
+        self.guild = None
 
     def on_member_join(self, member):
         events.emit(EventType.NEW_DISCORD_MEMBER, member)
