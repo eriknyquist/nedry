@@ -123,12 +123,15 @@ class Scheduler(object):
     def _add_active_event(self, event):
         # Need to maintain the list in order of timer expiry
         index = 0
+        found_later_expiry = False
+
         for i in range(len(self._active_events)):
             if self._active_events[i].expiry_time > event.expiry_time:
+                found_later_expiry = True
                 index = i
                 break
 
-        if (index == 0) and self._active_events:
+        if not found_later_expiry:
             index = len(self._active_events)
 
         self._active_events.insert(index, event)
@@ -155,10 +158,6 @@ class Scheduler(object):
         return event
 
 
-HELPTEXT = """
-"""
-
-
 scheduler = Scheduler()
 
 
@@ -169,7 +168,7 @@ def _parse_time_string(s):
 
 def _dump_reminders(user):
     """
-    Handler for !reminders command
+    Get description of all active reminders for given user
     """
     events = []
     for e in scheduler.all_events():
@@ -185,6 +184,77 @@ def _dump_reminders(user):
     ret += "```%s```" % "\n".join(events)
 
     return ret
+
+def _dump_scheduled(user):
+    """
+    Get description of all scheduled messages
+    """
+    events = []
+    for e in scheduler.all_events():
+        if e.event_type == ScheduledEventType.CHANNEL_MESSAGE:
+            events.append("!schedule %s %s in %s (%s until scheduled message)" %
+                          (e.event_data[1], e.event_data[0], e.event_data[2],
+                           e.time_remaining_string()))
+
+    if not events:
+        return "%s you have no scheduled messages" % user.mention
+
+    ret = "%s here are your scheduled messages:\n" % user.mention
+    ret += "```%s```" % "\n".join(events)
+
+    return ret
+
+
+REMIND_HELPTEXT = """
+{0} [reminder_text] in [time_description]
+
+Set up a reminder. After the specified time, the bot will send you a DM with whatever
+text you provided for [reminder_text].
+
+[reminder_text] should be replaced with whatever text you want in the reminder message,
+e.g. the thing that you want to be reminded of.
+
+[time_description] should be replaced with a description of the desired delay
+before the reminder is delivered. This delay should be written in english, and should
+use digits (e.g. "5") instead of words (e.g. "five") for number values. For example:
+"1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+
+Sending the command with no arguments returns the list of active reminders
+for the user that sent the command.
+
+Examples:
+
+@BotName !{0}                                           # Query current reminders for me
+@BotName !{0} To take out the trash... in 12 hours      # schedule reminder in 12 hours
+@BotName !{0} about the test! in 2h18m                  # Schedule reminder in 2 hours and 18 minutes
+@BotName !{0} to take a shower :D in 1 day and 5 mins   # Schedule reminder in 1 day and 5 minutes
+"""
+
+SCHEDULE_HELPTEXT = """
+{0} [channel_name] [message_text] in [time_description]
+
+Set up a message to be sent by the bot in a specific discord channel after a specific
+time delay.
+
+[channel_name] should be replaced with name of the discord channel in which you
+want the message to be sent.
+
+[message_text] should be replaced with whatever text you want to be sent in the discord message.
+
+[time_description] should be replaced with a description of the desired delay
+before the message is sent to the channel. This delay should be written in english,
+and should use digits (e.g. "5") instead of words (e.g. "five") for number values.
+For example: "1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+
+Sending the command with no arguments returns the list of currently scheduled messages.
+
+Examples:
+
+@BotName !{0}                                       # Query currently scheduled messages
+@BotName !{0} joke-channel haha! in 2 hours         # Schedule discord message to "joke-channel" in 2 hours
+@BotName !{0} news-channel raining :( in 1h & 10m   # Schedule discord message to "news-channel" in 1 hour, 10 mins
+@BotName !{0} chat-channel Hey Guys! in 2 days      # Schedule discord message to "chat-channel" in 2 days
+"""
 
 
 def remind_command_handler(proc, config, twitch_monitor, args, message):
@@ -224,6 +294,9 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
     """
     Handler for !schedule command
     """
+    if len(args) == 0:
+        return _dump_scheduled(message.author)
+
     if len(args) < 4:
         return ("Invalid schedule, try saying something like:\n"
                 "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```")
@@ -247,7 +320,7 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
     if not channel:
         return "Can't find a discord channel called '%s', are you sure that's right?" % channel_name
 
-    event = scheduler.add_event(int(secon`ds / 60),
+    event = scheduler.add_event(int(seconds / 60),
                                 ScheduledEventType.CHANNEL_MESSAGE,
                                 msg,
                                 channel_name,
@@ -271,8 +344,8 @@ class Schedule(PluginModule):
         """
         Enables plugin operation; subscribe to events and/or initialize things here
         """
-        self.discord_bot.add_command("schedule", schedule_command_handler, False, HELPTEXT)
-        self.discord_bot.add_command("remindme", remind_command_handler, False, HELPTEXT)
+        self.discord_bot.add_command("schedule", schedule_command_handler, False, SCHEDULE_HELPTEXT)
+        self.discord_bot.add_command("remindme", remind_command_handler, False, REMIND_HELPTEXT)
         scheduler.set_discord_bot(self.discord_bot)
 
     def close(self):
