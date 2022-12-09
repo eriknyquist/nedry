@@ -1,4 +1,5 @@
 requests
+pytimeparse
 twitch-python
 versionedobj>=2.0.1
 discord.py==1.7.3
