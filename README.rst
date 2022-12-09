@@ -14,6 +14,7 @@ Nedry's behaviour, or even write your own plugins.
 Some out-of-the-box features include:
 
 * Stream announcements for twitch streamers (your own stream or any other streams)
+* Scheduled DM reminders or public channel messages
 * Tell knock-knock jokes (and remember jokes that you tell to it)
 * Look something up on wikipedia for you (or provide a summary of a random wikipedia article)
 
@@ -195,6 +196,16 @@ Announcements for when a twitch streamer goes live
 
 .. image:: images/stream_announcement.PNG
 
+
+Scheduling a message in a public channel
+----------------------------------------
+
+.. image:: images/scheduled_message.PNG
+
+Scheduling a DM reminder
+------------------------
+
+.. image:: images/reminder.PNG
 
 Requesting a knock-knock joke from the bot
 ------------------------------------------
