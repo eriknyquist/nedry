@@ -336,11 +336,12 @@ class Command(object):
     def help_oneline(self):
         lines = []
         empty_lines_seen = 0
-        for line in self.helptext.split('\n'):
+        for line in self.helptext.strip().split('\n'):
             line = line.strip()
-            if line:
-                lines.append(line)
+            if not line:
                 empty_lines_seen += 1
+            elif empty_lines_seen:
+                lines.append(line)
 
             if empty_lines_seen > 1:
                 break
@@ -350,7 +351,7 @@ class Command(object):
         else:
             num_spaces = 1
 
-        ret = self.word + (" " * num_spaces) + " : " + ' '.join(lines[1:])
+        ret = self.word + (" " * num_spaces) + " : " + ' '.join(lines)
         if len(ret) > 80:
             ret = ret[:76] + ' ...'
 
