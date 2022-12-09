@@ -191,6 +191,11 @@ Writing and using plugins
 Misc. sample bot interactions
 =============================
 
+The following are some screenshots of miscellaneous command / response interactions
+with the bot in discord. This section is *not* intended as a comprehensive reference
+of all available commands (see the "Bot command reference" section at the end for that),
+but rather a quick illustration of what it looks like to interact with the bot in discord.
+
 Announcements for when a twitch streamer goes live
 --------------------------------------------------
 
