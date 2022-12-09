@@ -31,6 +31,16 @@ Example:
 @BotName !help wiki
 """
 
+CMD_PLUGINFO_HELP = """
+{0} [plugin_name]
+
+Query information about a loaded plugin.
+
+Example:
+
+@BotName !pluginfo knock_knock_jokes
+"""
+
 CMD_ANNOUNCECHANNEL_HELP = """
 {0} [discord_channel_name]
 
@@ -930,6 +940,28 @@ def cmd_plugsoff(proc, config, twitch_monitor, args, message):
 
     return "OK, the following plugins are disabled: %s" % ''.join(args)
 
+def cmd_pluginfo(proc, config, twitch_monitor, args, message):
+    if len(args) == 0:
+        return "Please provide the name of the plugin you want information about"
+
+    plugin_name = args[0].strip()
+    if not proc.bot.plugin_manager.is_valid_plugin_name(plugin_name):
+        return "%s is not a valid plugin name" % plugin_name
+
+    plugin = proc.bot.plugin_manager.get_plugins_by_name([plugin_name])[0]
+
+    long_desc = plugin.plugin_long_description.strip()
+    long_desc = '\n'.join([x.strip() for x in long_desc.split('\n')])
+    lines = []
+    lines.append("%s %s (%s)" % (plugin.plugin_name, plugin.plugin_version,
+                                 "enabled" if plugin.enabled else "disabled"))
+    lines.append("")
+    lines.append(plugin.plugin_short_description)
+    lines.append("")
+    lines.append(long_desc)
+
+    return ("Here is information about the '%s' plugin:\n```%s```" % (plugin_name, '\n'.join(lines)))
+
 def cmd_twitchclientid(proc, config, twitch_monitor, args, message):
     if len(args) != 2:
         return "Please provide 2 strings, twitch client ID & twitch client secret"
@@ -997,6 +1029,7 @@ nedry_command_list = [
     Command("plugins", cmd_plugins, True, CMD_PLUGINS_HELP),
     Command("plugson", cmd_plugson, True, CMD_PLUGSON_HELP),
     Command("plugsoff", cmd_plugsoff, True, CMD_PLUGSOFF_HELP),
+    Command("pluginfo", cmd_pluginfo, True, CMD_PLUGINFO_HELP),
     Command("twitchclientid", cmd_twitchclientid, True, CMD_TWITCHCLIENTID_HELP),
     Command("announcechannel", cmd_announcechannel, True, CMD_ANNOUNCECHANNEL_HELP),
 ]

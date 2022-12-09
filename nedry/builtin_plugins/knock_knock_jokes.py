@@ -175,7 +175,25 @@ class KnockKnockJokes(PluginModule):
     plugin_name = "knock_knock_jokes"
     plugin_version = "1.0.0"
     plugin_short_description = "Tell knock-knock jokes, and remember jokes told by others"
-    plugin_long_description = ""
+    plugin_long_description = """
+    Adds a '!joke' command, which causes the bot to tell a randomly selected
+    interactive knock-knock joke (interactive in that the bot waits for someone
+    to say 'who's there?' etc...).
+
+    There are a small number of hard-coded jokes
+    that the bot will pick from, however you can also tell jokes to the bot
+    (by mentioning the bot and saying some form of 'knock knock', e.g.
+    '@BotName Knock knock!', and the bot will remember jokes that it hasn't heard
+    before, adding them to the pool of jokes to be randomly selected the next time
+    someone asks for a joke.
+
+    Anyone can tell a joke to the bot, and it will respond, however only discord
+    user registered as 'joke tellers' can tell jokes that will be remembered by the bot.
+
+    Commands added:
+
+    !joke (see !help joke)
+    """
 
     def _on_mention(self, message, text_without_mention):
         ret = None

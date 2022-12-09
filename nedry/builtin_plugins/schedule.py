@@ -76,7 +76,7 @@ class Scheduler(object):
                     timedesc = event.event_data[2]
 
                     user = self._discord_bot.client.get_user(user_id)
-                    msg = "Hey %s, don't forget %s!\n" % (user.mention, text)
+                    msg = "Hey %s!\n```%s!```\n" % (user.mention, text)
                     msg += "(You asked me to remind you about this %s ago)" % timedesc
 
                     logger.debug("sending reminder '%s' to user %s" % (text, user.name))
@@ -157,6 +157,29 @@ class Scheduler(object):
 
         return event
 
+    def remove_events(self, events):
+        with self._lock:
+            for e in events:
+                if e not in self._active_events:
+                    raise ValueError()
+
+            if self._active_events:
+                # Other events are active, stop the thread before modifying the list
+                self._stop_event.set()
+                self._thread.join()
+
+            for e in events:
+                self._active_events.remove(e)
+
+        # (Re)Start thread
+        self._thread = threading.Thread(target=self._thread_task)
+        self._thread.daemon = True
+        self._thread.start()
+
+    def get_events_of_type(self, event_type):
+        with self._lock:
+            return [x for x in self._active_events if x.event_type == event_type]
+
 
 scheduler = Scheduler()
 
@@ -171,17 +194,17 @@ def _dump_reminders(user):
     Get description of all active reminders for given user
     """
     events = []
-    for e in scheduler.all_events():
-        if e.event_type == ScheduledEventType.DM_MESSAGE:
-            if e.event_data[1] == user.id:
-                events.append("!remindme %s in %s (%s until reminder)" %
-                              (e.event_data[0], e.event_data[2], e.time_remaining_string()))
+    for e in scheduler.get_events_of_type(ScheduledEventType.DM_MESSAGE):
+        if e.event_data[1] == user.id:
+            events.append("%d. !remindme %s in %s (%s until reminder)" %
+                          (len(events) + 1, e.event_data[0], e.event_data[2], e.time_remaining_string()))
 
     if not events:
         return "%s you have no scheduled reminders" % user.mention
 
     ret = "%s here are your scheduled reminders:\n" % user.mention
-    ret += "```%s```" % "\n".join(events)
+    ret += "```%s```\n" % "\n".join(events)
+    ret += "(Use the '!unremind' command to remove reminders)"
 
     return ret
 
@@ -190,20 +213,64 @@ def _dump_scheduled(user):
     Get description of all scheduled messages
     """
     events = []
-    for e in scheduler.all_events():
-        if e.event_type == ScheduledEventType.CHANNEL_MESSAGE:
-            events.append("!schedule %s %s in %s (%s until scheduled message)" %
-                          (e.event_data[1], e.event_data[0], e.event_data[2],
-                           e.time_remaining_string()))
+    for e in scheduler.get_events_of_type(ScheduledEventType.CHANNEL_MESSAGE):
+        events.append("%d. !schedule %s %s in %s (%s until scheduled message)" %
+                      (len(events) + 1, e.event_data[1], e.event_data[0], e.event_data[2],
+                       e.time_remaining_string()))
+
 
     if not events:
         return "%s you have no scheduled messages" % user.mention
 
     ret = "%s here are your scheduled messages:\n" % user.mention
-    ret += "```%s```" % "\n".join(events)
+    ret += "```%s```\n" % "\n".join(events)
+    ret += "(Use the '!unschedule' command to remove scheduled messages)"
 
     return ret
 
+lastreminder_by_user = {}
+lastsched_by_user = {}
+
+UNREMIND_HELPTEXT = """
+{0} [reminder_number] [reminder_number] ...
+{0} all
+{0} last
+
+Remove one or more reminders by number. [reminder_number] should be replaced with the
+number of the reminder you want to remove, as shown by the output of running the
+'!remindme' command with no arguments.
+
+Alternatively, instead of passing numbers, you can pass a single argument of "all"
+to remove all reminders at once, or "last" to remove the last reminder that you scheduled.
+
+Examples:
+
+@BotName !unremind last          # Remove last added reminder
+@BotName !unremind all           # Remove all reminders
+@BotName !unremind 2             # Remove reminder #2
+@BotName !unremind 5 6           # Remove reminders 5 and 6
+"""
+
+UNSCHEDULE_HELPTEXT = """
+{0} [message_number] [message_number] ...
+{0} all
+{0} last
+
+Remove one or more scheduled messages by number. [message_number] should be replaced
+with the number of the message you want to remove, as shown by the output of running the
+'!schedule' command with no arguments.
+
+Alternatively, instead of passing numbers, you can pass a single argument of "all"
+to remove all scheduled messages at once, or "last" to remove the most recently
+added scheduled message.
+
+Examples:
+
+@BotName !unschedule last          # Remove last added message
+@BotName !unschedule all           # Remove all messages
+@BotName !unschedule 2             # Remove message #2
+@BotName !unschedule 5 6           # Remove messages 5 and 6
+"""
 
 REMIND_HELPTEXT = """
 {0} [reminder_text] in [time_description]
@@ -286,6 +353,9 @@ def remind_command_handler(proc, config, twitch_monitor, args, message):
                                 message.author.id,
                                 timedesc)
 
+    # Save event for this user ID, for the "unremind last" command
+    lastreminder_by_user[message.author.id] = event
+
     return ("%s OK, I will remind you \"%s\" in %s!\n```(%s until reminder)```" %
             (message.author.mention, msg, timedesc, event.time_remaining_string()))
 
@@ -315,6 +385,13 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
     timedesc = split_fields[-1]
 
     seconds = _parse_time_string(timedesc)
+    if seconds is None:
+        return ("Invalid schedule, try saying something like:\n"
+                "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```")
+
+    if seconds < 60:
+        return "Sorry, '%s' is too short, it needs to be at least 1 minute" % timedesc
+
 
     channel = proc.bot.get_channel_by_name(channel_name)
     if not channel:
@@ -326,9 +403,138 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
                                 channel_name,
                                 timedesc)
 
+    # Save event for this user ID, for the "unschedule last" command
+    lastsched_by_user[message.author.id] = event
+
     return ("%s OK, I will send the following message:\n```%s```\n in channel \"%s\" in %s!\n"
             "```(%s until scheduled message)```" % (message.author.mention, msg, channel_name,
             timedesc, event.time_remaining_string()))
+
+
+def unremind_command_handler(proc, config, twitch_monitor, args, message):
+    """
+    Handler for !unremind command
+    """
+    if len(args) == 0:
+        return "Please provide some arguments, see '!help unremind'"
+
+    if args[0].lower() == "all":
+        all_events = scheduler.get_events_of_type(ScheduledEventType.DM_MESSAGE)
+        events_to_remove = []
+        for e in all_events:
+            if e.event_data[1] == message.author.id:
+                events_to_remove.append(e)
+
+        scheduler.remove_events(events_to_remove)
+        return "%s OK! removed all your reminders" % message.author.mention
+
+    elif args[0].lower() == "last":
+        if message.author.id not in lastreminder_by_user:
+            return "Sorry, I don't remember the last reminder you added"
+
+        removed = lastreminder_by_user[message.author.id]
+        scheduler.remove_events([removed])
+        del lastreminder_by_user[message.author.id]
+
+        return ("OK! removed this reminder:\n```!remindme %s in %s```" %
+                (removed.event_data[0], removed.event_data[2]))
+
+    all_events = []
+    for e in scheduler.get_events_of_type(ScheduledEventType.DM_MESSAGE):
+        if e.event_data[1] == message.author.id:
+            all_events.append(e)
+
+    if not all_events:
+        return "%s No reminders to remove" % message.author.mention
+
+    event_nums = []
+    for a in args:
+        try:
+            i = int(a)
+        except ValueError:
+            return "%s Invalid reminder number '%s'" % (a, message.author.mention)
+
+        event_nums.append(i)
+
+    events_to_remove = []
+    for n in event_nums:
+        if n < 1:
+            return "%s Invalid reminder number '%d'" % (n, message.author.mention)
+
+        if n > len(all_events):
+            return "%s Invalid reminder number '%d'" % (n, message.author.mention)
+
+        events_to_remove.append(all_events[n - 1])
+
+    try:
+        scheduler.remove_events(events_to_remove)
+    except ValueError:
+        return "%s Invalid event number provided" % message.author.mention
+
+    rm_desc = ["!remindme %s in %s" % (e.event_data[0], e.event_data[2]) for e in events_to_remove]
+    return "%s OK! removed the following reminders:\n```%s```" % (message.author.mention, '\n'.join(rm_desc))
+
+
+def unschedule_command_handler(proc, config, twitch_monitor, args, message):
+    """
+    Handler for !unschedule command
+    """
+    if len(args) == 0:
+        return "Please provide some arguments, see '!help unschedule'"
+
+    if args[0].lower() == "all":
+        events_to_remove = scheduler.get_events_of_type(ScheduledEventType.CHANNEL_MESSAGE)
+        scheduler.remove_events(events_to_remove)
+        return "%s OK! removed all scheduled messages" % message.author.mention
+
+    elif args[0].lower() == "last":
+        if message.author.id not in lastsched_by_user:
+            return "Sorry, I don't remember the last scheduled message you added"
+
+        removed = lastsched_by_user[message.author.id]
+        del lastsched_by_user[message.author.id]
+
+        try:
+            scheduler.remove_events([removed])
+        except ValueError:
+            return "The last message you scheduled has already been removed"
+
+        return ("OK! removed this scheduled message:\n```!schedule %s %s in %s```" %
+                (removed.event_data[1], removed.event_data[0], removed.event_data[2]))
+
+    all_events = []
+    for e in scheduler.get_events_of_type(ScheduledEventType.CHANNEL_MESSAGE):
+        all_events.append(e)
+
+    if not all_events:
+        return "%s No scheduled messages to remove" % message.author.mention
+
+    event_nums = []
+    for a in args:
+        try:
+            i = int(a)
+        except ValueError:
+            return "%s Invalid message number '%s'" % (a, message.author.mention)
+
+        event_nums.append(i)
+
+    events_to_remove = []
+    for n in event_nums:
+        if n < 1:
+            return "%s Invalid message number '%d'" % (n, message.author.mention)
+
+        if n > len(all_events):
+            return "%s Invalid message number '%d'" % (n, message.author.mention)
+
+        events_to_remove.append(all_events[n - 1])
+
+    try:
+        scheduler.remove_events(events_to_remove)
+    except ValueError:
+        return "%s Invalid message number provided" % message.author.mention
+
+    rm_desc = ["!schedule %s %s in %s" % (e.event_data[1], e.event_data[0], e.event_data[2]) for e in events_to_remove]
+    return "%s OK! removed the following scheduled messages:\n```%s```" % (message.author.mention, '\n'.join(rm_desc))
 
 
 class Schedule(PluginModule):
@@ -338,14 +544,32 @@ class Schedule(PluginModule):
     plugin_name = "schedule"
     plugin_version = "1.0.0"
     plugin_short_description = "Schedule discord messages"
-    plugin_long_description = "Schedule discord messages"
+    plugin_long_description = """
+    Adds multiple commands that allow;
+
+    - All discord users to create/manage reminders, which consist of the bot sending
+      the a DM with a specific message after a specified delay.
+
+    - Admin. discord users to create/manage scheduled channel messages, which consist
+      of the bot sending a specific message to a specific public channel after a
+      specified time delay.
+
+    Commands added:
+
+    !remindme (see !help remindme)
+    !unremind (see !help unremind)
+    !schedule (see !help schedule)
+    !unschedule (see !help unschedule)
+    """
 
     def open(self):
         """
         Enables plugin operation; subscribe to events and/or initialize things here
         """
-        self.discord_bot.add_command("schedule", schedule_command_handler, False, SCHEDULE_HELPTEXT)
+        self.discord_bot.add_command("schedule", schedule_command_handler, True, SCHEDULE_HELPTEXT)
+        self.discord_bot.add_command("unschedule", unschedule_command_handler, True, UNSCHEDULE_HELPTEXT)
         self.discord_bot.add_command("remindme", remind_command_handler, False, REMIND_HELPTEXT)
+        self.discord_bot.add_command("unremind", unremind_command_handler, False, UNREMIND_HELPTEXT)
         scheduler.set_discord_bot(self.discord_bot)
 
     def close(self):
@@ -354,4 +578,6 @@ class Schedule(PluginModule):
         """
         self.discord_bot.remove_command("schedule")
         self.discord_bot.remove_command("remindme")
+        self.discord_bot.remove_command("unremind")
+        self.discord_bot.remove_command("unschedule")
         scheduler.set_discord_bot(None)

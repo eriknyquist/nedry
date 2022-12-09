@@ -129,21 +129,31 @@ class DiscordBot(object):
         msgs = []
         code_marker_count = 0
         current_message = ""
+        inside_code_marker = False
 
         for line in message.split("\n"):
+            if current_message == "":
+                if inside_code_marker:
+                    current_message += "```"
+                    inside_code_marker = False
+
             if len(current_message) + len(line) > self.message_limit:
                 # This line would exceed message limit, time for a new message
                 inside_code_marker = (code_marker_count % 6) != 0
                 code_marker_count = 0
 
                 if inside_code_marker:
-                    current_message += '```'
+                    current_message += '\n```'
 
                 msgs.append(current_message)
-                current_message = '```' if inside_code_marker else ''
+                current_message = ""
                 continue
 
             code_marker_count += line.count('```')
+
+            if current_message == "```":
+                line = line.lstrip()
+
             current_message += line + "\n"
 
         if current_message:

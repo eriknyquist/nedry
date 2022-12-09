@@ -93,6 +93,9 @@ class PluginModuleManager(object):
 
         return [self._plugin_modules[n] for n in plugin_names if n in self._plugin_modules]
 
+    def get_plugins_by_name(self, names):
+        return self._plugins_by_name(names)
+
     def is_valid_plugin_name(self, name):
         return name.lower() in self._plugin_modules
 

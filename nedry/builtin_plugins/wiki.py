@@ -119,7 +119,16 @@ class Wikipedia(PluginModule):
     plugin_name = "wiki"
     plugin_version = "1.0.0"
     plugin_short_description = "Search wikipedia via discord messages"
-    plugin_long_description = "Search wikipedia via discord messages"
+    plugin_long_description = """
+    This plugin adds a 'wiki' command, allowing you to pass in a string containing search terms
+    as arguments, and the bot will perform a wikipedia search, and return a message to the
+    same channel in which the command was sent, containing a summary of the first article in
+    the search results. If no search terms are given, a random article is provided.
+
+    Commands added:
+
+    !wiki (see !help wiki)
+    """
 
     def open(self):
         """
