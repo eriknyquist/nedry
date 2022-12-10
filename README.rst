@@ -416,6 +416,7 @@ Command ``help``
 
    All discord users may use this command.
 
+
 Command ``quote``
 -----------------
 
@@ -431,6 +432,7 @@ Command ``quote``
    @BotName !quote
 
    All discord users may use this command.
+
 
 Command ``mock``
 ----------------
@@ -449,6 +451,7 @@ Command ``mock``
 
    All discord users may use this command.
 
+
 Command ``unmock``
 ------------------
 
@@ -465,6 +468,7 @@ Command ``unmock``
    @BotName !unmock @discord_user
 
    All discord users may use this command.
+
 
 Command ``apologise``
 ---------------------
@@ -483,6 +487,7 @@ Command ``apologise``
 
    All discord users may use this command.
 
+
 Command ``apologize``
 ---------------------
 
@@ -500,6 +505,7 @@ Command ``apologize``
 
    All discord users may use this command.
 
+
 Command ``listmocks``
 ---------------------
 
@@ -516,6 +522,7 @@ Command ``listmocks``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``mockson``
 -------------------
 
@@ -531,6 +538,7 @@ Command ``mockson``
    @BotName !mockson
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``mocksoff``
 --------------------
@@ -549,6 +557,7 @@ Command ``mocksoff``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``clearmocks``
 ----------------------
 
@@ -565,6 +574,7 @@ Command ``clearmocks``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``streamers``
 ---------------------
 
@@ -580,6 +590,7 @@ Command ``streamers``
    @BotName !streamers
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``addstreamers``
 ------------------------
@@ -598,6 +609,7 @@ Command ``addstreamers``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``removestreamers``
 ---------------------------
 
@@ -615,6 +627,7 @@ Command ``removestreamers``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``clearallstreamers``
 -----------------------------
 
@@ -630,6 +643,7 @@ Command ``clearallstreamers``
    @BotName !clearallstreamers
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``phrases``
 -------------------
@@ -647,6 +661,7 @@ Command ``phrases``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``testphrases``
 -----------------------
 
@@ -663,6 +678,7 @@ Command ``testphrases``
    @BotName !testphrases
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``addphrase``
 ---------------------
@@ -691,6 +707,7 @@ Command ``addphrase``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``removephrases``
 -------------------------
 
@@ -710,6 +727,7 @@ Command ``removephrases``
    @BotName !removephrases 3 4 5
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``nocompetition``
 -------------------------
@@ -733,6 +751,7 @@ Command ``nocompetition``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``cmdhistory``
 ----------------------
 
@@ -751,6 +770,7 @@ Command ``cmdhistory``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``say``
 ---------------
 
@@ -768,6 +788,7 @@ Command ``say``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``plugins``
 -------------------
 
@@ -783,6 +804,7 @@ Command ``plugins``
    @BotName !help wiki
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``plugson``
 -------------------
@@ -801,6 +823,7 @@ Command ``plugson``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
+
 Command ``plugsoff``
 --------------------
 
@@ -817,6 +840,24 @@ Command ``plugsoff``
    @BotName !pluginoff knock_knock_jokes other_plugin
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+
+Command ``pluginfo``
+--------------------
+
+::
+
+
+   pluginfo [plugin_name]
+
+   Query information about a loaded plugin.
+
+   Example:
+
+   @BotName !pluginfo knock_knock_jokes
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``twitchclientid``
 --------------------------
@@ -835,6 +876,7 @@ Command ``twitchclientid``
    @BotName !help twitchclientid XXXXXXXXXXXX YYYYYYYYYYYY
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
 
 Command ``announcechannel``
 ---------------------------
@@ -855,28 +897,14 @@ Command ``announcechannel``
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
-Command ``wiki``
-----------------
-
-::
-
-
-   Search the provided text using Wikipedia's public API, and return the summary text
-   (generally the first paragraph) of the first page in the search results. If no search
-   text is provided, then a random Wikipedia article will be selected instead.
-
-   Examples:
-
-   @Mr Stream !wiki python language   (Show summary of wiki page for Python programming language)
-   @Mr Stream !wiki                   (Show summary of a random wiki page)
-
-   All discord users may use this command.
 
 Command ``joke``
 ----------------
 
 ::
 
+
+   joke
 
    Tells an interactive knock-knock joke.
 
@@ -888,6 +916,147 @@ Command ``joke``
 
    Example:
 
-   @Mr Stream !joke
+   @BotName !joke
 
    All discord users may use this command.
+
+
+Command ``wiki``
+----------------
+
+::
+
+
+   wiki [search text]
+
+   Search the provided text using Wikipedia's public API, and return the summary text
+   (generally the first paragraph) of the first page in the search results. If no search
+   text is provided, then a random Wikipedia article will be selected instead.
+
+   Examples:
+
+   @BotName !wiki python language   (Show summary of wiki page for Python programming language)
+   @BotName !wiki                   (Show summary of a random wiki page)
+
+   All discord users may use this command.
+
+
+Command ``schedule``
+--------------------
+
+::
+
+
+   schedule [channel_name] [message_text] in [time_description]
+
+   Set up a message to be sent by the bot in a specific discord channel after a specific
+   time delay.
+
+   [channel_name] should be replaced with name of the discord channel in which you
+   want the message to be sent.
+
+   [message_text] should be replaced with whatever text you want to be sent in the discord message.
+
+   [time_description] should be replaced with a description of the desired delay
+   before the message is sent to the channel. This delay should be written in english,
+   and should use digits (e.g. "5") instead of words (e.g. "five") for number values.
+   For example: "1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+
+   Sending the command with no arguments returns the list of currently scheduled messages.
+
+   Examples:
+
+   @BotName !schedule                                       # Query currently scheduled messages
+   @BotName !schedule joke-channel haha! in 2 hours         # Schedule discord message to "joke-channel" in 2 hours
+   @BotName !schedule news-channel raining :( in 1h & 10m   # Schedule discord message to "news-channel" in 1 hour, 10 mins
+   @BotName !schedule chat-channel Hey Guys! in 2 days      # Schedule discord message to "chat-channel" in 2 days
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+
+Command ``unschedule``
+----------------------
+
+::
+
+
+   unschedule [message_number] [message_number] ...
+   unschedule all
+   unschedule last
+
+   Remove one or more scheduled messages by number. [message_number] should be replaced
+   with the number of the message you want to remove, as shown by the output of running the
+   '!schedule' command with no arguments.
+
+   Alternatively, instead of passing numbers, you can pass a single argument of "all"
+   to remove all scheduled messages at once, or "last" to remove the most recently
+   added scheduled message.
+
+   Examples:
+
+   @BotName !unschedule last          # Remove last added message
+   @BotName !unschedule all           # Remove all messages
+   @BotName !unschedule 2             # Remove message #2
+   @BotName !unschedule 5 6           # Remove messages 5 and 6
+
+   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+
+
+Command ``remindme``
+--------------------
+
+::
+
+
+   remindme [reminder_text] in [time_description]
+
+   Set up a reminder. After the specified time, the bot will send you a DM with whatever
+   text you provided for [reminder_text].
+
+   [reminder_text] should be replaced with whatever text you want in the reminder message,
+   e.g. the thing that you want to be reminded of.
+
+   [time_description] should be replaced with a description of the desired delay
+   before the reminder is delivered. This delay should be written in english, and should
+   use digits (e.g. "5") instead of words (e.g. "five") for number values. For example:
+   "1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+
+   Sending the command with no arguments returns the list of active reminders
+   for the user that sent the command.
+
+   Examples:
+
+   @BotName !remindme                                           # Query current reminders for me
+   @BotName !remindme To take out the trash... in 12 hours      # schedule reminder in 12 hours
+   @BotName !remindme about the test! in 2h18m                  # Schedule reminder in 2 hours and 18 minutes
+   @BotName !remindme to take a shower :D in 1 day and 5 mins   # Schedule reminder in 1 day and 5 minutes
+
+   All discord users may use this command.
+
+
+Command ``unremind``
+--------------------
+
+::
+
+
+   unremind [reminder_number] [reminder_number] ...
+   unremind all
+   unremind last
+
+   Remove one or more reminders by number. [reminder_number] should be replaced with the
+   number of the reminder you want to remove, as shown by the output of running the
+   '!remindme' command with no arguments.
+
+   Alternatively, instead of passing numbers, you can pass a single argument of "all"
+   to remove all reminders at once, or "last" to remove the last reminder that you scheduled.
+
+   Examples:
+
+   @BotName !unremind last          # Remove last added reminder
+   @BotName !unremind all           # Remove all reminders
+   @BotName !unremind 2             # Remove reminder #2
+   @BotName !unremind 5 6           # Remove reminders 5 and 6
+
+   All discord users may use this command.
+
