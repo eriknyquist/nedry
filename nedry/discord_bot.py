@@ -62,6 +62,11 @@ class DiscordBot(object):
         self._host_streaming = False
 
         @self.client.event
+        async def on_guild_unavailable(guild):
+            logger.info("disconnected from guild \"%s\"", guild.name)
+            self.guild = None
+
+        @self.client.event
         async def on_guild_available(guild):
             logger.info("connected to guild \"%s\"", guild.name)
 
@@ -233,7 +238,7 @@ class DiscordBot(object):
         pass
 
     def on_disconnect(self):
-        self.guild = None
+        pass
 
     def on_member_join(self, member):
         events.emit(EventType.NEW_DISCORD_MEMBER, member)
