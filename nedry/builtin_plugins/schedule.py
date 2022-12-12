@@ -324,7 +324,7 @@ Examples:
 """
 
 
-def remind_command_handler(proc, config, twitch_monitor, args, message):
+def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !remindme command
     """
@@ -335,14 +335,18 @@ def remind_command_handler(proc, config, twitch_monitor, args, message):
     split_fields = collapsed_spaces.split(' in ')
 
     if len(split_fields) < 2:
-        return "Invalid command format, try saying something like '!remindme to call my mother in 5 days and 6 hours"
+        return proc.usage_msg("Invalid command format, try saying something like "
+                              "'!remindme to call my mother in 5 days and 6 hours'",
+                              cmd_word)
 
     msg = ' '.join(split_fields[:-1])
     timedesc = split_fields[-1]
 
     seconds = _parse_time_string(timedesc)
     if seconds is None:
-        return "Invalid time format, try saying something like '!remindme to call my mother in 5 days and 6 hours"
+        return proc.usage_msg("Invalid time format, try saying something like:\n"
+                              "```!remindme to call my mother in 5 days and 6 hours```",
+                              cmd_word)
 
     if seconds < 60:
         return "Sorry, '%s' is too short, it needs to be at least 1 minute" % timedesc
@@ -360,7 +364,7 @@ def remind_command_handler(proc, config, twitch_monitor, args, message):
             (message.author.mention, msg, timedesc, event.time_remaining_string()))
 
 
-def schedule_command_handler(proc, config, twitch_monitor, args, message):
+def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !schedule command
     """
@@ -368,8 +372,9 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
         return _dump_scheduled(message.author)
 
     if len(args) < 4:
-        return ("Invalid schedule, try saying something like:\n"
-                "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```")
+        return proc.usage_msg("Invalid schedule, try saying something like:\n"
+                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
+                              cmd_word)
 
     channel_name = args[0].strip()
 
@@ -377,8 +382,9 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
     split_fields = collapsed_spaces.split(' in ')
 
     if len(split_fields) < 2:
-        return ("Invalid schedule, try saying something like:\n"
-                "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```")
+        return proc.usage_msg("Invalid schedule, try saying something like:\n"
+                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
+                              cmd_word)
 
 
     msg = ' '.join(split_fields[:-1])
@@ -386,8 +392,9 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
 
     seconds = _parse_time_string(timedesc)
     if seconds is None:
-        return ("Invalid schedule, try saying something like:\n"
-                "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```")
+        return proc.usage_msg("Invalid schedule, try saying something like:\n"
+                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
+                              cmd_word)
 
     if seconds < 60:
         return "Sorry, '%s' is too short, it needs to be at least 1 minute" % timedesc
@@ -411,12 +418,12 @@ def schedule_command_handler(proc, config, twitch_monitor, args, message):
             timedesc, event.time_remaining_string()))
 
 
-def unremind_command_handler(proc, config, twitch_monitor, args, message):
+def unremind_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !unremind command
     """
     if len(args) == 0:
-        return "Please provide some arguments, see '!help unremind'"
+        return proc.usage_msg("Please provide some arguments.", cmd_word)
 
     if args[0].lower() == "all":
         all_events = scheduler.get_events_of_type(ScheduledEventType.DM_MESSAGE)
@@ -475,12 +482,12 @@ def unremind_command_handler(proc, config, twitch_monitor, args, message):
     return "%s OK! removed the following reminders:\n```%s```" % (message.author.mention, '\n'.join(rm_desc))
 
 
-def unschedule_command_handler(proc, config, twitch_monitor, args, message):
+def unschedule_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !unschedule command
     """
     if len(args) == 0:
-        return "Please provide some arguments, see '!help unschedule'"
+        return proc.usage_msg("Please provide some arguments.", cmd_word)
 
     if args[0].lower() == "all":
         events_to_remove = scheduler.get_events_of_type(ScheduledEventType.CHANNEL_MESSAGE)

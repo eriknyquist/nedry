@@ -157,7 +157,7 @@ Example:
 channel_data = {}
 
 
-def joke_command_handler(proc, config, twitch_monitor, args, message):
+def joke_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !joke command
     """

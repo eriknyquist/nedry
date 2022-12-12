@@ -45,9 +45,9 @@ async def _mock_last_message(bot, channel, user_id):
             break
 
 
-def mock_command_handler(proc, config, twitch_monitor, args, message):
+def mock_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 0:
-        return "'mock' requires more information, please mention the user you want to mock"
+        return proc.usage_msg("Please mention the user you want to mock.", cmd_word)
 
     user_id = utils.parse_mention(args[0].strip())
     if user_id is None:
@@ -56,9 +56,9 @@ def mock_command_handler(proc, config, twitch_monitor, args, message):
     asyncio.run_coroutine_threadsafe(_mock_last_message(proc.bot, message.channel, user_id), main_event_loop)
 
 
-def apologize_command_handler(proc, config, twitch_monitor, args, message):
+def apologize_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 0:
-        return "'apologise' requires more information, please mention the user you want to apologise to"
+        return proc.usage_msg("Please mention the user you want to apologise to.", cmd_word)
 
     user_id = utils.parse_mention(args[0].strip())
     if user_id is None:
