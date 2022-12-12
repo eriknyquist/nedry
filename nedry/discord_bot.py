@@ -269,7 +269,7 @@ class DiscordBot(object):
             # Ignore mentions of ourself from ourself
             return None
 
-        msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '').strip()
+        msg = message.content.replace(self.mention(), '', 1).strip()
         events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
 
         resp = self.cmdprocessor.process_command(message.channel, message.author, msg)

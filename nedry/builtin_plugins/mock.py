@@ -100,4 +100,4 @@ class Mocking(PluginModule):
         """
         self.discord_bot.remove_command("mock")
         self.discord_bot.remove_command("apologize")
-        self.discord_bot.remove_command("apologize")
+        self.discord_bot.remove_command("apologise")
