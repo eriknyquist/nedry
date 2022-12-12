@@ -110,39 +110,6 @@ Examples:
 @BotName !{0} 5   (show last 5 entries)
 """
 
-CMD_MOCK_HELP = """
-{0} [mention]
-
-Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
-with a mention of the discord user you want to mock.
-
-Example:
-
-@BotName !mock @discord_user
-"""
-
-CMD_UNMOCK_HELP = """
-{0} [mention]
-
-Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
-you want to stop mocking.
-
-Example:
-
-@BotName !unmock @discord_user
-"""
-
-CMD_APOLOGIZE_HELP = """
-{0} [mention]
-
-Apologize to a specific user for having mocked them. Replace [mention]
-with a mention of the discord user you want to apologize to.
-
-Example:
-
-@BotName !apologize @discord_user
-"""
-
 CMD_QUOTE_HELP = """
 {0}
 
@@ -278,47 +245,6 @@ Example:
 @BotName !say Good morning
 """
 
-CMD_MOCKSON_HELP = """
-{0}
-
-Re-enable mocking after disabling
-
-Example:
-
-@BotName !mockson
-"""
-
-CMD_MOCKSOFF_HELP = """
-{0}
-
-Disable all mocking until 'mockson' command is sent. Current list of mocked
-users will be remembered.
-
-Example:
-
-@BotName !mocksoff
-"""
-
-CMD_CLEARMOCKS_HELP = """
-{0}
-
-Clear all users that are currently being mocked
-
-Example:
-
-@BotName !clearmocks
-"""
-
-CMD_MOCKLIST_HELP = """
-{0}
-
-List the name & discord IDs of all users currently being mocked
-
-Example:
-
-@BotName !listmocks
-"""
-
 
 class Command(object):
     """
@@ -385,8 +311,6 @@ class CommandProcessor(object):
         self.config = config
         self.bot = bot
         self.cmds = {x.word: x for x in command_list}
-        self.last_msg_by_user = {}
-        self.mocking_users = []
         self.command_log_buf = []
         self.mocking_enabled = True
         self.log_filename = None
@@ -485,11 +409,6 @@ class CommandProcessor(object):
         """
         author = message.author
         text = message.content
-
-        self.last_msg_by_user[author.id] = text
-
-        if self.mocking_enabled and (author.id in self.mocking_users):
-            return utils.mockify_text(text)
 
         return None
 
@@ -771,91 +690,6 @@ def cmd_removephrases(proc, config, twitch_monitor, args, message):
 
     return "OK! Removed the following phrases:\n```%s```" % '\n'.join(phrases_to_remove)
 
-def cmd_mock(proc, config, twitch_monitor, args, message):
-    if len(args) == 0:
-        return "'mock' requires more information, please mention the user you want to mock"
-
-    user_id = utils.parse_mention(args[0].strip())
-    if user_id is None:
-        return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
-
-    if user_id not in proc.mocking_users:
-        proc.mocking_users.append(user_id)
-
-    if proc.mocking_enabled:
-        if user_id in proc.last_msg_by_user:
-            return utils.mockify_text(proc.last_msg_by_user[user_id])
-    else:
-        return "Mocking has been disabled by an admin user, but I have remembered your request"
-
-def cmd_mockson(proc, config, twitch_monitor, args, message):
-    if proc.mocking_enabled:
-        return "Mocking is already enabled"
-
-    proc.mocking_enabled = True
-    return "OK, mocking is enabled now!"
-
-def cmd_mocksoff(proc, config, twitch_monitor, args, message):
-    if not proc.mocking_enabled:
-        return "Mocking is already disabled"
-
-    proc.mocking_enabled = False
-    return "OK, mocking is disabled now!"
-
-def cmd_clearmocks(proc, config, twitch_monitor, args, message):
-    proc.mocking_users = []
-    return "OK, I have forgotten about everyone I was supposed to mock!"
-
-def cmd_listmocks(proc, config, twitch_monitor, args, message):
-    names = []
-
-    for user_id in proc.mocking_users:
-        user_desc = "Unknown user"
-
-        try:
-            user = proc.bot.client.get_user(user_id)
-        except:
-            pass
-
-        if user is not None:
-            user_desc = user.name
-
-        names.append('%s (%d)' % (user_desc, user_id))
-
-    if not names:
-        return "No users are being mocked right now."
-
-    ret = "Here are the users that I am currently mocking:\n"
-    ret += "```\n%s\n```" % '\n'.join(names)
-
-    if not proc.mocking_enabled:
-        ret += "\n(mocking not currently enabled)"
-
-    return ret
-
-def cmd_unmock(proc, config, twitch_monitor, args, message):
-    if len(args) == 0:
-        return "'unmock' requires more information, please mention the user you want to unmock"
-
-    user_id = utils.parse_mention(args[0].strip())
-    if user_id is None:
-        return "Please mention the user you wish to unmock (e.g. '!unmock @eknyquist)"
-
-    if user_id in proc.mocking_users:
-        proc.mocking_users.remove(user_id)
-        return "OK, I will leave %s alone now." % args[0].strip()
-
-def cmd_apologize(proc, config, twitch_monitor, args, message):
-    if len(args) == 0:
-        return "'apologise' requires more information, please mention the user you want to apologise to"
-
-    user_id = utils.parse_mention(args[0].strip())
-    if user_id is None:
-        return "Please mention the user you wish to apologise to (e.g. '!apologise @eknyquist)"
-
-    return ("%s, I am truly, deeply sorry for mocking you just now. "
-            "I'm only a robot, you see. I have no free will." % args[0].strip())
-
 def cmd_quote(proc, config, twitch_monitor, args, message):
     text, author = quotes.get_donk_quote()
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
@@ -1006,16 +840,8 @@ nedry_command_list = [
     # Commands available to everyone
     Command("help", cmd_help, False, CMD_HELP_HELP),
     Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
-    Command("mock", cmd_mock, False, CMD_MOCK_HELP),
-    Command("unmock", cmd_unmock, False, CMD_UNMOCK_HELP),
-    Command("apologise", cmd_apologize, False, CMD_APOLOGIZE_HELP),
-    Command("apologize", cmd_apologize, False, CMD_APOLOGIZE_HELP),
 
     # Commands only available to admin users
-    Command("listmocks", cmd_listmocks, True, CMD_MOCKLIST_HELP),
-    Command("mockson", cmd_mockson, True, CMD_MOCKSON_HELP),
-    Command("mocksoff", cmd_mocksoff, True, CMD_MOCKSOFF_HELP),
-    Command("clearmocks", cmd_clearmocks, True, CMD_CLEARMOCKS_HELP),
     Command("streamers", cmd_streamers, True, CMD_STREAMERS_HELP),
     Command("addstreamers", cmd_addstreamers, True, CMD_ADDSTREAMERS_HELP),
     Command("removestreamers", cmd_removestreamers, True, CMD_REMOVESTREAMERS_HELP),

@@ -434,147 +434,6 @@ Command ``quote``
    All discord users may use this command.
 
 
-Command ``mock``
-----------------
-
-::
-
-
-   mock [mention]
-
-   Repeat everything said by a specific user in a "mocking" tone. Replace [mention]
-   with a mention of the discord user you want to mock.
-
-   Example:
-
-   @BotName !mock @discord_user
-
-   All discord users may use this command.
-
-
-Command ``unmock``
-------------------
-
-::
-
-
-   unmock [mention]
-
-   Stop mocking the mentioned user. Replace [mention] with a mention of the discord user
-   you want to stop mocking.
-
-   Example:
-
-   @BotName !unmock @discord_user
-
-   All discord users may use this command.
-
-
-Command ``apologise``
----------------------
-
-::
-
-
-   apologise [mention]
-
-   Apologize to a specific user for having mocked them. Replace [mention]
-   with a mention of the discord user you want to apologize to.
-
-   Example:
-
-   @BotName !apologize @discord_user
-
-   All discord users may use this command.
-
-
-Command ``apologize``
----------------------
-
-::
-
-
-   apologize [mention]
-
-   Apologize to a specific user for having mocked them. Replace [mention]
-   with a mention of the discord user you want to apologize to.
-
-   Example:
-
-   @BotName !apologize @discord_user
-
-   All discord users may use this command.
-
-
-Command ``listmocks``
----------------------
-
-::
-
-
-   listmocks
-
-   List the name & discord IDs of all users currently being mocked
-
-   Example:
-
-   @BotName !listmocks
-
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
-
-
-Command ``mockson``
--------------------
-
-::
-
-
-   mockson
-
-   Re-enable mocking after disabling
-
-   Example:
-
-   @BotName !mockson
-
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
-
-
-Command ``mocksoff``
---------------------
-
-::
-
-
-   mocksoff
-
-   Disable all mocking until 'mockson' command is sent. Current list of mocked
-   users will be remembered.
-
-   Example:
-
-   @BotName !mocksoff
-
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
-
-
-Command ``clearmocks``
-----------------------
-
-::
-
-
-   clearmocks
-
-   Clear all users that are currently being mocked
-
-   Example:
-
-   @BotName !clearmocks
-
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
-
-
 Command ``streamers``
 ---------------------
 
@@ -937,6 +796,60 @@ Command ``wiki``
 
    @BotName !wiki python language   (Show summary of wiki page for Python programming language)
    @BotName !wiki                   (Show summary of a random wiki page)
+
+   All discord users may use this command.
+
+
+Command ``mock``
+----------------
+
+::
+
+
+   mock [mention]
+
+   Repeat the last thing said by a specific user in a "mocking" tone. Replace [mention]
+   with a mention of the discord user you want to mock.
+
+   Example:
+
+   @BotName !mock @discord_user
+
+   All discord users may use this command.
+
+
+Command ``apologize``
+---------------------
+
+::
+
+
+   apologize [mention]
+
+   Apologize to a specific user for having mocked them. Replace [mention]
+   with a mention of the discord user you want to apologize to.
+
+   Example:
+
+   @BotName !apologize @discord_user
+
+   All discord users may use this command.
+
+
+Command ``apologise``
+---------------------
+
+::
+
+
+   apologise [mention]
+
+   Apologize to a specific user for having mocked them. Replace [mention]
+   with a mention of the discord user you want to apologize to.
+
+   Example:
+
+   @BotName !apologize @discord_user
 
    All discord users may use this command.
 

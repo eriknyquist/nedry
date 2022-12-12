@@ -1,6 +1,6 @@
 # Implements a DiscordBot class that provides a interface for interacting
 # with discord's bot API
-
+import queue
 import os
 import discord
 import asyncio
@@ -234,6 +234,17 @@ class DiscordBot(object):
         for message in messages:
             asyncio.run_coroutine_threadsafe(self._send_dm_async(member, message), main_event_loop)
 
+    def message_history(self, channel, limit=20):
+        async def _get_messages(chan, lim):
+            return await chan.history(limit=lim).flatten()
+
+        fut = asyncio.run_coroutine_threadsafe(_get_messages(channel, limit), main_event_loop)
+        async def _await_fut():
+            await fut
+
+        asyncio.run_coroutine_threadsafe(_await_fut(), main_event_loop)
+        return fut.result(1)
+
     def on_connect(self):
         pass
 
@@ -254,6 +265,10 @@ class DiscordBot(object):
         return None
 
     def on_mention(self, message):
+        if message.author.id == self.client.user.id:
+            # Ignore mentions of ourself from ourself
+            return None
+
         msg = message.content.replace(self.mention(), '').replace(self.nickmention(), '').strip()
         events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
 
