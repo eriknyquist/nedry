@@ -39,7 +39,8 @@ Example:
 
 async def _mock_last_message(bot, channel, user_id):
     async for message in channel.history(limit=100):
-        if message.author.id == user_id:
+        content = message.content.strip()
+        if (message.author.id == user_id) and not content.startswith(bot.mention()):
             bot.send_message(channel, utils.mockify_text(message.content))
             break
 
