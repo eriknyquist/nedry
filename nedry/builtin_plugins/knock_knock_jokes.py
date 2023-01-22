@@ -207,7 +207,7 @@ class KnockKnockJokes(PluginModule):
         if joke_in_progress is not None:
             ret = joke_in_progress.parse(text_without_mention)
             if joke_in_progress.complete:
-                channel_data[chanid].joke_in_progress = None
+                channel_data[chanid] = None
         else:
             cleaned = ''.join(text_without_mention.split()).lower()
             if cleaned.startswith('knockknock'):
