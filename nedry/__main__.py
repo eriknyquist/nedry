@@ -99,6 +99,7 @@ def main():
 
     logger.info("Stopping")
     bot.stop()
+    config.stop()
 
 if __name__ == "__main__":
     main()

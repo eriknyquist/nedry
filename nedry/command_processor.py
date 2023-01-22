@@ -31,6 +31,24 @@ Example:
 @BotName !help wiki
 """
 
+CMD_TIMEZONE_HELP = """
+{0} [timezone_name]
+
+Set the timezone for the author of the discord message, allowing this
+discord user to provide/see dates and times in their local timezone.
+
+[timezone_name] should be replaced with the name of a timezeone from the IANA
+time zone database, or some substring, e.g. "london" or "los angeles".
+
+Sending this command with no arguments will query the timezone currently
+assigned to the author of the discord message.
+
+Example:
+
+@BotName !timezone           # Query timezone setting for this discord user
+@BotName !timezone london    # Set timezone for this discord user to "Europe/London"
+"""
+
 CMD_PLUGINFO_HELP = """
 {0} [plugin_name]
 
@@ -556,10 +574,6 @@ def cmd_addstreamers(cmd_word, args, message, proc, config, twitch_monitor):
     if not names_to_add:
         return "Streamer(s) already added"
 
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
-
     try:
         twitch_monitor.add_usernames(names_to_add)
     except InvalidTwitchUser as e:
@@ -577,10 +591,6 @@ def cmd_addstreamers(cmd_word, args, message, proc, config, twitch_monitor):
 def cmd_removestreamers(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) < 1:
         return proc.usage_msg("Please provide the name(s) of the streamer(s) you want to remove.", cmd_word)
-
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
 
     twitch_monitor.remove_usernames(args)
 
@@ -617,10 +627,6 @@ def cmd_nocompetition(cmd_word, args, message, proc, config, twitch_monitor):
     val = args[0].lower()
     if val not in ["true", "false"]:
         return "Invalid value '%s': please use 'true' or 'false'" % val
-
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
 
     val = True if val == "true" else False
 
@@ -661,10 +667,6 @@ def cmd_addphrase(cmd_word, args, message, proc, config, twitch_monitor):
     if phrase in config.config.stream_start_messages:
         return "This phrase already exists"
 
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
-
     config.config.stream_start_messages.append(phrase)
     config.save_to_file()
 
@@ -692,10 +694,6 @@ def cmd_removephrases(cmd_word, args, message, proc, config, twitch_monitor):
                                   cmd_word)
 
         phrases_to_remove.append(config.config.stream_start_messages[num - 1])
-
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
 
     for p in phrases_to_remove:
         config.config.stream_start_messages.remove(p)
@@ -754,10 +752,6 @@ def cmd_plugson(cmd_word, args, message, proc, config, twitch_monitor):
             return proc.usage_msg("%s is not a valid plugin name" % n,
                                   cmd_word)
 
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
-
     proc.bot.plugin_manager.enable_plugins(plugin_names=args)
 
     enabled_plugins = [x.plugin_name.lower() for x in proc.bot.plugin_manager.enabled_plugins()]
@@ -778,10 +772,6 @@ def cmd_plugsoff(cmd_word, args, message, proc, config, twitch_monitor):
         if not proc.bot.plugin_manager.is_valid_plugin_name(n):
             return proc.usage_msg("%s is not a valid plugin name" % n,
                                   cmd_word)
-
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
 
     proc.bot.plugin_manager.disable_plugins(plugin_names=args)
 
@@ -825,10 +815,6 @@ def cmd_twitchclientid(cmd_word, args, message, proc, config, twitch_monitor):
     new_client_id = args[0].strip()
     new_client_secret = args[1].strip()
 
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
-
     if not twitch_monitor.reconnect(new_client_id, new_client_secret):
         return "Unable to connect to twitch using that client ID/secret, are you sure they're right?"
 
@@ -842,10 +828,6 @@ def cmd_announcechannel(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 0:
         return "Current stream announcements channel is ```%s```" % config.config.discord_channel_name
 
-    if not config.write_allowed():
-        return ("Configuration was already changed in the last %d seconds, wait a bit and try again" %
-                config.config.config_write_delay_seconds)
-
     channel_name = args[0].strip()
     if not proc.bot.change_channel(channel_name):
         return ("Couldn't find a discord channel called '%s' in '%s', "
@@ -856,11 +838,34 @@ def cmd_announcechannel(cmd_word, args, message, proc, config, twitch_monitor):
 
     return "OK! stream announcements will now be sent to the '%s' channel" % channel_name
 
+def cmd_timezone(cmd_word, args, message, proc, config, twitch_monitor):
+    if len(args) == 0:
+        if str(message.author.id) not in config.config.timezones:
+            return f"{message.author.mention} no timezone currently assigned for you"
+
+        tz_name = config.config.timezones[str(message.author.id)]
+        return f"{message.author.mention} your timezone is:\n```{tz_name}```"
+
+    tz_name = ' '.join([x.strip().lower().replace('_', ' ').replace('/', ' ') for x in args])
+    logger.info(tz_name)
+    tz_obj = utils.find_timezone_by_name(tz_name)
+    if tz_obj is None:
+        return f"{message.author.mention} Unable to find a timezone matching '{' '.join(args)}'"
+
+    try:
+        del config.config.timezones[str(message.author.id)]
+    except KeyError:
+        pass
+
+    config.config.timezones[str(message.author.id)] = tz_obj.key
+    config.save_to_file()
+    return f"{message.author.mention} OK, your timezone is set to:\n```{tz_obj.key}```"
 
 nedry_command_list = [
     # Commands available to everyone
     Command("help", cmd_help, False, CMD_HELP_HELP),
     Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
+    Command("timezone", cmd_timezone, False, CMD_TIMEZONE_HELP),
 
     # Commands only available to admin users
     Command("streamers", cmd_streamers, True, CMD_STREAMERS_HELP),

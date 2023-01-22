@@ -1,4 +1,7 @@
 import datetime
+import zoneinfo
+
+tz_names = zoneinfo.available_timezones()
 
 FMT_TOK_STREAMER_NAME = "streamer_name"
 FMT_TOK_STREAM_URL = "stream_url"
@@ -23,6 +26,22 @@ format_args = {
     FMT_TOK_YEAR: None,
     FMT_TOK_BOT_NAME: None
 }
+
+def find_timezone_by_name(s):
+    lower = s.lower()
+    tz_name = None
+
+    for n in tz_names:
+        cleaned = n.lower().replace('_', ' ').replace('/', ' ')
+        if lower in cleaned:
+            tz_name = n
+            break
+
+    if tz_name is None:
+        # Couldn't find a timezone that matches this name
+        return None
+
+    return zoneinfo.ZoneInfo(tz_name)
 
 def clean_outer_quotes(text):
     text = text.strip()

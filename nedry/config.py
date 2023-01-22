@@ -4,14 +4,15 @@
 import json
 import time
 import logging
+import threading
 
 from versionedobj import VersionedObject, Serializer, migration
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 class BotConfig(VersionedObject):
-    version = "1.4"
+    version = "1.5"
     twitch_client_id = ""
     twitch_client_secret = ""
     discord_bot_api_token = ""
@@ -32,6 +33,7 @@ class BotConfig(VersionedObject):
     config_write_delay_seconds = 15
     command_log_file = None
     jokes = []
+    timezones = {}
 
 @migration(BotConfig, None, "1.0")
 def migrate_none_to_10(attrs):
@@ -58,26 +60,62 @@ def migrate_none_13_to_14(attrs):
     attrs["enabled_plugins"] = []
     return attrs
 
+@migration(BotConfig, "1.4", "1.5")
+def migrate_none_14_to_15(attrs):
+    attrs["timezones"] = {}
+    return attrs
+
 
 class BotConfigManager(object):
+    SAVE_INTERVAL_SECS = 300
+
     def __init__(self, filename):
         self.filename = filename
         self.config = BotConfig()
         self.serializer = Serializer(self.config)
-        self.last_write_time = 0
+        self.stop_event = threading.Event()
+        self.save_requested = threading.Event()
 
-    def write_allowed(self):
-        return (time.time() - self.last_write_time) >= float(self.config.config_write_delay_seconds)
-   
+        self.save_thread = threading.Thread(target=self._save_thread_task)
+        self.save_thread.daemon = True
+        self.save_thread.start()
+
     def load_from_file(self, filename=None):
         if filename is None:
             filename = self.filename
 
         return self.serializer.from_file(filename)
 
-    def save_to_file(self, filename=None):
-        if filename is None:
-            filename = self.filename
+    def save_to_file(self):
+        self.save_requested.set()
+        logger.debug("flush to config file requested")
 
-        self.serializer.to_file(filename, indent=4)
-        self.last_write_time = time.time()
+    def _check_flush_to_file(self):
+        # If save was requested, flush current config data to file
+        if self.save_requested.is_set():
+            self.serializer.to_file(self.filename, indent=4)
+            self.save_requested.clear()
+            logger.debug(f"flushed new config to {self.filename}")
+        else:
+            logger.debug("No config changes to flush")
+
+    def stop(self):
+        self.stop_event.set()
+        self.save_thread.join()
+        self._check_flush_to_file()
+
+    def _save_thread_task(self):
+        logger.debug("started config file save thread")
+        last_save_time = time.time()
+
+        while True:
+            # Wait until it's time to check for a requested save
+            while (time.time() - last_save_time) < self.SAVE_INTERVAL_SECS:
+                time.sleep(1.0)
+
+                if self.stop_event.is_set():
+                    self.stop_event.clear()
+                    return
+
+            last_save_time = time.time()
+            self._check_flush_to_file()
