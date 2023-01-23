@@ -38,7 +38,7 @@ for cmd in bot.cmdprocessor.cmds.values():
     out_lines.append('\n::\n\n   ' + indented)
 
     if cmd.admin_only:
-        out_lines.append("   Only discord users registered in 'admin_users' in the bot config. file may use this command.\n")
+        out_lines.append("   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.\n")
     else:
         out_lines.append("   All discord users may use this command.\n")
 
