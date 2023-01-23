@@ -67,7 +67,7 @@ def migrate_none_14_to_15(attrs):
 
 
 class BotConfigManager(object):
-    SAVE_INTERVAL_SECS = 300
+    SAVE_INTERVAL_SECS = 3600 # 1 hour
 
     def __init__(self, filename):
         self.filename = filename
