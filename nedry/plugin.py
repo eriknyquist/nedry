@@ -117,7 +117,7 @@ class PluginModuleManager(object):
         """
         Call close method on multiple specific plugins by name
 
-        :param plugin_names: names of plugins to close. If unset, all plugins will be opened.
+        :param plugin_names: names of plugins to close. If unset, all plugins will be closed.
         """
         for plugin in self._plugins_by_name(plugin_names):
             if not plugin.enabled:
@@ -152,3 +152,15 @@ class PluginModuleManager(object):
                 ret.append(self._plugin_modules[i])
 
         return ret
+
+    def stop(self):
+        """
+        Disable/close all plugins and stop plugin manager
+        """
+        logger.debug("Stopping")
+        # Disable all enabled plugins
+        for n in self._plugin_modules:
+            plugin = self._plugin_modules[n]
+            if plugin.enabled:
+                plugin.close()
+                plugin.enabled = False

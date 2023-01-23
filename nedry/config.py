@@ -9,10 +9,10 @@ import threading
 from versionedobj import VersionedObject, Serializer, migration
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 class BotConfig(VersionedObject):
-    version = "1.5"
+    version = "1.6"
     twitch_client_id = ""
     twitch_client_secret = ""
     discord_bot_api_token = ""
@@ -30,7 +30,6 @@ class BotConfig(VersionedObject):
     startup_message = None
     discord_admin_users = []
     discord_joke_tellers = []
-    config_write_delay_seconds = 15
     command_log_file = None
     jokes = []
     timezones = {}
@@ -63,6 +62,11 @@ def migrate_none_13_to_14(attrs):
 @migration(BotConfig, "1.4", "1.5")
 def migrate_none_14_to_15(attrs):
     attrs["timezones"] = {}
+    return attrs
+
+@migration(BotConfig, "1.5", "1.6")
+def migrate_none_15_to_16(attrs):
+    del attrs["config_write_delay_seconds"]
     return attrs
 
 
@@ -100,6 +104,7 @@ class BotConfigManager(object):
             logger.debug("No config changes to flush")
 
     def stop(self):
+        logger.debug("Stopping")
         self.stop_event.set()
         self.save_thread.join()
         self._check_flush_to_file()

@@ -367,7 +367,7 @@ class CommandProcessor(object):
             del self.cmds[cmd_word]
 
     def close(self):
-        logger.info("Stopping")
+        logger.debug("Stopping")
         if self.log_filename is not None:
             self._flush_command_log_buf()
 

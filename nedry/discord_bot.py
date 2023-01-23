@@ -213,7 +213,7 @@ class DiscordBot(object):
         self.client.run(self.token)
 
     def stop(self):
-        logger.info("Stopping")
+        logger.debug("Stopping")
         asyncio.run(self.client.close())
         self.cmdprocessor.close()
 

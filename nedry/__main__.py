@@ -98,8 +98,9 @@ def main():
     bot.run()
 
     logger.info("Stopping")
-    bot.stop()
-    config.stop()
+    bot.stop()              # Shut down discord client
+    plugin_manager.stop()   # Shut down all plugins
+    config.stop()           # Shut down config file manager
 
 if __name__ == "__main__":
     main()

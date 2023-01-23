@@ -9,7 +9,7 @@ import zoneinfo
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 DATETIME_FMT = [
     ('%d/%m/%Y %H:%M', 'DD/MM/YYYY HH:MM'),
