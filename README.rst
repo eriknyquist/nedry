@@ -1,6 +1,6 @@
 .. raw:: html
 
-   <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
+    <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
 Nedry discord bot 2.2.0
 =======================
@@ -347,7 +347,7 @@ with their expected arguments and a brief description:
      - (message)
 
        "message" is the discord.py message object (see
-       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`_)
+       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`__)
      - Emitted whenever any discord message is received, either in a public channel
        which the bot has access to, or in a DM with the bot.
 
@@ -355,7 +355,7 @@ with their expected arguments and a brief description:
      - (message, text_without_mention)
 
        "message" is the discord.py message object (see
-       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`_).
+       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`__).
        "text_without_mention" is the message text with the bot mention stripped out.
      - Emitted whenever any discord message that starts with a mention of the bots
        discord name is received, either in a public channel which the bot has access
@@ -365,7 +365,7 @@ with their expected arguments and a brief description:
      - (member)
 
        "member" is the discord.py User object of the member who joined
-       (see `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.User>`_).
+       (see `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.User>`__).
      - Emitted whenever a new user joins the discord server.
 
    * - DISCORD_CONNECTED
