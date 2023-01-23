@@ -1,0 +1,11 @@
+[Unit]
+Description=Nedry Discord Bot
+
+[Service]
+Type=simple
+User=ubuntu
+ExecStart=/usr/bin/python3 -m nedry /home/ubuntu/nedry_config.json
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
