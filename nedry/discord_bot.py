@@ -8,7 +8,7 @@ import logging
 import random
 import threading
 
-from nedry.command_processor import CommandProcessor, nedry_command_list
+from nedry.command_processor import CommandProcessor, nedry_command_list, COMMAND_PREFIX
 from nedry.event_types import EventType
 from nedry import events, utils
 
@@ -270,7 +270,10 @@ class DiscordBot(object):
             return None
 
         msg = message.content.replace(self.mention(), '', 1).strip()
-        events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
+
+        if not msg.strip().startswith(COMMAND_PREFIX):
+            # Only emit mention event if message is not a command
+            events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
 
         resp = self.cmdprocessor.process_command(message.channel, message.author, msg)
 

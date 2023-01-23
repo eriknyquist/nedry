@@ -139,3 +139,13 @@ def truncate_text(text, size=80):
         text = text[:size - 4] + ' ...'
 
     return text
+
+def list_to_english(words):
+    if not words:
+        return ""
+    elif len(words) == 1:
+        return words[0]
+    elif len(words) == 2:
+        return "%s and %s" % (words[0], words[1])
+    else:
+        return ", ".join(words[:-1]) + " and " + words[-1]

@@ -478,17 +478,6 @@ class CommandProcessor(object):
         return ret
 
 
-def _list_to_english(words):
-    if not words:
-        return ""
-    elif len(words) == 1:
-        return words[0]
-    elif len(words) == 2:
-        return "%s and %s" % (words[0], words[1])
-    else:
-        return ", ".join(words[:-1]) + " and " + words[-1]
-
-
 
 # All command handlers, for all commands, follow...
 
@@ -590,7 +579,7 @@ def cmd_addstreamers(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 1:
         return "OK! Streamer '%s' is now being monitored" % args[0]
     else:
-        return "OK! Streamers %s are now being monitored" % _list_to_english(args)
+        return "OK! Streamers %s are now being monitored" % utils.list_to_english(args)
 
 def cmd_removestreamers(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) < 1:
@@ -616,7 +605,7 @@ def cmd_removestreamers(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 1:
         return "OK! Streamer '%s' is no longer being monitored" % args[0]
     else:
-        return "OK! Streamers %s are no longer being monitored" % _list_to_english(args)
+        return "OK! Streamers %s are no longer being monitored" % utils.list_to_english(args)
 
 def cmd_clearallstreamers(cmd_word, args, message, proc, config, twitch_monitor):
     twitch_monitor.clear_usernames()
