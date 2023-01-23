@@ -5,11 +5,18 @@ from pytimeparse.timeparse import timeparse
 from datetime import timedelta, timezone, datetime
 import threading
 import logging
+import zoneinfo
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+DATETIME_FMT = [
+    ('%d/%m/%Y %H:%M', 'DD/MM/YYYY HH:MM'),
+    ('%Y/%m/%d %H:%M', 'YYYY/MM/DD HH:MM'),
+    ('%H:%M %d/%m/%Y', 'HH:MM DD/MM/YYYY'),
+    ('%H:%M %Y/%m/%d', 'HH:MM YYYY/MM/DD'),
+]
 
 def _utc_time():
     return datetime.now(timezone.utc).timestamp()
@@ -273,7 +280,7 @@ Examples:
 """
 
 REMIND_HELPTEXT = """
-{0} [reminder_text] in [time_description]
+{0} [reminder_text] in|on|at [time_description]
 
 Set up a reminder. After the specified time, the bot will send you a DM with whatever
 text you provided for [reminder_text].
@@ -281,10 +288,18 @@ text you provided for [reminder_text].
 [reminder_text] should be replaced with whatever text you want in the reminder message,
 e.g. the thing that you want to be reminded of.
 
-[time_description] should be replaced with a description of the desired delay
-before the reminder is delivered. This delay should be written in english, and should
-use digits (e.g. "5") instead of words (e.g. "five") for number values. For example:
-"1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+[time_description] should be replaced with a description of the desired time before
+the reminder is delivered. The time can be described in one of the following ways:
+
+- An absolute delay period written in english, using digits (e.g. "5") instead of
+  words (e.g. "five") for number values. For example: "1 minute", "2 hours and 3 minutes",
+  "2hrs3mins", "2 hours & 3 minutes"
+
+- A specific date and time, written in one of the following formats:
+  * DD/MM/YYYY HH:MM
+  * YYYY/MM/DD HH:MM
+  * HH:MM DD/MM/YYYY
+  * HH:MM YYYY/MM/DD
 
 Sending the command with no arguments returns the list of active reminders
 for the user that sent the command.
@@ -293,12 +308,12 @@ Examples:
 
 @BotName !{0}                                           # Query current reminders for me
 @BotName !{0} To take out the trash... in 12 hours      # schedule reminder in 12 hours
-@BotName !{0} about the test! in 2h18m                  # Schedule reminder in 2 hours and 18 minutes
 @BotName !{0} to take a shower :D in 1 day and 5 mins   # Schedule reminder in 1 day and 5 minutes
+@BotName !{0} to brush my teeth on 22/4/2025 14:30      # Schedule reminder at specific date & time
 """
 
 SCHEDULE_HELPTEXT = """
-{0} [channel_name] [message_text] in [time_description]
+{0} [channel_name] [message_text] in|on|at [time_description]
 
 Set up a message to be sent by the bot in a specific discord channel after a specific
 time delay.
@@ -308,20 +323,79 @@ want the message to be sent.
 
 [message_text] should be replaced with whatever text you want to be sent in the discord message.
 
-[time_description] should be replaced with a description of the desired delay
-before the message is sent to the channel. This delay should be written in english,
-and should use digits (e.g. "5") instead of words (e.g. "five") for number values.
-For example: "1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+[time_description] should be replaced with a description of the desired time before
+the message is delivered to the channel. The time can be described in one of the following ways:
+
+- An absolute delay period written in english, using digits (e.g. "5") instead of
+  words (e.g. "five") for number values. For example: "1 minute", "2 hours and 3 minutes",
+  "2hrs3mins", "2 hours & 3 minutes"
+
+- A specific date and time, written in one of the following formats:
+  * DD/MM/YYYY HH:MM
+  * YYYY/MM/DD HH:MM
+  * HH:MM DD/MM/YYYY
+  * HH:MM YYYY/MM/DD
 
 Sending the command with no arguments returns the list of currently scheduled messages.
 
 Examples:
 
-@BotName !{0}                                       # Query currently scheduled messages
-@BotName !{0} joke-channel haha! in 2 hours         # Schedule discord message to "joke-channel" in 2 hours
-@BotName !{0} news-channel raining :( in 1h & 10m   # Schedule discord message to "news-channel" in 1 hour, 10 mins
-@BotName !{0} chat-channel Hey Guys! in 2 days      # Schedule discord message to "chat-channel" in 2 days
+@BotName !{0}                                    # Query currently scheduled messages
+@BotName !{0} jokes haha! in 2 hours             # Schedule message to "jokes" in 2 hours
+@BotName !{0} news raining :( in 1h & 10m        # Schedule message to "news" in 1 hour, 10 mins
+@BotName !{0} general howdy! at 17:02 23/10/2025 # Schedule message to "general" at specific date & time
 """
+
+def _parse_datetime_str_to_seconds(config, discord_user, message):
+    parsed_dt = None
+    # See if we can parse a datetime from this string
+    for fmtstr, _ in DATETIME_FMT:
+        try:
+            parsed_dt = datetime.strptime(message, fmtstr)
+        except ValueError:
+            continue
+        else:
+            break
+
+    if parsed_dt is None:
+        # None of the datetime format strings matched
+        return
+
+    # Check if discord user has a stored timezone
+    tz_info = None
+    tz_name = config.config.timezones.get(str(discord_user.id), None)
+    if tz_name is not None:
+        tz_info = zoneinfo.ZoneInfo(tz_name)
+
+    # Add discord user's timezone to datetime object
+    parsed_dt = parsed_dt.replace(tzinfo=tz_info)
+    local_now = datetime.now(tz=tz_info)
+
+    # Return seconds until specified datetime (will be negative if datetime is in the past)
+    return (parsed_dt - local_now).total_seconds()
+
+def _parse_timedelta_from_message(config, discord_user, message):
+    fields = None
+    splitw = None
+    for w in [' in ', ' on ', ' at ']:
+        f = message.split(w)
+        if len(f) >= 2:
+            fields = f
+            splitw = w
+            break
+
+    if None in [fields, splitw]:
+        return None, None, None, None
+
+    # See if string describes a time delta
+    msg = ' '.join(fields[:-1])
+    timedesc = fields[-1]
+    deltasecs = _parse_time_string(timedesc)
+
+    if deltasecs is None:
+        deltasecs = _parse_datetime_str_to_seconds(config, discord_user, timedesc)
+
+    return msg, timedesc, splitw.strip(), deltasecs
 
 
 def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
@@ -332,24 +406,17 @@ def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor
         return _dump_reminders(message.author)
 
     collapsed_spaces = ' '.join(args).lower()
-    split_fields = collapsed_spaces.split(' in ')
-
-    if len(split_fields) < 2:
+    msg, timedesc, splitw, seconds = _parse_timedelta_from_message(config, message.author, collapsed_spaces)
+    if seconds is None:
         return proc.usage_msg("Invalid command format, try saying something like "
                               "'!remindme to call my mother in 5 days and 6 hours'",
                               cmd_word)
 
-    msg = ' '.join(split_fields[:-1])
-    timedesc = split_fields[-1]
-
-    seconds = _parse_time_string(timedesc)
-    if seconds is None:
-        return proc.usage_msg("Invalid time format, try saying something like:\n"
-                              "```!remindme to call my mother in 5 days and 6 hours```",
-                              cmd_word)
+    if seconds < 0:
+        return "Sorry, the time you provided is in the past, please provide a time in the future"
 
     if seconds < 60:
-        return "Sorry, '%s' is too short, it needs to be at least 1 minute" % timedesc
+        return "Sorry, %s seconds is too short, it needs to be at least 1 minute" % timedesc
 
     event = scheduler.add_event(int(seconds / 60),
                                 ScheduledEventType.DM_MESSAGE,
@@ -360,8 +427,8 @@ def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor
     # Save event for this user ID, for the "unremind last" command
     lastreminder_by_user[message.author.id] = event
 
-    return ("%s OK, I will remind you \"%s\" in %s!\n```(%s until reminder)```" %
-            (message.author.mention, msg, timedesc, event.time_remaining_string()))
+    return ("%s OK, I will remind you \"%s\" %s %s!\n```(%s until reminder)```" %
+            (message.author.mention, msg, splitw, timedesc, event.time_remaining_string()))
 
 
 def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
@@ -379,22 +446,14 @@ def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monit
     channel_name = args[0].strip()
 
     collapsed_spaces = ' '.join(args[1:])
-    split_fields = collapsed_spaces.split(' in ')
-
-    if len(split_fields) < 2:
-        return proc.usage_msg("Invalid schedule, try saying something like:\n"
-                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
-                              cmd_word)
-
-
-    msg = ' '.join(split_fields[:-1])
-    timedesc = split_fields[-1]
-
-    seconds = _parse_time_string(timedesc)
+    msg, timedesc, splitw, seconds = _parse_timedelta_from_message(config, message.author, collapsed_spaces)
     if seconds is None:
         return proc.usage_msg("Invalid schedule, try saying something like:\n"
                               "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
                               cmd_word)
+
+    if seconds < 0:
+        return "Sorry, the time you provided is in the past, please provide a time in the future"
 
     if seconds < 60:
         return "Sorry, '%s' is too short, it needs to be at least 1 minute" % timedesc
@@ -413,9 +472,9 @@ def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monit
     # Save event for this user ID, for the "unschedule last" command
     lastsched_by_user[message.author.id] = event
 
-    return ("%s OK, I will send the following message:\n```%s```\n in channel \"%s\" in %s!\n"
+    return ("%s OK, I will send the following message:\n```%s```\n in channel \"%s\" %s %s!\n"
             "```(%s until scheduled message)```" % (message.author.mention, msg, channel_name,
-            timedesc, event.time_remaining_string()))
+            splitw, timedesc, event.time_remaining_string()))
 
 
 def unremind_command_handler(cmd_word, args, message, proc, config, twitch_monitor):

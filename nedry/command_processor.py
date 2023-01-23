@@ -847,7 +847,6 @@ def cmd_timezone(cmd_word, args, message, proc, config, twitch_monitor):
         return f"{message.author.mention} your timezone is:\n```{tz_name}```"
 
     tz_name = ' '.join([x.strip().lower().replace('_', ' ').replace('/', ' ') for x in args])
-    logger.info(tz_name)
     tz_obj = utils.find_timezone_by_name(tz_name)
     if tz_obj is None:
         return f"{message.author.mention} Unable to find a timezone matching '{' '.join(args)}'"
