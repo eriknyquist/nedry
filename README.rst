@@ -169,6 +169,18 @@ The following steps are required to enable twitch stream announcements:
    The client ID and client secret you provide with this command is saved in the config file,
    so there is no need to re-send this every time you start the bot.
 
+Running nedry as a systemctl service
+====================================
+
+Use the `nedry.service <https://raw.githubusercontent.com/eriknyquist/nedry/master/scripts/nedry.service>`__
+file available on github to quickly create a systemctl service for running nedry.
+
+NOTE: This service loads a config file at ``/home/ubuntu/nedry_config.json``, you may
+need to edit the "ExecStart" line and change that path to your config file location.
+
+NOTE: This service loads the environment of a user named "ubuntu", you may need to
+edit the "User" line and change the username to your own username.
+
 Writing and using plugins
 =========================
 
@@ -247,13 +259,13 @@ in the Quick Start section. The configuration file must be a .json file of the f
         "discord_server_id": 123456789123456789,
         "discord_channel_name": "my-discord-channel",
         "poll_period_seconds": 60,
-        "config_write_delay_seconds": 60,
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
         "plugin_directories" : ["/home/user/nedry_plugins"],
         "discord_admin_users" : [422222187366187010, 487222187346187011],
         "discord_joke_tellers" : [422222187366187010, 487222187346187011],
         "jokes": [],
+        "timezones": {},
         "command_log_file" : "/home/user/twitch_monitor_bot_command_log.txt",
         "startup_message": "Hello! I am a bot who can monitor twitch streams for you.",
         "streamers_to_monitor": [
@@ -294,11 +306,11 @@ Description of fields
 
 * ``jokes``: Any jokes remembered by the bot from discord users will be stored here.
 
+* ``timezones``: Dict that maps discord user ID numbers to the IANA name of the timezone they are in.
+  When you tell the bot your timezone with the "timezone" command, this is where it is stored.
+
 * ``command_log_file``: Enter desired filename to log commands received from discord messages.
   Set to "null" if you don't want to log commands.
-
-* ``config_write_delay_seconds``: Enter the desired cooldown time (in seconds) for commands that
-  write changes to the bot config file here (makes it more difficult for someone with admin privileges to spam the disk).
 
 * ``startup_message``: Enter the message you would like the bot to send when it comes online after being started up here.
   Message may contain the following format tokens:
