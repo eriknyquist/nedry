@@ -434,6 +434,35 @@ Command ``quote``
    All discord users may use this command.
 
 
+Command ``timezone``
+--------------------
+
+::
+
+
+   timezone [timezone_name]
+
+   Set the timezone for the author of the discord message, allowing this
+   discord user to provide/see dates and times in their local timezone.
+
+   [timezone_name] should be replaced with the name of a timezone from the IANA
+   time zone database, or some substring, e.g. "london" or "los angeles". If you
+   live in a big city, then often just typing the name of the city here will be
+   enough. If you are having issues, however, try selecting your region on
+   this IANA timezone map, and using the country/city name that is shown in
+   the drop-down selection box: https://kevalbhatt.github.io/timezone-picker
+
+   Sending this command with no arguments will query the timezone currently
+   assigned to the author of the discord message.
+
+   Example:
+
+   @BotName !timezone           # Query timezone setting for this discord user
+   @BotName !timezone london    # Set timezone for this discord user to "Europe/London"
+
+   All discord users may use this command.
+
+
 Command ``streamers``
 ---------------------
 
@@ -860,7 +889,7 @@ Command ``schedule``
 ::
 
 
-   schedule [channel_name] [message_text] in [time_description]
+   schedule [channel_name] [message_text] in|on|at [time_description]
 
    Set up a message to be sent by the bot in a specific discord channel after a specific
    time delay.
@@ -870,19 +899,27 @@ Command ``schedule``
 
    [message_text] should be replaced with whatever text you want to be sent in the discord message.
 
-   [time_description] should be replaced with a description of the desired delay
-   before the message is sent to the channel. This delay should be written in english,
-   and should use digits (e.g. "5") instead of words (e.g. "five") for number values.
-   For example: "1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+   [time_description] should be replaced with a description of the desired time before
+   the message is delivered to the channel. The time can be described in one of the following ways:
+
+   - An absolute delay period written in english, using digits (e.g. "5") instead of
+     words (e.g. "five") for number values. For example: "1 minute", "2 hours and 3 minutes",
+     "2hrs3mins", "2 hours & 3 minutes"
+
+   - A specific date and time, written in one of the following formats:
+     * DD/MM/YYYY HH:MM
+     * YYYY/MM/DD HH:MM
+     * HH:MM DD/MM/YYYY
+     * HH:MM YYYY/MM/DD
 
    Sending the command with no arguments returns the list of currently scheduled messages.
 
    Examples:
 
-   @BotName !schedule                                       # Query currently scheduled messages
-   @BotName !schedule joke-channel haha! in 2 hours         # Schedule discord message to "joke-channel" in 2 hours
-   @BotName !schedule news-channel raining :( in 1h & 10m   # Schedule discord message to "news-channel" in 1 hour, 10 mins
-   @BotName !schedule chat-channel Hey Guys! in 2 days      # Schedule discord message to "chat-channel" in 2 days
+   @BotName !schedule                                    # Query currently scheduled messages
+   @BotName !schedule jokes haha! in 2 hours             # Schedule message to "jokes" in 2 hours
+   @BotName !schedule news raining :( in 1h & 10m        # Schedule message to "news" in 1 hour, 10 mins
+   @BotName !schedule general howdy! at 17:02 23/10/2025 # Schedule message to "general" at specific date & time
 
    Only discord users registered in 'admin_users' in the bot config. file may use this command.
 
@@ -921,7 +958,7 @@ Command ``remindme``
 ::
 
 
-   remindme [reminder_text] in [time_description]
+   remindme [reminder_text] in|on|at [time_description]
 
    Set up a reminder. After the specified time, the bot will send you a DM with whatever
    text you provided for [reminder_text].
@@ -929,10 +966,18 @@ Command ``remindme``
    [reminder_text] should be replaced with whatever text you want in the reminder message,
    e.g. the thing that you want to be reminded of.
 
-   [time_description] should be replaced with a description of the desired delay
-   before the reminder is delivered. This delay should be written in english, and should
-   use digits (e.g. "5") instead of words (e.g. "five") for number values. For example:
-   "1 minute", "2 hours and 3 minutes", "2hrs3mins", "2 hours & 3 minutes"
+   [time_description] should be replaced with a description of the desired time before
+   the reminder is delivered. The time can be described in one of the following ways:
+
+   - An absolute delay period written in english, using digits (e.g. "5") instead of
+     words (e.g. "five") for number values. For example: "1 minute", "2 hours and 3 minutes",
+     "2hrs3mins", "2 hours & 3 minutes"
+
+   - A specific date and time, written in one of the following formats:
+     * DD/MM/YYYY HH:MM
+     * YYYY/MM/DD HH:MM
+     * HH:MM DD/MM/YYYY
+     * HH:MM YYYY/MM/DD
 
    Sending the command with no arguments returns the list of active reminders
    for the user that sent the command.
@@ -941,8 +986,8 @@ Command ``remindme``
 
    @BotName !remindme                                           # Query current reminders for me
    @BotName !remindme To take out the trash... in 12 hours      # schedule reminder in 12 hours
-   @BotName !remindme about the test! in 2h18m                  # Schedule reminder in 2 hours and 18 minutes
    @BotName !remindme to take a shower :D in 1 day and 5 mins   # Schedule reminder in 1 day and 5 minutes
+   @BotName !remindme to brush my teeth on 22/4/2025 14:30      # Schedule reminder at specific date & time
 
    All discord users may use this command.
 
