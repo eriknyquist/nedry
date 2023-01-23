@@ -37,8 +37,12 @@ CMD_TIMEZONE_HELP = """
 Set the timezone for the author of the discord message, allowing this
 discord user to provide/see dates and times in their local timezone.
 
-[timezone_name] should be replaced with the name of a timezeone from the IANA
-time zone database, or some substring, e.g. "london" or "los angeles".
+[timezone_name] should be replaced with the name of a timezone from the IANA
+time zone database, or some substring, e.g. "london" or "los angeles". If you
+live in a big city, then often just typing the name of the city here will be
+enough. If you are having issues, however, try selecting your region on
+this IANA timezone map, and using the country/city name that is shown in
+the drop-down selection box: https://kevalbhatt.github.io/timezone-picker
 
 Sending this command with no arguments will query the timezone currently
 assigned to the author of the discord message.

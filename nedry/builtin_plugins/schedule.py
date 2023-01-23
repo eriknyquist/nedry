@@ -34,13 +34,14 @@ class ScheduledEvent(object):
     """
     Represents a single generic scheduled event
     """
-    def __init__(self, expiry_time, event_type, *event_data):
-        self.expiry_time = expiry_time  # Expiry time in seconds, UTC timestamp
-        self.event_type = event_type    # Event type (one of ScheduledEventType)
-        self.event_data = event_data    # Event data (list, different for each event type)
+    def __init__(self, time_seconds, expiry_time, event_type, *event_data):
+        self.time_seconds = time_seconds # Expiry time in seconds from now
+        self.expiry_time = expiry_time   # Expiry time in absolute seconds, UTC timestamp
+        self.event_type = event_type     # Event type (one of ScheduledEventType)
+        self.event_data = event_data     # Event data (list, different for each event type)
 
     def time_remaining_string(self):
-        return timedelta(seconds=(self.expiry_time - _utc_time()))
+        return timedelta(seconds=(int(self.expiry_time) - int(_utc_time())))
 
     def __str__(self):
         return "%s(%s, %s, %s)" % (self.__class__.__name__, self.expiry_time,
@@ -80,11 +81,10 @@ class Scheduler(object):
                 if event.event_type == ScheduledEventType.DM_MESSAGE:
                     text = event.event_data[0]
                     user_id = event.event_data[1]
-                    timedesc = event.event_data[2]
 
                     user = self._discord_bot.client.get_user(user_id)
                     msg = "Hey %s!\n```%s!```\n" % (user.mention, text)
-                    msg += "(You asked me to remind you about this %s ago)" % timedesc
+                    msg += "(You asked me to remind you about this %s ago)" % timedelta(seconds=event.time_seconds)
 
                     logger.debug("sending reminder '%s' to user %s" % (text, user.name))
                     self._discord_bot.send_dm(user, msg)
@@ -146,7 +146,7 @@ class Scheduler(object):
 
     def add_event(self, mins_from_now, event_type, *event_data):
         expiry_time_secs = int(_utc_time() + (mins_from_now * 60))
-        event = ScheduledEvent(expiry_time_secs, event_type, *event_data)
+        event = ScheduledEvent(mins_from_now * 60, expiry_time_secs, event_type, *event_data)
 
         with self._lock:
             first_event = len(self._active_events) == 0
@@ -416,7 +416,7 @@ def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor
         return "Sorry, the time you provided is in the past, please provide a time in the future"
 
     if seconds < 60:
-        return "Sorry, %s seconds is too short, it needs to be at least 1 minute" % timedesc
+        return "Sorry, %s is too short, must be at least 1 minute in the future" % timedesc
 
     event = scheduler.add_event(int(seconds / 60),
                                 ScheduledEventType.DM_MESSAGE,
@@ -456,7 +456,7 @@ def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monit
         return "Sorry, the time you provided is in the past, please provide a time in the future"
 
     if seconds < 60:
-        return "Sorry, '%s' is too short, it needs to be at least 1 minute" % timedesc
+        return "Sorry, '%s' is too short, must be at least 1 minute in the future" % timedesc
 
 
     channel = proc.bot.get_channel_by_name(channel_name)
