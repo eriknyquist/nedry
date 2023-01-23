@@ -46,7 +46,7 @@ That's it!
 Install
 =======
 
-Install for Python (3x only) using ``pip``:
+Install for Python (only Python 3.9x or greater is supported) using ``pip``:
 
 ::
 

@@ -23,6 +23,7 @@ setup(
     author='Erik Nyquist',
     author_email='eknyquist@gmail.com',
     license='Apache 2.0',
+    python_requires='>=3.9',
     packages=find_packages(),
     package_dir={'nedry': 'nedry'},
     package_data={'nedry': [os.path.join('nedry', 'quotedb.json')]},
