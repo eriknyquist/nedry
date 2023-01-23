@@ -5,6 +5,7 @@ import json
 import time
 import logging
 import threading
+import zoneinfo
 
 from versionedobj import VersionedObject, Serializer, migration
 
@@ -108,6 +109,14 @@ class BotConfigManager(object):
         self.stop_event.set()
         self.save_thread.join()
         self._check_flush_to_file()
+
+    def timezone_by_discord_user_id(self, discord_user_id):
+        tz_info = None
+        if str(discord_user_id) in self.config.timezones:
+            tz_name = self.config.timezones[str(discord_user_id)]
+            tz_info = zoneinfo.ZoneInfo(tz_name)
+
+        return tz_info
 
     def _save_thread_task(self):
         logger.debug("started config file save thread")

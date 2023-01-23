@@ -362,10 +362,7 @@ def _parse_datetime_str_to_seconds(config, discord_user, message):
         return
 
     # Check if discord user has a stored timezone
-    tz_info = None
-    tz_name = config.config.timezones.get(str(discord_user.id), None)
-    if tz_name is not None:
-        tz_info = zoneinfo.ZoneInfo(tz_name)
+    tz_info = config.timezone_by_discord_user_id(discord_user.id)
 
     # Add discord user's timezone to datetime object
     parsed_dt = parsed_dt.replace(tzinfo=tz_info)
