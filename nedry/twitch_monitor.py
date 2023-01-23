@@ -126,14 +126,18 @@ class TwitchMonitor(object):
     def _check_streamers_retry(self, max_retries=5):
         retry_count = 0
 
-        try:
-            self._check_streamers()
-        except ConnectionResetError as e:
-            if retry_count >= max_retries:
-                raise e
+        while True:
+            try:
+                self._check_streamers()
+            except ConnectionResetError as e:
+                if retry_count >= max_retries:
+                    raise e
 
-            retry_count += 1
-            logger.warning(f"ConnectionResetError occurred, retrying ({retry_count}/{max_retries})")
+                retry_count += 1
+                logger.warning(f"ConnectionResetError occurred, retrying ({retry_count}/{max_retries})")
+                continue
+            else:
+                break
 
     def _streamer_check_loop(self):
         self.discord_connected.wait()
