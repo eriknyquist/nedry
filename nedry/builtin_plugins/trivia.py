@@ -12,6 +12,10 @@ from nedry import events, utils
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+PLUGIN_NAME = "trivia"
+PLUGIN_VERSION = "1.0.0"
+
+
 category_names = [
     'general knowledge', 'books', 'film', 'music', 'television', 'science',
     'mythology', 'geography', 'history', 'entertainment: art', 'animals'
@@ -95,6 +99,22 @@ trivia_by_channel_lock = threading.Lock()
 trivia_by_channel = {}
 
 
+def _increment_score(config, user_id):
+    if PLUGIN_NAME not in config.config.plugin_data:
+        config.config.plugin_data[PLUGIN_NAME] = {}
+
+    user_id = str(user_id)
+
+    score = 0
+    if user_id in config.config.plugin_data[PLUGIN_NAME]:
+        score = config.config.plugin_data[PLUGIN_NAME][user_id]
+
+    new_score = score + 1
+    config.config.plugin_data[PLUGIN_NAME][user_id] = new_score
+    config.save_to_file()
+    return new_score
+
+
 def _trivia_thread_task(discord_bot, time_secs, channel):
     time.sleep(time_secs)
 
@@ -116,15 +136,21 @@ def _trivia_thread_task(discord_bot, time_secs, channel):
         resp = (f'Time is up! The correct answer was:\n'
                 f'```{correct_choice}. {session.trivia.correct_answer}```\n')
 
+        score = None
+        if correct_answers:
+            score = _increment_score(discord_bot.config, correct_answers[0].id)
+
         if not correct_answers:
             resp += "Unfortunately, nobody picked that answer :("
         elif len(correct_answers) == 1:
             resp += (f"Congratulations {correct_answers[0].mention}, you're the "
-                     f"only one who picked the right answer!")
+                     f"only one who picked the right answer!\n"
+                     f"(total win count for {correct_answers[0].mention}: {score})")
         else:
             mentions = utils.list_to_english([f"{x.mention}" for x in correct_answers])
             resp += (f"{mentions} picked the right answer, but {correct_answers[0].mention} "
-                     f"picked it first, so they win. Congratulations {correct_answers[0].mention}!")
+                     f"picked it first, so they win. Congratulations {correct_answers[0].mention}!\n"
+                     f"(total win count for {correct_answers[0].mention}: {score})")
 
         discord_bot.send_message(channel, resp)
 
@@ -167,8 +193,8 @@ class Trivia(PluginModule):
     """
     Plugin for starting an interactive trivia session in the current discord channel
     """
-    plugin_name = "trivia"
-    plugin_version = "1.0.0"
+    plugin_name = PLUGIN_NAME
+    plugin_version = PLUGIN_VERSION
     plugin_short_description = "Start an interactive trivia session in the current channel"
     plugin_long_description = """
     """
