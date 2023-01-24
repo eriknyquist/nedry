@@ -11,6 +11,11 @@ import zoneinfo
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
+PLUGIN_NAME = "schedule"
+PLUGIN_VERSION = "1.1.0"
+
+
 DATETIME_FMT = [
     ('%d/%m/%Y %H:%M', 'DD/MM/YYYY HH:MM'),
     ('%Y/%m/%d %H:%M', 'YYYY/MM/DD HH:MM'),
@@ -39,6 +44,23 @@ class ScheduledEvent(object):
         self.expiry_time = expiry_time   # Expiry time in absolute seconds, UTC timestamp
         self.event_type = event_type     # Event type (one of ScheduledEventType)
         self.event_data = event_data     # Event data (list, different for each event type)
+
+    def to_json(self):
+        return {
+            "time_seconds": self.time_seconds,
+            "expiry_time": self.expiry_time,
+            "event_type": self.event_type,
+            "event_data": self.event_data
+        }
+
+    @classmethod
+    def from_json(cls, attrs):
+        return ScheduledEvent(
+            attrs["time_seconds"],
+            attrs["expiry_time"],
+            attrs["event_type"],
+            *attrs["event_data"]
+        )
 
     def time_remaining_string(self):
         return timedelta(seconds=(int(self.expiry_time) - int(_utc_time())))
@@ -77,6 +99,9 @@ class Scheduler(object):
 
                 if not event:
                     return
+
+                # Save state of scheduled event queue
+                self.save_scheduled_events()
 
                 if event.event_type == ScheduledEventType.DM_MESSAGE:
                     text = event.event_data[0]
@@ -144,6 +169,37 @@ class Scheduler(object):
         self._active_events.insert(index, event)
         return index == 0
 
+    def save_scheduled_events(self):
+        if PLUGIN_NAME in self._discord_bot.config.config.plugin_data:
+           del self._discord_bot.config.config.plugin_data[PLUGIN_NAME]
+
+        scheduled_events = []
+        for event in self._active_events:
+            scheduled_events.append(event.to_json())
+
+        self._discord_bot.config.config.plugin_data[PLUGIN_NAME] = scheduled_events
+        self._discord_bot.config.save_to_file()
+
+    def load_scheduled_events(self):
+        events_loaded = 0
+        if PLUGIN_NAME in self._discord_bot.config.config.plugin_data:
+            with self._lock:
+                for event_data in self._discord_bot.config.config.plugin_data[PLUGIN_NAME]:
+                    event = ScheduledEvent.from_json(event_data)
+
+                    if _utc_time() >= event.expiry_time:
+                        # Event has already expired
+                        continue
+
+                    self._add_active_event(event)
+                    events_loaded += 1
+
+            if events_loaded > 0:
+                # (Re)Start thread
+                self._thread = threading.Thread(target=self._thread_task)
+                self._thread.daemon = True
+                self._thread.start()
+
     def add_event(self, mins_from_now, event_type, *event_data):
         expiry_time_secs = int(_utc_time() + (mins_from_now * 60))
         event = ScheduledEvent(mins_from_now * 60, expiry_time_secs, event_type, *event_data)
@@ -156,6 +212,9 @@ class Scheduler(object):
                 self._thread.join()
 
             self._add_active_event(event)
+
+            # Save state of scheduled event queue
+            self.save_scheduled_events()
 
         # (Re)Start thread
         self._thread = threading.Thread(target=self._thread_task)
@@ -604,8 +663,8 @@ class Schedule(PluginModule):
     """
     Plugin for scheduling discord messages to be delivered at a specific later time
     """
-    plugin_name = "schedule"
-    plugin_version = "1.0.0"
+    plugin_name = PLUGIN_NAME
+    plugin_version = PLUGIN_VERSION
     plugin_short_description = "Schedule discord messages"
     plugin_long_description = """
     Adds multiple commands that allow;
@@ -625,6 +684,10 @@ class Schedule(PluginModule):
     !unschedule (see !help unschedule)
     """
 
+    def __init__(self, *args, **kwargs):
+        super(Schedule, self).__init__(*args, **kwargs)
+        self.open_count = 0
+
     def open(self):
         """
         Enables plugin operation; subscribe to events and/or initialize things here
@@ -634,6 +697,12 @@ class Schedule(PluginModule):
         self.discord_bot.add_command("remindme", remind_command_handler, False, REMIND_HELPTEXT)
         self.discord_bot.add_command("unremind", unremind_command_handler, False, UNREMIND_HELPTEXT)
         scheduler.set_discord_bot(self.discord_bot)
+
+        if self.open_count == 0:
+            # Only want to do this on first open
+            scheduler.load_scheduled_events()
+
+        self.open_count += 1
 
     def close(self):
         """

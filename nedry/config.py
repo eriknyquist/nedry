@@ -21,6 +21,7 @@ class BotConfig(VersionedObject):
     discord_channel_name = ""
     plugin_directories = []
     enabled_plugins = []
+    plugin_data = {}
     streamers_to_monitor = []
     host_streamer = ""
     silent_when_host_streaming = False
@@ -68,6 +69,7 @@ def migrate_none_14_to_15(attrs):
 @migration(BotConfig, "1.5", "1.6")
 def migrate_none_15_to_16(attrs):
     del attrs["config_write_delay_seconds"]
+    attrs["plugin_data"] = {}
     return attrs
 
 
