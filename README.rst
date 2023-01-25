@@ -22,6 +22,8 @@ Some out-of-the-box features include:
 * Looking something up on wikipedia (or providing a summary of a random wikipedia article)
 * Interactive trivia questions (via opentdb.com)
 
+To get started right away, see the :ref:`Quick Start section <quick-start>`.
+
 .. contents:: **Table of Contents**
 
 Limitations
@@ -144,9 +146,9 @@ The following steps are required to enable twitch stream announcements:
 
    This is optional, but there is only 1 default stream announcement phrase, so
    you might want to add some of your own. Each time a streamer goes live, one
-   of phrases is picked randomly for the announcement. Phrases may contain format tokens (see
-   the "@BotName !help addphrase" command for more information about format tokens). e.g.
-   "@BotName !addphrase some custom phrase":
+   of your stream announcement phrases is picked randomly for the announcement.
+   Phrases may contain format tokens (see the "@BotName !help addphrase" command
+   for more information about format tokens). e.g. "@BotName !addphrase some custom phrase":
 
    .. image:: images/add_phrase.png
 
