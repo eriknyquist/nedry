@@ -80,12 +80,16 @@ def get_trivia_question():
 
 
 TRIVIA_HELPTEXT = """
-{0}
+{0} [time_limit]
 
-Fetch a trivia question from opentdb.com and allow 60 seconds for all discord users
-in the channel to provide an answer. Whoever provides the correct answer first
-wins, and if the correct answer is not provided, then nobody wins. Keeps track
+Fetch a trivia question from opentdb.com and allow all discord users to provide
+an answer until the time limit is up. Whoever provides the correct answer first
+wins, and if the correct answer is not provided, then nobody wins. Also keeps track
 of scores (number of wins) by discord user ID.
+
+[time_limit] should be replaced with the desired time limit for the question, in seconds.
+This parameter is optional; if no time limit is provided then a time limit of 60 seconds
+will be used.
 
 Example:
 
@@ -197,6 +201,13 @@ class Trivia(PluginModule):
     plugin_version = PLUGIN_VERSION
     plugin_short_description = "Start an interactive trivia session in the current channel"
     plugin_long_description = """
+    Allows all discord users to request a trivia question in the current discord channel.
+    Uses opentdb.com to fetch a random trivia quesion. Also keeps track of the scores
+    (number of correct trivia answers) of all discord users.
+
+    Commands added:
+
+    !trivia (see !help trivia)
     """
 
     def _handle_trivia_answer(self, session, message, text_without_mention):
