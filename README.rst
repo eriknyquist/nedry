@@ -22,7 +22,7 @@ Some out-of-the-box features include:
 * Looking something up on wikipedia (or providing a summary of a random wikipedia article)
 * Interactive trivia questions (via opentdb.com)
 
-To get started right away, see the :ref:`quickstartanchor` section.
+To get started right away, see the `Quick start`_ section.
 
 .. contents:: **Table of Contents**
 
@@ -57,8 +57,6 @@ Install for Python (only Python 3.9x or greater is supported) using ``pip``:
 ::
 
     python -m pip install nedry
-
-.. _quickstartanchor:
 
 Quick start
 ===========
