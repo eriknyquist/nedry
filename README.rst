@@ -14,8 +14,9 @@ Nedry's behaviour, or even write your own plugins.
 Some out-of-the-box features include:
 
 * Stream announcements for twitch, with highly configurable stream announcement messages
- (write your own stream announcement messages with format tokens for variable data like stream url, discord bot name, etc.
-  and optionally disable stream announcements when you yourself are streaming)
+  (write your own stream announcement messages with format tokens for variable data like
+  stream url, discord bot name, etc. and optionally disable stream announcements when
+  you yourself are streaming)
 * Scheduled discord messages as DMs or in public channels
 * Telling knock-knock jokes (and remembering jokes that are told by discord users)
 * Looking something up on wikipedia (or providing a summary of a random wikipedia article)
