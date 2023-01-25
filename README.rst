@@ -415,6 +415,7 @@ with their expected arguments and a brief description:
 
 Bot command reference
 =====================
+
 Command ``help``
 ----------------
 
@@ -1042,12 +1043,16 @@ Command ``trivia``
 ::
 
 
-   trivia
+   trivia [time_limit]
 
-   Fetch a trivia question from opentdb.com and allow 60 seconds for all discord users
-   in the channel to provide an answer. Whoever provides the correct answer first
-   wins, and if the correct answer is not provided, then nobody wins. Keeps track
+   Fetch a trivia question from opentdb.com and allow all discord users to provide
+   an answer until the time limit is up. Whoever provides the correct answer first
+   wins, and if the correct answer is not provided, then nobody wins. Also keeps track
    of scores (number of wins) by discord user ID.
+
+   [time_limit] should be replaced with the desired time limit for the question, in seconds.
+   This parameter is optional; if no time limit is provided then a time limit of 60 seconds
+   will be used.
 
    Example:
 
