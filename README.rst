@@ -13,10 +13,13 @@ Nedry's behaviour, or even write your own plugins.
 
 Some out-of-the-box features include:
 
-* Stream announcements for twitch streamers (your own stream or any other streams)
-* Scheduled DM reminders or public channel messages
-* Tell knock-knock jokes (and remember jokes that you tell to it)
-* Look something up on wikipedia for you (or provide a summary of a random wikipedia article)
+* Stream announcements for twitch, with highly configurable stream announcement messages
+ (write your own stream announcement messages with format tokens for variable data like stream url, discord bot name, etc.
+  and optionally disable stream announcements when you yourself are streaming)
+* Scheduled discord messages as DMs or in public channels
+* Telling knock-knock jokes (and remembering jokes that are told by discord users)
+* Looking something up on wikipedia (or providing a summary of a random wikipedia article)
+* Interactive trivia questions (via opentdb.com)
 
 .. contents:: **Table of Contents**
 
@@ -261,6 +264,7 @@ in the Quick Start section. The configuration file must be a .json file of the f
         "poll_period_seconds": 60,
         "host_streamer": "my-twitch-streamer-name",
         "silent_when_host_streaming": true,
+        "plugin_data": {},
         "plugin_directories" : ["/home/user/nedry_plugins"],
         "discord_admin_users" : [422222187366187010, 487222187346187011],
         "discord_joke_tellers" : [422222187366187010, 487222187346187011],
@@ -296,6 +300,8 @@ Description of fields
 * ``silent_when_host_streaming``: If true, no announcements about other streams will be made when host streamer is live.
 
 * ``plugin_directories``: List of directory names to search for plugins to load on startup
+
+* ``plugin_data``: Holds persistent data for plugins, dict keyed by plugin name
 
 * ``discord_admin_users``: Multiple discord user ID numbers can be added here. Users added
   here will be allowed to configure the bot by sending commands in discord.
@@ -409,7 +415,6 @@ with their expected arguments and a brief description:
 
 Bot command reference
 =====================
-
 Command ``help``
 ----------------
 
@@ -489,7 +494,7 @@ Command ``streamers``
 
    @BotName !streamers
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``addstreamers``
@@ -507,7 +512,7 @@ Command ``addstreamers``
 
    @BotName !addstreamers streamer1 streamer2 streamer3
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``removestreamers``
@@ -525,7 +530,7 @@ Command ``removestreamers``
 
    @BotName !removestreamers streamer1 streamer2 streamer3
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``clearallstreamers``
@@ -542,7 +547,7 @@ Command ``clearallstreamers``
 
    @BotName !clearallstreamers
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``phrases``
@@ -559,7 +564,7 @@ Command ``phrases``
 
    @BotName !phrases
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``testphrases``
@@ -577,7 +582,7 @@ Command ``testphrases``
 
    @BotName !testphrases
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``addphrase``
@@ -605,7 +610,7 @@ Command ``addphrase``
 
    @BotName !addphrase "{streamer_name} is now streaming at {stream_url}!"
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``removephrases``
@@ -626,7 +631,7 @@ Command ``removephrases``
 
    @BotName !removephrases 3 4 5
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``nocompetition``
@@ -649,7 +654,7 @@ Command ``nocompetition``
    @BotName !nocompetition false    (enable nocompetition)
    @BotName !nocompetition          (check current state)
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``cmdhistory``
@@ -668,7 +673,7 @@ Command ``cmdhistory``
    @BotName !cmdhistory     (show last 25 entries)
    @BotName !cmdhistory 5   (show last 5 entries)
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``say``
@@ -686,7 +691,7 @@ Command ``say``
 
    @BotName !say Good morning
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``plugins``
@@ -703,7 +708,7 @@ Command ``plugins``
 
    @BotName !help wiki
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``plugson``
@@ -721,7 +726,7 @@ Command ``plugson``
 
    @BotName !pluginon knock_knock_jokes other_plugin
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``plugsoff``
@@ -739,7 +744,7 @@ Command ``plugsoff``
 
    @BotName !pluginoff knock_knock_jokes other_plugin
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``pluginfo``
@@ -756,7 +761,7 @@ Command ``pluginfo``
 
    @BotName !pluginfo knock_knock_jokes
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``twitchclientid``
@@ -775,7 +780,7 @@ Command ``twitchclientid``
 
    @BotName !help twitchclientid XXXXXXXXXXXX YYYYYYYYYYYY
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``announcechannel``
@@ -795,7 +800,7 @@ Command ``announcechannel``
    @BotName !announcechannel                # Query current channel name
    @BotName !announcechannel my-channel     # Set announcements channel to 'my-channel'
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``joke``
@@ -933,7 +938,7 @@ Command ``schedule``
    @BotName !schedule news raining :( in 1h & 10m        # Schedule message to "news" in 1 hour, 10 mins
    @BotName !schedule general howdy! at 17:02 23/10/2025 # Schedule message to "general" at specific date & time
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``unschedule``
@@ -961,7 +966,7 @@ Command ``unschedule``
    @BotName !unschedule 2             # Remove message #2
    @BotName !unschedule 5 6           # Remove messages 5 and 6
 
-   Only discord users registered in 'admin_users' in the bot config. file may use this command.
+   Only discord users registered in 'discord_admin_users' in the bot configuration file may use this command.
 
 
 Command ``remindme``
@@ -1027,6 +1032,26 @@ Command ``unremind``
    @BotName !unremind all           # Remove all reminders
    @BotName !unremind 2             # Remove reminder #2
    @BotName !unremind 5 6           # Remove reminders 5 and 6
+
+   All discord users may use this command.
+
+
+Command ``trivia``
+------------------
+
+::
+
+
+   trivia
+
+   Fetch a trivia question from opentdb.com and allow 60 seconds for all discord users
+   in the channel to provide an answer. Whoever provides the correct answer first
+   wins, and if the correct answer is not provided, then nobody wins. Keeps track
+   of scores (number of wins) by discord user ID.
+
+   Example:
+
+   @BotName !trivia
 
    All discord users may use this command.
 
