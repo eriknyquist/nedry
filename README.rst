@@ -58,7 +58,7 @@ Install for Python (only Python 3.9x or greater is supported) using ``pip``:
 
     python -m pip install nedry
 
-.. _quickstartanchor
+.. _quickstartanchor:
 
 Quick start
 ===========
