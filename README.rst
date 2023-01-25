@@ -22,7 +22,7 @@ Some out-of-the-box features include:
 * Looking something up on wikipedia (or providing a summary of a random wikipedia article)
 * Interactive trivia questions (via opentdb.com)
 
-To get started right away, see the :ref:`Quick Start section <quick-start>`.
+To get started right away, see the :ref:`Quick Start section <Quick start>`.
 
 .. contents:: **Table of Contents**
 
