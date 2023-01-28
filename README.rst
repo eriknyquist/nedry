@@ -928,10 +928,16 @@ Command ``schedule``
      "2hrs3mins", "2 hours & 3 minutes"
 
    - A specific date and time, written in one of the following formats:
+
      * DD/MM/YYYY HH:MM
      * YYYY/MM/DD HH:MM
      * HH:MM DD/MM/YYYY
      * HH:MM YYYY/MM/DD
+
+     NOTE: if you are using a specific date/time, you should first tell the bot which
+     timezone you are in using the "!timezone" command. That way, you can provide dates/times
+     in your local timezone. You only have to set your timezone once, the bot will
+     remember it (see "@BotName !help timezone" for more details about how to set your timezone).
 
    Sending the command with no arguments returns the list of currently scheduled messages.
 
@@ -995,10 +1001,16 @@ Command ``remindme``
      "2hrs3mins", "2 hours & 3 minutes"
 
    - A specific date and time, written in one of the following formats:
+
      * DD/MM/YYYY HH:MM
      * YYYY/MM/DD HH:MM
      * HH:MM DD/MM/YYYY
      * HH:MM YYYY/MM/DD
+
+     NOTE: if you are using a specific date/time, you should first tell the bot which
+     timezone you are in using the "!timezone" command. That way, you can provide dates/times
+     in your local timezone. You only have to set your timezone once, the bot will
+     remember it (see "@BotName !help timezone" for more details about how to set your timezone).
 
    Sending the command with no arguments returns the list of active reminders
    for the user that sent the command.
