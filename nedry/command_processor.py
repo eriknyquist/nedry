@@ -742,7 +742,7 @@ def cmd_plugson(cmd_word, args, message, proc, config, twitch_monitor):
     args = [x.strip() for x in args]
     for n in args:
         if not proc.bot.plugin_manager.is_valid_plugin_name(n):
-            return proc.usage_msg("%s is not a valid plugin name" % n,
+            return proc.usage_msg("'%s' is not a valid plugin name" % n,
                                   cmd_word)
 
     proc.bot.plugin_manager.enable_plugins(plugin_names=args)
@@ -753,7 +753,7 @@ def cmd_plugson(cmd_word, args, message, proc, config, twitch_monitor):
         config.config.enabled_plugins = enabled_plugins
         config.save_to_file()
 
-    return "OK, the following plugins are enabled: %s" % ''.join(args)
+    return "OK, the following plugins are enabled: %s" % ', '.join(args)
 
 def cmd_plugsoff(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 0:
@@ -763,7 +763,7 @@ def cmd_plugsoff(cmd_word, args, message, proc, config, twitch_monitor):
     args = [x.strip() for x in args]
     for n in args:
         if not proc.bot.plugin_manager.is_valid_plugin_name(n):
-            return proc.usage_msg("%s is not a valid plugin name" % n,
+            return proc.usage_msg("'%s' is not a valid plugin name" % n,
                                   cmd_word)
 
     proc.bot.plugin_manager.disable_plugins(plugin_names=args)
@@ -774,7 +774,7 @@ def cmd_plugsoff(cmd_word, args, message, proc, config, twitch_monitor):
         config.config.enabled_plugins = enabled_plugins
         config.save_to_file()
 
-    return "OK, the following plugins are disabled: %s" % ''.join(args)
+    return "OK, the following plugins are disabled: %s" % ', '.join(args)
 
 def cmd_pluginfo(cmd_word, args, message, proc, config, twitch_monitor):
     if len(args) == 0:
