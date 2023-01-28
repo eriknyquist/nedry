@@ -91,6 +91,7 @@ class BotConfigManager(object):
         if filename is None:
             filename = self.filename
 
+        logger.debug(f"loading configuration file {filename}")
         return self.serializer.from_file(filename)
 
     def save_to_file(self):

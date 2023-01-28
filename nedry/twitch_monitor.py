@@ -62,7 +62,7 @@ class TwitchMonitor(object):
         if self.config.config.twitch_client_id and self.config.config.twitch_client_secret:
             self.reconnect(self.config.config.twitch_client_id, self.config.config.twitch_client_secret)
         else:
-            logger.info("Can't monitor twitch streamers yet, no twitch client ID/secret is set")
+            logger.warning("Can't monitor twitch streamers yet, no twitch client ID/secret is set")
 
     def _on_discord_connected(self):
         self.discord_connected.set()

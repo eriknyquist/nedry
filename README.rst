@@ -1063,3 +1063,21 @@ Command ``trivia``
 
    All discord users may use this command.
 
+
+Command ``triviascores``
+------------------------
+
+::
+
+
+   triviascores
+
+   Shows total score (number of first correct answers) for all discord users who have
+   ever answered a trivia question.
+
+   Example:
+
+   @BotName !triviascores
+
+   All discord users may use this command.
+

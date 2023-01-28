@@ -7,3 +7,6 @@ __version__ = "2.2.0"
 __maintainer__ = "Erik Nyquist"
 __email__ = "eknyquist@gmail.com"
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.info(f"nedry {__version__}")

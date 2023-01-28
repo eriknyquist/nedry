@@ -96,6 +96,17 @@ Example:
 @BotName !trivia
 """
 
+TRIVIA_SCORES_HELPTEXT = """
+{0}
+
+Shows total score (number of first correct answers) for all discord users who have
+ever answered a trivia question.
+
+Example:
+
+@BotName !triviascores
+"""
+
 MIN_TIME_SECONDS = 10
 DEFAULT_TIME_SECONDS = 60
 
@@ -192,6 +203,21 @@ def trivia_command_handler(cmd_word, args, message, proc, config, twitch_monitor
             "desired answer, make sure to mention me!\n\n(Example: \"@%s 1\")" %
             (q.question, answers, time_secs, proc.bot.client.user.name))
 
+def trivia_scores_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
+    score_data = []
+
+    for userid in config.config.plugin_data[PLUGIN_NAME]:
+        user = proc.bot.client.get_user(int(userid))
+        if not user:
+            continue
+
+        score_data.append((user.name, config.config.plugin_data[PLUGIN_NAME][userid]))
+
+    score_data.sort(key=lambda x: x[1], reverse=True)
+    logger.info(score_data)
+    lines = '\n'.join([f"{x[0]}: {x[1]}" for x in score_data])
+
+    return (f"Number of wins (first correct answers) by all participating discord users:\n```{lines}```")
 
 class Trivia(PluginModule):
     """
@@ -250,6 +276,7 @@ class Trivia(PluginModule):
         populate_categories()
         events.subscribe(EventType.DISCORD_BOT_MENTION, self._on_mention)
         self.discord_bot.add_command("trivia", trivia_command_handler, False, TRIVIA_HELPTEXT)
+        self.discord_bot.add_command("triviascores", trivia_scores_command_handler, False, TRIVIA_SCORES_HELPTEXT)
 
     def close(self):
         """
@@ -257,3 +284,4 @@ class Trivia(PluginModule):
         """
         categories_by_id.clear()
         self.discord_bot.remove_command("trivia")
+        self.discord_bot.remove_command("triviascores")
