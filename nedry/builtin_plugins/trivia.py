@@ -100,7 +100,7 @@ TRIVIA_SCORES_HELPTEXT = """
 {0}
 
 Shows total score (number of first correct answers) for all discord users who have
-ever answered a trivia question.
+ever answered a trivia question correctly.
 
 Example:
 
@@ -114,7 +114,7 @@ trivia_by_channel_lock = threading.Lock()
 trivia_by_channel = {}
 
 
-def _increment_score(config, user_id):
+def _increment_score(config, user_id, num=1):
     if PLUGIN_NAME not in config.config.plugin_data:
         config.config.plugin_data[PLUGIN_NAME] = {}
 
@@ -124,7 +124,7 @@ def _increment_score(config, user_id):
     if user_id in config.config.plugin_data[PLUGIN_NAME]:
         score = config.config.plugin_data[PLUGIN_NAME][user_id]
 
-    new_score = score + 1
+    new_score = score + num
     config.config.plugin_data[PLUGIN_NAME][user_id] = new_score
     config.save_to_file()
     return new_score
@@ -153,19 +153,23 @@ def _trivia_thread_task(discord_bot, time_secs, channel):
 
         score = None
         if correct_answers:
-            score = _increment_score(discord_bot.config, correct_answers[0].id)
+            # First correct answer always gets 2 points
+            score = _increment_score(discord_bot.config, correct_answers[0].id, 2)
 
         if not correct_answers:
             resp += "Unfortunately, nobody picked that answer :("
         elif len(correct_answers) == 1:
             resp += (f"Congratulations {correct_answers[0].mention}, you're the "
-                     f"only one who picked the right answer!\n"
-                     f"(total win count for {correct_answers[0].mention}: {score})")
+                     f"only one who picked the right answer! You get 2 points.\n"
+                     f"(total score: {score})")
         else:
-            mentions = utils.list_to_english([f"{x.mention}" for x in correct_answers])
-            resp += (f"{mentions} picked the right answer, but {correct_answers[0].mention} "
-                     f"picked it first, so they win. Congratulations {correct_answers[0].mention}!\n"
-                     f"(total win count for {correct_answers[0].mention}: {score})")
+            for answer in correct_answers[1:]:
+                _ = _increment_score(discord_bot.config, answer.id, 1)
+
+            win_mention = correct_answers[0].mention
+            mentions = utils.list_to_english([f"{x.mention}" for x in correct_answers[1:]])
+            resp += (f"{win_mention} picked the right answer first, so they get 2 points (total score: {score}).\n")
+            resp += (f"{mentions} also picked the right answer, so they get 1 point.")
 
         discord_bot.send_message(channel, resp)
 
