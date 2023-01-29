@@ -104,7 +104,7 @@ def wiki_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     if not result:
         return "No results found, sorry :("
 
-    result = utils.truncate_text(result, 900)
+    result = utils.truncate_text(result, 1500)
 
     if result.endswith("may refer to:"):
         return "Please be a bit more specific with your search terms"
