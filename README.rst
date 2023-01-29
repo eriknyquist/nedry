@@ -2,7 +2,7 @@
 
     <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-Nedry discord bot 2.2.0
+Nedry discord bot 2.3.0
 =======================
 
 (formerly "twitch_monitor_discord_bot")
@@ -1085,7 +1085,7 @@ Command ``triviascores``
    triviascores
 
    Shows total score (number of first correct answers) for all discord users who have
-   ever answered a trivia question.
+   ever answered a trivia question correctly.
 
    Example:
 
