@@ -30,6 +30,8 @@ BUILTIN_JOKES = [
     ["Yoda lady", "Such beautiful yodelling!"],
     ["Amish", "You're not a shoe, you're a person!"],
     ["Europe", "No, you're a poo!"],
+    ["Cow says", "No, cow says moo actually"],
+    ["Dishes", "Dishes da police, open up!"],
 ]
 
 class JokeState(object):
