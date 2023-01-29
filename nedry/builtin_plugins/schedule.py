@@ -504,7 +504,7 @@ def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor
     # Save event for this user ID, for the "unremind last" command
     lastreminder_by_user[message.author.id] = event
 
-    return ("%s OK, I will remind you \"%s\" %s %s!\n```(%s until reminder)```" %
+    return ("%s OK, I will remind you \"%s\" %s %s!\n```\n(%s until reminder)```" %
             (message.author.mention, msg, splitw, timedesc, event.time_remaining_string()))
 
 
@@ -532,9 +532,9 @@ def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monit
     if seconds is None:
         return invalid_format(cmd_word)
 
-    fields = args.rsplit(' ' + splitw + ' ', 1)
+    fields = argtext.rsplit(' ' + splitw + ' ', 1)
     if len(fields) == 1:
-        fields = args.rsplit('\n' + splitw + ' ', 1)
+        fields = argtext.rsplit('\n' + splitw + ' ', 1)
 
     msg = fields[0].strip()
 
@@ -558,7 +558,7 @@ def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monit
     # Save event for this user ID, for the "unschedule last" command
     lastsched_by_user[message.author.id] = event
 
-    return ("%s OK, I will send the following message:\n```%s```\n in channel \"%s\" %s %s!\n"
+    return ("%s OK, I will send the following message:\n```\n%s```\n in channel \"%s\" %s %s!\n"
             "```(%s until scheduled message)```" % (message.author.mention, msg, channel_name,
             splitw, timedesc, event.time_remaining_string()))
 
