@@ -108,7 +108,7 @@ class Scheduler(object):
                     user_id = event.event_data[1]
 
                     user = self._discord_bot.client.get_user(user_id)
-                    msg = "Hey %s!\n```%s!```\n" % (user.mention, text)
+                    msg = "Hey %s!\n```\n%s```\n" % (user.mention, text)
                     msg += "(You asked me to remind you about this %s ago)" % timedelta(seconds=event.time_seconds)
 
                     logger.debug("sending reminder '%s' to user %s" % (text, user.name))
@@ -262,14 +262,14 @@ def _dump_reminders(user):
     events = []
     for e in scheduler.get_events_of_type(ScheduledEventType.DM_MESSAGE):
         if e.event_data[1] == user.id:
-            events.append("%d. !remindme %s in %s (%s until reminder)" %
+            events.append("```\n%d. !remindme %s in %s (%s until reminder)```" %
                           (len(events) + 1, e.event_data[0], e.event_data[2], e.time_remaining_string()))
 
     if not events:
         return "%s you have no scheduled reminders" % user.mention
 
     ret = "%s here are your scheduled reminders:\n" % user.mention
-    ret += "```%s```\n" % "\n".join(events)
+    ret += "%s\n" % "\n\n".join(events)
     ret += "(Use the '!unremind' command to remove reminders)"
 
     return ret
@@ -280,7 +280,7 @@ def _dump_scheduled(user):
     """
     events = []
     for e in scheduler.get_events_of_type(ScheduledEventType.CHANNEL_MESSAGE):
-        events.append("%d. !schedule %s %s in %s (%s until scheduled message)" %
+        events.append("```\n%d. !schedule %s %s in %s (%s until scheduled message)```" %
                       (len(events) + 1, e.event_data[1], e.event_data[0], e.event_data[2],
                        e.time_remaining_string()))
 
@@ -289,7 +289,7 @@ def _dump_scheduled(user):
         return "%s you have no scheduled messages" % user.mention
 
     ret = "%s here are your scheduled messages:\n" % user.mention
-    ret += "```%s```\n" % "\n".join(events)
+    ret += "%s\n" % "\n\n".join(events)
     ret += "(Use the '!unschedule' command to remove scheduled messages)"
 
     return ret
@@ -453,7 +453,7 @@ def _parse_timedelta_from_message(config, discord_user, message):
             break
 
     if None in [fields, splitw]:
-        return None, None, None, None
+        return None, None, None
 
     # See if string describes a time delta
     msg = ' '.join(fields[:-1])
@@ -463,22 +463,31 @@ def _parse_timedelta_from_message(config, discord_user, message):
     if deltasecs is None:
         deltasecs = _parse_datetime_str_to_seconds(config, discord_user, timedesc)
 
-    return msg, timedesc, splitw.strip(), deltasecs
+    return timedesc, splitw.strip(), deltasecs
 
 
 def remind_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !remindme command
     """
-    if len(args) == 0:
+    def invalid_format(cmd_word):
+        return proc.usage_msg("Invalid reminder, try saying something like:\n"
+                              "```!remindme to call my mother in 5 days and 6 hours```",
+                              cmd_word)
+
+    if not args.strip():
         return _dump_reminders(message.author)
 
-    collapsed_spaces = ' '.join(args).lower()
-    msg, timedesc, splitw, seconds = _parse_timedelta_from_message(config, message.author, collapsed_spaces)
+    collapsed_spaces = ' '.join(args.split())
+    timedesc, splitw, seconds = _parse_timedelta_from_message(config, message.author, collapsed_spaces)
     if seconds is None:
-        return proc.usage_msg("Invalid command format, try saying something like "
-                              "'!remindme to call my mother in 5 days and 6 hours'",
-                              cmd_word)
+        return invalid_format(cmd_word)
+
+    fields = args.rsplit(' ' + splitw + ' ', 1)
+    if len(fields) == 1:
+        fields = args.rsplit('\n' + splitw + ' ', 1)
+
+    msg = fields[0].strip()
 
     if seconds < 0:
         return "Sorry, the time you provided is in the past, please provide a time in the future"
@@ -503,22 +512,31 @@ def schedule_command_handler(cmd_word, args, message, proc, config, twitch_monit
     """
     Handler for !schedule command
     """
-    if len(args) == 0:
+
+    def invalid_format(cmd_word):
+        return proc.usage_msg("Invalid schedule, try saying something like:\n"
+                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
+                              cmd_word)
+    if not args.strip():
         return _dump_scheduled(message.author)
 
-    if len(args) < 4:
-        return proc.usage_msg("Invalid schedule, try saying something like:\n"
-                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
-                              cmd_word)
+    fields = args.lower().split(maxsplit=1)
+    if len(fields) != 2:
+        return invalid_format(cmd_word)
 
-    channel_name = args[0].strip()
+    channel_name = fields[0].strip()
+    argtext = fields[1]
 
-    collapsed_spaces = ' '.join(args[1:])
-    msg, timedesc, splitw, seconds = _parse_timedelta_from_message(config, message.author, collapsed_spaces)
+    collapsed_spaces = ' '.join(argtext.split())
+    timedesc, splitw, seconds = _parse_timedelta_from_message(config, message.author, collapsed_spaces)
     if seconds is None:
-        return proc.usage_msg("Invalid schedule, try saying something like:\n"
-                              "```!schedule channel-name Hey Guys, 10 mins have elapsed! in 10 minutes```",
-                              cmd_word)
+        return invalid_format(cmd_word)
+
+    fields = args.rsplit(' ' + splitw + ' ', 1)
+    if len(fields) == 1:
+        fields = args.rsplit('\n' + splitw + ' ', 1)
+
+    msg = fields[0].strip()
 
     if seconds < 0:
         return "Sorry, the time you provided is in the past, please provide a time in the future"
@@ -549,6 +567,7 @@ def unremind_command_handler(cmd_word, args, message, proc, config, twitch_monit
     """
     Handler for !unremind command
     """
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please provide some arguments.", cmd_word)
 
@@ -613,6 +632,7 @@ def unschedule_command_handler(cmd_word, args, message, proc, config, twitch_mon
     """
     Handler for !unschedule command
     """
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please provide some arguments.", cmd_word)
 

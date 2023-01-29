@@ -100,6 +100,7 @@ async def _mock_last_message(bot, channel, user_id):
 
 
 def mock_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please mention the user you want to mock.", cmd_word)
 
@@ -111,6 +112,7 @@ def mock_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
 
 
 def apologize_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please mention the user you want to apologise to.", cmd_word)
 

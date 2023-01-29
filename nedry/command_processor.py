@@ -453,6 +453,7 @@ class CommandProcessor(object):
 
         words = text.lstrip(COMMAND_PREFIX).split()
         command = words[0].lower().strip()
+        argtext = text.lstrip(COMMAND_PREFIX + command)
 
         msg_data = MessageData(channel, author, author.id in self.config.config.discord_admin_users)
 
@@ -468,7 +469,7 @@ class CommandProcessor(object):
 
             # Run command handler
             handler = self.cmds[command].handler
-            return handler(command, words[1:], msg_data, self, self.config, self.twitch_monitor)
+            return handler(command, argtext, msg_data, self, self.config, self.twitch_monitor)
 
         return "Sorry, I don't recognize the command '%s'" % command
 
@@ -483,6 +484,7 @@ class CommandProcessor(object):
 
 def cmd_help(cmd_word, args, message, proc, config, twitch_monitor):
     bot_name = proc.bot.client.user.name
+    args = args.lower().split()
 
     if len(args) == 0:
         return (("See list of available commands below. Use the help command again "
@@ -500,6 +502,7 @@ def cmd_help(cmd_word, args, message, proc, config, twitch_monitor):
 
 def cmd_cmdhistory(cmd_word, args, message, proc, config, twitch_monitor):
     default_count = False
+    args = args.lower().split()
 
     if len(args) == 0:
         count = 25
@@ -548,6 +551,7 @@ def cmd_streamers(cmd_word, args, message, proc, config, twitch_monitor):
     return "Streamers being monitored:\n```\n%s```" % "\n".join(lines)
 
 def cmd_addstreamers(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) < 1:
         return proc.usage_msg("Please provide the name(s) of the streamer(s) you want to add.", cmd_word)
 
@@ -582,6 +586,7 @@ def cmd_addstreamers(cmd_word, args, message, proc, config, twitch_monitor):
         return "OK! Streamers %s are now being monitored" % utils.list_to_english(args)
 
 def cmd_removestreamers(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) < 1:
         return proc.usage_msg("Please provide the name(s) of the streamer(s) you want to remove.", cmd_word)
 
@@ -614,6 +619,7 @@ def cmd_clearallstreamers(cmd_word, args, message, proc, config, twitch_monitor)
     return "OK, no streamers are being monitored any more."
 
 def cmd_nocompetition(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) < 1:
         return "nocompetition is %s" % ("enabled" if config.config.silent_when_host_streaming else "disabled")
 
@@ -647,6 +653,7 @@ def cmd_testphrases(cmd_word, args, message, proc, config, twitch_monitor):
     return "Phrases currently in use (with format tokens populated):\n```\n%s```" % "\n\n".join(lines)
 
 def cmd_addphrase(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) < 1:
         return proc.usage_msg("Please provide the text for the phrase you want to add.",
                               cmd_word)
@@ -666,6 +673,7 @@ def cmd_addphrase(cmd_word, args, message, proc, config, twitch_monitor):
     return "OK! added the following phrase:\n```%s```" % phrase
 
 def cmd_removephrases(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) < 1:
         return proc.usage_msg("Please provide the number(s) for the phrase(s) you want to remove.",
                               cmd_word)
@@ -700,6 +708,7 @@ def cmd_quote(cmd_word, args, message, proc, config, twitch_monitor):
     return "```\n\"%s\"\n  - %s\n```" % (text, author)
 
 def cmd_say(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) < 1:
         return proc.usage_msg("Give me something to say!", cmd_word)
 
@@ -735,6 +744,7 @@ def cmd_plugins(cmd_word, args, message, proc, config, twitch_monitor):
     return ret
 
 def cmd_plugson(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please provide the name(s) of one or more plugin(s) you want to enable.",
                              cmd_word)
@@ -756,6 +766,7 @@ def cmd_plugson(cmd_word, args, message, proc, config, twitch_monitor):
     return "OK, the following plugins are enabled: %s" % ', '.join(args)
 
 def cmd_plugsoff(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please provide the name(s) of one or more plugin(s) you want to disable.",
                               cmd_word)
@@ -777,6 +788,7 @@ def cmd_plugsoff(cmd_word, args, message, proc, config, twitch_monitor):
     return "OK, the following plugins are disabled: %s" % ', '.join(args)
 
 def cmd_pluginfo(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         return proc.usage_msg("Please provide the name of the plugin you want information about.",
                               cmd_word)
@@ -801,6 +813,7 @@ def cmd_pluginfo(cmd_word, args, message, proc, config, twitch_monitor):
     return ("Here is information about the '%s' plugin:\n```%s```" % (plugin_name, '\n'.join(lines)))
 
 def cmd_twitchclientid(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) != 2:
         return proc.usage_msg("Please provide 2 strings, twitch client ID & twitch client secret.",
                               cmd_word)
@@ -818,6 +831,7 @@ def cmd_twitchclientid(cmd_word, args, message, proc, config, twitch_monitor):
     return "OK! successfully connected to twitch with your new client ID/secret"
 
 def cmd_announcechannel(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         return "Current stream announcements channel is ```%s```" % config.config.discord_channel_name
 
@@ -832,6 +846,7 @@ def cmd_announcechannel(cmd_word, args, message, proc, config, twitch_monitor):
     return "OK! stream announcements will now be sent to the '%s' channel" % channel_name
 
 def cmd_timezone(cmd_word, args, message, proc, config, twitch_monitor):
+    args = args.lower().split()
     if len(args) == 0:
         if str(message.author.id) not in config.config.timezones:
             return f"{message.author.mention} no timezone currently assigned for you"
