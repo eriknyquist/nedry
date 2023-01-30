@@ -17,7 +17,7 @@ with open(REQS, 'r') as fh:
 setup(
     name='nedry',
     version=__version__,
-    description=('A discord bot for monitoring twitch streams'),
+    description=('A self-hosted discord bot with a modular plugin system'),
     long_description=long_description,
     url='http://github.com/eriknyquist/nedry',
     author='Erik Nyquist',
