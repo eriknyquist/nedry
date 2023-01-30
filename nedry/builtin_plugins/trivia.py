@@ -34,11 +34,73 @@ class TriviaQuestion(object):
     def correct_answer_index(self):
         return self.answers.index(self.correct_answer)
 
+
 class TriviaSession(object):
-    def __init__(self, trivia, thread):
-        self.thread = thread
+    def __init__(self, trivia, time_secs, channel, discord_bot):
+        self.thread = None
         self.trivia = trivia
         self.responses = []
+        self.discord_bot = discord_bot
+        self.time_secs = time_secs
+        self.channel = channel
+        self.stop_event = threading.Event()
+
+    def start_thread(self):
+        self.thread = threading.Thread(target=self._trivia_thread_task)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def stop_thread(self):
+        if self.thread is not None:
+            logger.info(f"stopping {self.thread}")
+            self.stop_event.set()
+            self.thread.join()
+            self.thread = None
+
+    def _trivia_thread_task(self):
+        stopped = self.stop_event.wait(self.time_secs)
+        if stopped:
+            # Stopped early, return
+            return
+
+        with trivia_by_channel_lock:
+            correct_answers = []
+            incorrect_answers = []
+            correct_choice = self.trivia.correct_answer_index() + 1
+
+            for i in range(len(self.responses)):
+                discord_user, choice = self.responses[i]
+                if choice == correct_choice:
+                    correct_answers.append(discord_user)
+                else:
+                    incorrect_answers.append(discord_user)
+
+
+            resp = (f'Time is up! The correct answer was:\n'
+                    f'```{correct_choice}. {self.trivia.correct_answer}```\n')
+
+            score = None
+            if correct_answers:
+                # First correct answer always gets 2 points
+                score = _increment_score(self.discord_bot.config, correct_answers[0].id, 2)
+
+            if not correct_answers:
+                resp += "Unfortunately, nobody picked that answer :("
+            elif len(correct_answers) == 1:
+                resp += (f"Congratulations {correct_answers[0].mention}, you're the "
+                         f"only one who picked the right answer! You get 2 points.\n"
+                         f"(total score: {score})")
+            else:
+                for answer in correct_answers[1:]:
+                    _ = _increment_score(self.discord_bot.config, answer.id, 1)
+
+                win_mention = correct_answers[0].mention
+                mentions = utils.list_to_english([f"{x.mention}" for x in correct_answers[1:]])
+                resp += (f"{win_mention} picked the right answer first, so they get 2 points (total score: {score}).\n")
+                resp += (f"{mentions} also picked the right answer, so they get 1 point.")
+
+            self.discord_bot.send_message(self.channel, resp)
+
 
 def populate_categories():
     resp = requests.get(url="https://opentdb.com/api_category.php")
@@ -131,55 +193,12 @@ def _increment_score(config, user_id, num=1):
     return new_score
 
 
-def _trivia_thread_task(discord_bot, time_secs, channel):
-    time.sleep(time_secs)
-
-    with trivia_by_channel_lock:
-        session = trivia_by_channel.pop(channel.id)
-
-        correct_answers = []
-        incorrect_answers = []
-        correct_choice = session.trivia.correct_answer_index() + 1
-
-        for i in range(len(session.responses)):
-            discord_user, choice = session.responses[i]
-            if choice == correct_choice:
-                correct_answers.append(discord_user)
-            else:
-                incorrect_answers.append(discord_user)
-
-
-        resp = (f'Time is up! The correct answer was:\n'
-                f'```{correct_choice}. {session.trivia.correct_answer}```\n')
-
-        score = None
-        if correct_answers:
-            # First correct answer always gets 2 points
-            score = _increment_score(discord_bot.config, correct_answers[0].id, 2)
-
-        if not correct_answers:
-            resp += "Unfortunately, nobody picked that answer :("
-        elif len(correct_answers) == 1:
-            resp += (f"Congratulations {correct_answers[0].mention}, you're the "
-                     f"only one who picked the right answer! You get 2 points.\n"
-                     f"(total score: {score})")
-        else:
-            for answer in correct_answers[1:]:
-                _ = _increment_score(discord_bot.config, answer.id, 1)
-
-            win_mention = correct_answers[0].mention
-            mentions = utils.list_to_english([f"{x.mention}" for x in correct_answers[1:]])
-            resp += (f"{win_mention} picked the right answer first, so they get 2 points (total score: {score}).\n")
-            resp += (f"{mentions} also picked the right answer, so they get 1 point.")
-
-        discord_bot.send_message(channel, resp)
-
-
 def trivia_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     with trivia_by_channel_lock:
         if message.channel.id in trivia_by_channel:
             return f"{message.author.mention} A trivia question is already in progress, wait until it finishes"
 
+    args = args.lower().split()
     if len(args) > 0:
         try:
             time_secs = int(args[0])
@@ -197,16 +216,14 @@ def trivia_command_handler(cmd_word, args, message, proc, config, twitch_monitor
     answers = "\n".join(["```%d. %s```" % (i + 1, q.answers[i]) for i in range(len(q.answers))])
 
     with trivia_by_channel_lock:
-        thread = threading.Thread(target=_trivia_thread_task,
-                                  args=(proc.bot, time_secs, message.channel,))
-        thread.daemon = True
-        thread.start()
-
-        trivia_by_channel[message.channel.id] = TriviaSession(q, thread)
+        session = TriviaSession(q, time_secs, message.channel, proc.bot)
+        session.start_thread()
+        trivia_by_channel[message.channel.id] = session
 
     return ("%s\n\n%s\n\n You have %d seconds to respond with the number of your "
             "desired answer, make sure to mention me!\n\n(Example: \"@%s 1\")" %
             (q.question, answers, time_secs, proc.bot.client.user.name))
+
 
 def trivia_scores_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     score_data = []
@@ -222,6 +239,7 @@ def trivia_scores_command_handler(cmd_word, args, message, proc, config, twitch_
     lines = '\n'.join([f"{x[0]}: {x[1]}" for x in score_data])
 
     return f"Trivia scores for all participating discord users:\n```{lines}```"
+
 
 class Trivia(PluginModule):
     """
@@ -287,6 +305,14 @@ class Trivia(PluginModule):
         """
         Disables plugin operation; unsubscribe from events and/or tear down things here
         """
+        # Stop all running threads
+        with trivia_by_channel_lock:
+            for channelid in trivia_by_channel:
+                session = trivia_by_channel[channelid]
+                session.stop_thread()
+
+            trivia_by_channel.clear()
+
         categories_by_id.clear()
         self.discord_bot.remove_command("trivia")
         self.discord_bot.remove_command("triviascores")

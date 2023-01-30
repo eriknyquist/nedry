@@ -94,7 +94,7 @@ def wiki_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     """
     Handler for !wiki command
     """
-    search_text = ' '.join(args).strip()
+    search_text = args
     if not search_text:
         # If no search text provided, just get a random wiki page
         result = get_random_wiki_summary()
