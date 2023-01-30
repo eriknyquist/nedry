@@ -1062,8 +1062,8 @@ Command ``trivia``
 
    Fetch a trivia question from opentdb.com and allow all discord users to provide
    an answer until the time limit is up. Whoever provides the correct answer first
-   wins, and if the correct answer is not provided, then nobody wins. Also keeps track
-   of scores (number of wins) by discord user ID.
+   gets 2 points, and any other correct answers that came after that get 1 point.
+   If the correct answer is not provided, then no points are awarded.
 
    [time_limit] should be replaced with the desired time limit for the question, in seconds.
    This parameter is optional; if no time limit is provided then a time limit of 60 seconds
@@ -1084,8 +1084,9 @@ Command ``triviascores``
 
    triviascores
 
-   Shows total score (number of first correct answers) for all discord users who have
-   ever answered a trivia question.
+   Shows total score for all discord users who have ever answered a trivia question correctly.
+   The first correct answer to a trivia question gets 2 points, and all other correct answers
+   get 1 point.
 
    Example:
 
