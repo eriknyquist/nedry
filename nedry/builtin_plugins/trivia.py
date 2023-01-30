@@ -52,7 +52,6 @@ class TriviaSession(object):
 
     def stop_thread(self):
         if self.thread is not None:
-            logger.info(f"stopping {self.thread}")
             self.stop_event.set()
             self.thread.join()
             self.thread = None
