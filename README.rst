@@ -416,6 +416,16 @@ with their expected arguments and a brief description:
      - No arguments
      - Emitted when the configured host streamer stops streaming
 
+Reporting problems
+==================
+
+If you find a problem or a typo please report it by `creating a new issue on Github <https://github.com/eriknyquist/nedry/issues>`_.
+
+Contributions
+=============
+
+Contributions are welcome, please `open a pull request on Github <https://github.com/eriknyquist/nedry/pulls>`_.
+
 Bot command reference
 =====================
 
