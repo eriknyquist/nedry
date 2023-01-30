@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 PLUGIN_NAME = "schedule"
-PLUGIN_VERSION = "1.1.0"
+PLUGIN_VERSION = "1.2.0"
 
 
 DATETIME_FMT = [
@@ -84,6 +84,29 @@ class Scheduler(object):
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
 
+    def has_active_events(self):
+        with self._lock:
+            event_count = len(self._active_events)
+
+        return event_count
+
+    def stop(self):
+        if self._thread is not None:
+            self._stop_event.set()
+            self._thread.join()
+            self._thread = None
+
+    def start(self):
+        if self._thread is None:
+            # Remove all expired events
+            utcnow = _utc_time()
+            while self._active_events[0].expiry_time <= utcnow:
+                self._active_events.pop(0)
+
+            self._thread = threading.Thread(target=self._thread_task)
+            self._thread.daemon = True
+            self._thread.start()
+
     def set_discord_bot(self, bot):
         self._discord_bot = bot
 
@@ -130,8 +153,7 @@ class Scheduler(object):
         # Loop forever
         while True:
             if not self._active_events:
-                # Exit if no active events, this thread should
-                # only be started when there are active events
+                # Exit if no active events
                 return
 
             # Figure out how long to wait until the next expiry
@@ -194,11 +216,7 @@ class Scheduler(object):
                     self._add_active_event(event)
                     events_loaded += 1
 
-            if events_loaded > 0:
-                # (Re)Start thread
-                self._thread = threading.Thread(target=self._thread_task)
-                self._thread.daemon = True
-                self._thread.start()
+        return events_loaded
 
     def add_event(self, mins_from_now, event_type, *event_data):
         expiry_time_secs = int(_utc_time() + (mins_from_now * 60))
@@ -208,8 +226,7 @@ class Scheduler(object):
             first_event = len(self._active_events) == 0
             if self._active_events:
                 # Other events are active, stop the thread before modifying the list
-                self._stop_event.set()
-                self._thread.join()
+                self.stop()
 
             self._add_active_event(event)
 
@@ -217,9 +234,7 @@ class Scheduler(object):
             self.save_scheduled_events()
 
         # (Re)Start thread
-        self._thread = threading.Thread(target=self._thread_task)
-        self._thread.daemon = True
-        self._thread.start()
+        self.start()
 
         return event
 
@@ -231,16 +246,13 @@ class Scheduler(object):
 
             if self._active_events:
                 # Other events are active, stop the thread before modifying the list
-                self._stop_event.set()
-                self._thread.join()
+                self.stop()
 
             for e in events:
                 self._active_events.remove(e)
 
         # (Re)Start thread
-        self._thread = threading.Thread(target=self._thread_task)
-        self._thread.daemon = True
-        self._thread.start()
+        self.start()
 
     def get_events_of_type(self, event_type):
         with self._lock:
@@ -736,6 +748,9 @@ class Schedule(PluginModule):
 
         self.open_count += 1
 
+        if scheduler.has_active_events():
+            scheduler.start()
+
     def close(self):
         """
         Disables plugin operation; unsubscribe from events and/or tear down things here
@@ -744,4 +759,5 @@ class Schedule(PluginModule):
         self.discord_bot.remove_command("remindme")
         self.discord_bot.remove_command("unremind")
         self.discord_bot.remove_command("unschedule")
+        scheduler.stop()
         scheduler.set_discord_bot(None)
