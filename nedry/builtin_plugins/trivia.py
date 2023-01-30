@@ -84,8 +84,8 @@ TRIVIA_HELPTEXT = """
 
 Fetch a trivia question from opentdb.com and allow all discord users to provide
 an answer until the time limit is up. Whoever provides the correct answer first
-wins, and if the correct answer is not provided, then nobody wins. Also keeps track
-of scores (number of wins) by discord user ID.
+gets 2 points, and any other correct answers that came after that get 1 point.
+If the correct answer is not provided, then no points are awarded.
 
 [time_limit] should be replaced with the desired time limit for the question, in seconds.
 This parameter is optional; if no time limit is provided then a time limit of 60 seconds
@@ -99,8 +99,9 @@ Example:
 TRIVIA_SCORES_HELPTEXT = """
 {0}
 
-Shows total score (number of first correct answers) for all discord users who have
-ever answered a trivia question correctly.
+Shows total score for all discord users who have ever answered a trivia question correctly.
+The first correct answer to a trivia question gets 2 points, and all other correct answers
+get 1 point.
 
 Example:
 
@@ -218,10 +219,9 @@ def trivia_scores_command_handler(cmd_word, args, message, proc, config, twitch_
         score_data.append((user.name, config.config.plugin_data[PLUGIN_NAME][userid]))
 
     score_data.sort(key=lambda x: x[1], reverse=True)
-    logger.info(score_data)
     lines = '\n'.join([f"{x[0]}: {x[1]}" for x in score_data])
 
-    return (f"Number of wins (first correct answers) by all participating discord users:\n```{lines}```")
+    return f"Trivia scores for all participating discord users:\n```{lines}```"
 
 class Trivia(PluginModule):
     """
@@ -233,11 +233,12 @@ class Trivia(PluginModule):
     plugin_long_description = """
     Allows all discord users to request a trivia question in the current discord channel.
     Uses opentdb.com to fetch a random trivia quesion. Also keeps track of the scores
-    (number of correct trivia answers) of all discord users.
+    of all discord users.
 
     Commands added:
 
-    !trivia (see !help trivia)
+    !trivia       (see !help trivia)
+    !triviascores (see !help triviascores)
     """
 
     def _handle_trivia_answer(self, session, message, text_without_mention):
