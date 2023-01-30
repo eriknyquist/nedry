@@ -2,7 +2,7 @@
 
     <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-Nedry discord bot 2.2.0
+Nedry discord bot 2.3.1
 =======================
 
 (formerly "twitch_monitor_discord_bot")
