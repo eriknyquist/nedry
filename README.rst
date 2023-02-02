@@ -75,7 +75,7 @@ Creating the config file and starting the bot
 
 #. Most of the behaviours of this bot can be configured via discord messages while the
    bot is up and running, but there are a few parameters that need to be set in the configuration
-   file first, to get the bot talking to twitch and to your discord server. Populate these required
+   file first, to get the bot talking to your discord server. Populate these required
    parameters in the .json file:
 
    #. ``discord_bot_api_token``: Discord bot API token must be entered here as a string.
@@ -285,8 +285,8 @@ in the Quick Start section. The configuration file must be a .json file of the f
         ]
     }
 
-Description of fields
----------------------
+Description of fields in configuration file
+-------------------------------------------
 
 * ``twitch_client_id``: Enter your Twitch client ID here.
 
