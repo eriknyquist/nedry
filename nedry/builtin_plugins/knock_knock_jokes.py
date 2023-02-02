@@ -214,7 +214,7 @@ class KnockKnockJokes(PluginModule):
             cleaned = ''.join(text_without_mention.split()).lower()
             if cleaned.startswith('knockknock'):
                 # Someone is telling us a joke
-                new_joke = KnockKnockJoke(self.config, False, message.author)
+                new_joke = KnockKnockJoke(self.discord_bot.config, False, message.author)
                 channel_data[chanid] = new_joke
                 ret = "%s who's there?" % message.author.mention
 
