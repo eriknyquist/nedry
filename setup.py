@@ -26,7 +26,8 @@ setup(
     python_requires='>=3.9',
     packages=find_packages(),
     package_dir={'nedry': 'nedry'},
-    package_data={'nedry': [os.path.join('nedry', 'quotedb.json')]},
+    package_data={'nedry':  ['quotedb.json',
+                            os.path.join('builtin_plugins', 'writing_prompts.txt')]},
     include_package_data=True,
     zip_safe=False,
     install_requires=requirements
