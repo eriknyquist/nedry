@@ -1,7 +1,14 @@
 import os
+import logging
+import textwrap
 
 from nedry.plugin import PluginModule
 from nedry import utils
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+LINE_WIDTH = 80
 
 PROMPTS_FILE = os.path.join(os.path.dirname(__file__), "writing_prompts.txt")
 
@@ -63,7 +70,7 @@ class StorySession(object):
 
             ret += text + ' '
 
-        return ret
+        return textwrap.fill(ret, LINE_WIDTH)
 
 
 def _handle_new_op(cmd_word, proc, message):
@@ -105,8 +112,9 @@ def _handle_show_op(cmd_word, proc, message):
                               cmd_word)
 
     session = stories_by_channel[message.channel.id]
-
-    return f"{message.author.mention} Here is the story so far:\n```{session.dump_story()}```"
+    story = session.dump_story()
+    logger.info(story)
+    return f"{message.author.mention} Here is the story so far:\n```{story}```"
 
 def _handle_stop_op(cmd_word, proc, message):
     if message.channel.id not in stories_by_channel:
