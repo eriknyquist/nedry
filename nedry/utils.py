@@ -1,3 +1,4 @@
+import random
 import datetime
 import zoneinfo
 
@@ -149,3 +150,34 @@ def list_to_english(words):
         return "%s and %s" % (words[0], words[1])
     else:
         return ", ".join(words[:-1]) + " and " + words[-1]
+
+def random_line_from_file(filename):
+    ret = b""
+    with open(filename, "rb") as fh:
+        fh.seek(0, 2)     # Seek to the end of the file
+        fsize = fh.tell() # Get file size
+
+        # Seek to random file offset
+        offs = int((fsize - 1) * random.random())
+        fh.seek(offs, 0)
+
+        # Keep reading single chars backwards until we see a newline
+        while True:
+            if fh.tell() == 0:
+                # Reached the beginning of the file
+                break
+
+            ch = fh.read(1)
+
+            if ch == b'\n':
+                break
+
+            fh.seek(-2, 1)
+
+        # Now, keep reading single chars until EOF or until the next newline
+        ch = fh.read(1)
+        while ch not in [b'\n', b'']:
+            ret += ch
+            ch = fh.read(1)
+
+        return ret.decode("utf-8")
