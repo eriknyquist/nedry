@@ -83,7 +83,7 @@ class TwitchMonitor(object):
         if not self.thread_running:
             self.thread.start()
             self.thread_running = True
-            logger.info("Started twitch monitor thread")
+            logger.debug("Started twitch monitor thread")
 
         return True
 
@@ -115,10 +115,10 @@ class TwitchMonitor(object):
             if c.name in self.streamers:
                 if c.is_live != self.streamers[c.name].is_live:
                     if c.is_live:
-                        logger.info("streamer %s went live" % c.name)
+                        logger.debug("streamer %s went live" % c.name)
                         events.emit(EventType.TWITCH_STREAM_STARTED, c.name, c.url)
                     else:
-                        logger.info("streamer %s is no longer live" % c.name)
+                        logger.debug("streamer %s is no longer live" % c.name)
                         events.emit(EventType.TWITCH_STREAM_ENDED, c.name, c.url)
 
             self.streamers[c.name] = c
