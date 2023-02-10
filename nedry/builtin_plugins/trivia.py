@@ -23,6 +23,9 @@ category_names = [
 
 categories_by_id = {}
 
+trivia_by_channel_lock = threading.Lock()
+trivia_by_channel = {}
+
 
 class TriviaQuestion(object):
     def __init__(self, category, question, answers, correct_answer):
@@ -98,6 +101,10 @@ class TriviaSession(object):
                 resp += (f"{win_mention} picked the right answer first, so they get 2 points (total score: {score}).\n")
                 resp += (f"{mentions} also picked the right answer, so they get 1 point.")
 
+            # Delete trivia session
+            if self.channel.id in trivia_by_channel:
+                del trivia_by_channel[self.channel.id]
+
             self.discord_bot.send_message(self.channel, resp)
 
 
@@ -172,9 +179,6 @@ Example:
 MIN_TIME_SECONDS = 10
 DEFAULT_TIME_SECONDS = 60
 
-trivia_by_channel_lock = threading.Lock()
-trivia_by_channel = {}
-
 
 def _increment_score(config, user_id, num=1):
     if PLUGIN_NAME not in config.config.plugin_data:
@@ -195,7 +199,8 @@ def _increment_score(config, user_id, num=1):
 def trivia_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     with trivia_by_channel_lock:
         if message.channel.id in trivia_by_channel:
-            return f"{message.author.mention} A trivia question is already in progress, wait until it finishes"
+            return (f"{message.author.mention} A trivia question is already in progress "
+                    f"on this channel, wait until it finishes")
 
     args = args.lower().split()
     if len(args) > 0:
