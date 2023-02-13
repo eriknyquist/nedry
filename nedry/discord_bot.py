@@ -215,7 +215,6 @@ class DiscordBot(object):
     def send_message(self, channel, message):
         messages = self._split_message_on_limit(message)
         for message in messages:
-            logger.info(message)
             asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
 
     def send_stream_announcement(self, message):
