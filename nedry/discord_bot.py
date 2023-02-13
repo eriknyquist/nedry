@@ -132,16 +132,11 @@ class DiscordBot(object):
 
     def _split_message_on_limit(self, message):
         msgs = []
+        line_buf = None
         code_marker_count = 0
         current_message = ""
-        inside_code_marker = False
 
         for line in message.split("\n"):
-            if current_message == "":
-                if inside_code_marker:
-                    current_message += "```"
-                    inside_code_marker = False
-
             if len(current_message) + len(line) > self.message_limit:
                 # This line would exceed message limit, time for a new message
                 inside_code_marker = (code_marker_count % 6) != 0
@@ -151,7 +146,7 @@ class DiscordBot(object):
                     current_message += '\n```'
 
                 msgs.append(current_message)
-                current_message = ""
+                current_message = "```" + line + '\n'
                 continue
 
             code_marker_count += line.count('```')
@@ -220,6 +215,7 @@ class DiscordBot(object):
     def send_message(self, channel, message):
         messages = self._split_message_on_limit(message)
         for message in messages:
+            logger.info(message)
             asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
 
     def send_stream_announcement(self, message):
