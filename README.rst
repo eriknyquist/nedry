@@ -1104,3 +1104,43 @@ Command ``triviascores``
 
    All discord users may use this command.
 
+
+Command ``story``
+-----------------
+
+::
+
+
+   story new|add|continue|show|stop [optional story contribution text]
+
+   Interact with the story being written on the current discord channel.
+
+   The first argument to this command may be one of the following 5 operations:
+
+   new      - Start a new story in this channel.
+
+   add      - Contribute the next part of the story being written on this channel.
+              [optional story contribution text] should be replaced with your desired
+              text for the next part of the story.
+
+   continue - Instead of starting a new story with a random prompt, add to an existing
+              story by providing the whole story. [optional story contribution text]
+              should be replaced with the text of the story that you want to continue.
+              (Note: if your story is too large to fit in a single discord message,
+              you may need to start with a smaller portion of the story, and afterwards
+              add the remaining text using the '!story add' command)
+
+   show     - Show the current story as written so far.
+
+   stop     - Stop the story writing session, and show the story as written so far.
+
+   Examples:
+
+   @BotName !story new                            (Provide a random prompt to start a new story)
+   @BotName !story add And then he fell down...   (Contribute to the current story)
+   @BotName !story continue Call me Ishmael       (Start new story with provided text, no prompt)
+   @BotName !story show                           (Show the story as written so far)
+   @BotName !story stop                           (Stop the story)
+
+   All discord users may use this command.
+
