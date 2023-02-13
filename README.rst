@@ -2,7 +2,7 @@
 
     <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-Nedry discord bot 2.3.2
+Nedry discord bot 2.4.0
 =======================
 
 (formerly "twitch_monitor_discord_bot")
@@ -203,7 +203,7 @@ Writing and using plugins
 
 * To get started with writing plugins, see `this sample plugin <https://github.com/eriknyquist/nedry/blob/nedry/example_plugins/echo_dm_example.py>`_.
 
-  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/nedry/blob/nedry/nedry/builtin_plugins/knock_knock_jokes.py>`_
+  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/nedry/blob/nedry/nedry/builtin_plugins/stories.py>`_
 
 
 Misc. sample bot interactions
