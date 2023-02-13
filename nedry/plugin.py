@@ -25,15 +25,31 @@ class PluginModule(object):
         self.discord_bot = discord_bot
         self.enabled = False
 
+    def startup(self):
+        """
+        Called once when the bot starts, after the configuration file has been loaded
+        """
+        pass
+
+    def shutdown(self):
+        """
+        Called once when the bot is shutdown / killed
+        """
+        pass
+
     def open(self):
         """
-        Enables plugin operation; subscribe to events and/or initialize things here
+        Called when the plugin is enabled via "plugson <plugin_name>" command.
+        Should enable plugin operation, e.g. subscribe to events and register bot
+        commands
         """
         raise NotImplementedError()
 
     def close(self):
         """
-        Disables plugin operation; unsubscribe from events and/or tear down things here
+        Called when plugin is disabled via "plugoff <plugin_name>" command.
+        Should disable plugin operation, e.g. unsubscribe from events and de-register
+        bot commands
         """
         raise NotImplementedError()
 
@@ -164,3 +180,21 @@ class PluginModuleManager(object):
             if plugin.enabled:
                 plugin.close()
                 plugin.enabled = False
+
+    def startup_plugins(self):
+        """
+        Call the startup method on all plugins
+        """
+        logger.debug("Starting up")
+        # Start up all plugins
+        for n in self._plugin_modules:
+            plugin = self._plugin_modules[n].startup()
+
+    def shutdown_plugins(self):
+        """
+        Call the shutdown method on all plugins
+        """
+        logger.debug("Shutting down")
+        # Start up all plugins
+        for n in self._plugin_modules:
+            plugin = self._plugin_modules[n].shutdown()

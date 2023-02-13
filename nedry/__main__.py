@@ -84,6 +84,7 @@ def main():
     for plugin in builtin_plugin_modules:
         plugin_manager.add_plugin_class(plugin)
 
+    plugin_manager.startup_plugins()
     plugin_manager.enable_plugins(config.config.enabled_plugins)
 
     bot.plugin_manager = plugin_manager
@@ -98,9 +99,10 @@ def main():
     bot.run()
 
     logger.info("Stopping")
-    bot.stop()              # Shut down discord client
-    plugin_manager.stop()   # Shut down all plugins
-    config.stop()           # Shut down config file manager
+    bot.stop()                         # Shut down discord client
+    plugin_manager.stop()              # Disable all plugins
+    plugin_manager.shutdown_plugins()  # Shut down all plugins
+    config.stop()                      # Shut down config file manager
 
 if __name__ == "__main__":
     main()
