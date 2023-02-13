@@ -203,7 +203,7 @@ Writing and using plugins
 
 * To get started with writing plugins, see `this sample plugin <https://github.com/eriknyquist/nedry/blob/nedry/example_plugins/echo_dm_example.py>`_.
 
-  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/nedry/blob/nedry/nedry/builtin_plugins/stories.py>`_
+  Also, see `this more complex built-in plugin <https://github.com/eriknyquist/nedry/blob/master/nedry/builtin_plugins/stories.py>`_
 
 
 Misc. sample bot interactions
