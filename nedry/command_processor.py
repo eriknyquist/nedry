@@ -6,8 +6,10 @@
 import random
 import datetime
 import os
+import time
 import logging
 
+from nedry import __version__ as version
 from nedry import quotes
 from nedry import utils
 from nedry.twitch_monitor import InvalidTwitchUser
@@ -29,6 +31,20 @@ command you want help with.
 Example:
 
 @BotName !help wiki
+"""
+
+CMD_INFO_HELP = """
+{0}
+
+Show general information about the bot, including but not limited to;
+
+- Python package version
+- Uptime (how long the bot has been running for)
+- Installed plugins, both enabled and disabled
+
+Example:
+
+@BotName !help info
 """
 
 CMD_TIMEZONE_HELP = """
@@ -337,6 +353,7 @@ class CommandProcessor(object):
         self.mocking_enabled = True
         self.log_filename = None
         self.channel_data = {}
+        self.start_time = time.time()
 
         try:
             # Check if command log file path is accessible
@@ -345,6 +362,9 @@ class CommandProcessor(object):
             pass
         else:
             self.log_filename = config.config.command_log_file
+
+    def uptime_seconds(self):
+        return time.time() - self.start_time
 
     def get_channel_data(self, channel_id, ident):
         if channel_id not in self.channel_data:
@@ -868,9 +888,37 @@ def cmd_timezone(cmd_word, args, message, proc, config, twitch_monitor):
     config.save_to_file()
     return f"{message.author.mention} OK, your timezone is set to:\n```{tz_obj.key}```"
 
+def cmd_info(cmd_word, args, message, proc, config, twitch_monitor):
+    uptime_str = datetime.timedelta(seconds=proc.uptime_seconds())
+
+    enabled = proc.bot.plugin_manager.enabled_plugins()
+    disabled = proc.bot.plugin_manager.disabled_plugins()
+
+    if (not enabled) and (not disabled):
+        return "No plugins are loaded"
+
+    def format_plugin_list(plugins, desc):
+        return["    [%s] version %s: %s (%s)" % (x.plugin_name, x.plugin_version, x.plugin_short_description, desc) for x in plugins]
+
+
+    enabled_desc = format_plugin_list(enabled, "enabled")
+    disabled_desc = format_plugin_list(disabled, "disabled")
+    plugins_str = '\n'.join(enabled_desc + disabled_desc)
+
+    admin_users = '\n'.join(["    %s (%s)" % (proc.bot.client.get_user(x).name, x) for x in config.config.discord_admin_users])
+    joke_tellers = '\n'.join(["    %s (%s)" % (proc.bot.client.get_user(x).name, x) for x in config.config.discord_joke_tellers])
+
+    return (f"```Version: {version}\n"
+               f"Uptime: {uptime_str}\n\n"
+               f"Plugins:\n\n{plugins_str}\n\n"
+               f"Admin. users:\n\n{admin_users}\n\n"
+               f"Joke tellers:\n\n{joke_tellers}\n\n"
+               "```")
+
 nedry_command_list = [
     # Commands available to everyone
     Command("help", cmd_help, False, CMD_HELP_HELP),
+    Command("info", cmd_info, False, CMD_INFO_HELP),
     Command("quote", cmd_quote, False, CMD_QUOTE_HELP),
     Command("timezone", cmd_timezone, False, CMD_TIMEZONE_HELP),
 
