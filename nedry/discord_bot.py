@@ -29,6 +29,10 @@ class MessageResponse(object):
         self.member = member
         self.response_data = response_data
 
+    def is_dm(self):
+        return member is not None
+
+
 class DiscordBot(object):
     """
     Wraps some interactions with the discord bot API, handles running the
@@ -58,6 +62,8 @@ class DiscordBot(object):
         events.subscribe(EventType.TWITCH_STREAM_STARTED, self._on_twitch_stream_started)
         events.subscribe(EventType.HOST_STREAM_STARTED, self._on_host_stream_started)
         events.subscribe(EventType.HOST_STREAM_ENDED, self._on_host_stream_ended)
+        events.subscribe(EventType.BOT_COMMAND_RECEIVED, self._on_bot_command_received)
+        events.subscribe(EventType.BOT_SENDING_MESSAGE, self._on_bot_sending_message)
 
         self._host_streaming = False
 
@@ -94,6 +100,10 @@ class DiscordBot(object):
 
         @self.client.event
         async def on_message(message):
+            if message.author.id == self.client.user.id:
+                # Ignore messages from ourself
+                return
+
             resp = None
 
             if (self.mention() in message.content) or (self.nickmention() in message.content):
@@ -104,7 +114,7 @@ class DiscordBot(object):
             if resp is None:
                 return
 
-            if resp.member is not None:
+            if resp.is_dm():
                 # Response should be sent in a DM to given member
                 self._dm_response(message, resp)
             elif resp.channel is not None:
@@ -123,9 +133,6 @@ class DiscordBot(object):
                 return c
 
         return None
-
-    def _dm_response(self, message, resp):
-        self.send_dm(message.author, resp.response_data)
 
     def _channel_response(self, channel, resp):
         self.send_message(channel, resp.response_data)
@@ -212,22 +219,16 @@ class DiscordBot(object):
         asyncio.run(self.client.close())
         self.cmdprocessor.close()
 
-    def send_message(self, channel, message):
+    def _on_bot_sending_message(self, channel, message):
         messages = self._split_message_on_limit(message)
         for message in messages:
             asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
 
+    def send_message(self, channel, message):
+        events.emit(EventType.BOT_SENDING_MESSAGE, channel, message)
+
     def send_stream_announcement(self, message):
         asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
-
-    async def _send_dm_async(self, member, message):
-        channel = await member.create_dm()
-        await channel.send(message)
-
-    def send_dm(self, member, message):
-        messages = self._split_message_on_limit(message)
-        for message in messages:
-            asyncio.run_coroutine_threadsafe(self._send_dm_async(member, message), main_event_loop)
 
     def message_history(self, channel, limit=20):
         async def _get_messages(chan, lim):
@@ -249,15 +250,32 @@ class DiscordBot(object):
     def on_member_join(self, member):
         events.emit(EventType.NEW_DISCORD_MEMBER, member)
 
+    def _send_processed_response(self, message, resp):
+        if resp.channel is not None:
+            # Response should be sent on the given channel
+            self._channel_response(resp.channel, resp)
+        else:
+            raise RuntimeError("malformed response: channel must be set")
+
+    def _on_discord_message_received(self, discord_message):
+        resp = self.cmdprocessor.process_message(discord_message)
+
+        if resp is None:
+            return
+
+        resp_msg = MessageResponse(resp, channel=discord_message.channel)
+        self._send_processed_response(discord_message, resp_msg)
+
     def on_message(self, message):
         events.emit(EventType.DISCORD_MESSAGE_RECEIVED, message)
 
-        resp = self.cmdprocessor.process_message(message)
+    def _on_bot_command_received(self, discord_message, cmd_msg):
+        resp = self.cmdprocessor.process_command(discord_message.channel, discord_message.author, cmd_msg)
+        if resp is None:
+            return
 
-        if resp is not None:
-            return MessageResponse(resp, channel=message.channel)
-
-        return None
+        resp_msg = MessageResponse(resp, channel=discord_message.channel)
+        self._send_processed_response(discord_message, resp_msg)
 
     def on_mention(self, message):
         if message.author.id == self.client.user.id:
@@ -267,12 +285,7 @@ class DiscordBot(object):
         msg = message.content.replace(self.mention(), '', 1).strip()
 
         if not msg.strip().startswith(COMMAND_PREFIX):
-            # Only emit mention event if message is not a command
+            # Emit mention event if message is not a command
             events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
-
-        resp = self.cmdprocessor.process_command(message.channel, message.author, msg)
-
-        if resp is not None:
-             return MessageResponse(resp, channel=message.channel)
-
-        return None
+        else:
+            events.emit(EventType.BOT_COMMAND_RECEIVED, message, msg)

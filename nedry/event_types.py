@@ -35,3 +35,11 @@ class EventType(object):
     # Host twitch streamer stopped streaming
     HOST_STREAM_ENDED = 1003
 
+
+    # Events 2000 through 2999 are reserved for nedry-specific events
+
+    # Bot command received in public channel or DM. Emitted before the command is handled.
+    BOT_COMMAND_RECEIVED = 2000
+
+    # Bot is sending a message in a public channel or DM. Emitted before the message is sent.
+    BOT_SENDING_MESSAGE = 2001
