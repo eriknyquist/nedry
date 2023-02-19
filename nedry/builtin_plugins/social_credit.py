@@ -1,6 +1,7 @@
 import logging
 from versionedobj import VersionedObject, Serializer, ListField
 
+from nedry.command_processor import COMMAND_PREFIX
 from nedry.plugin import PluginModule
 from nedry.event_types import EventType
 from nedry import utils, events
@@ -61,12 +62,23 @@ def _on_discord_message_received(message):
 def _on_bot_command_received(message, text):
     logger.info("cmd received:" + text)
 
+    if text.startswith(COMMAND_PREFIX + "socialcredit"):
+        # Don't add points for requesting credit score
+        return
+
     user_id = message.author.id
+    chan_id = message.channel.id
+
     if user_id not in discord_users_by_id:
         discord_users_by_id[user_id] = DiscordUser()
         discord_users_by_id[user_id].user_id = user_id
 
     discord_users_by_id[user_id].bot_commands_sent += 1
+
+    if chan_id not in discord_users_by_id[user_id].channels_visited:
+        discord_users_by_id[user_id].channels_visited[chan_id] = 0
+
+    discord_users_by_id[user_id].channels_visited[chan_id] += 1
 
 
 def _calculate_score(user):

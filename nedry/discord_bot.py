@@ -284,7 +284,7 @@ class DiscordBot(object):
 
         msg = message.content.replace(self.mention(), '', 1).strip()
 
-        if not msg.strip().startswith(COMMAND_PREFIX):
+        if not msg.startswith(COMMAND_PREFIX):
             # Emit mention event if message is not a command
             events.emit(EventType.DISCORD_BOT_MENTION, message, msg)
         else:
