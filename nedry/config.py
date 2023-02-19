@@ -101,7 +101,14 @@ class BotConfigManager(object):
     def _check_flush_to_file(self):
         # If save was requested, flush current config data to file
         if self.save_requested.is_set():
-            self.serializer.to_file(self.filename, indent=4)
+            # Serialize to JSON string first (instead of serializing directly
+            # into the file), if there is an exception raised when serializing
+            # we don't want to blow away the old config data.
+            json_str = self.serializer.to_json(self.config, indent=4)
+
+            with open(self.filename, 'w') as fh:
+                fh.write(json_str)
+
             self.save_requested.clear()
             logger.debug(f"flushed new config to {self.filename}")
         else:
