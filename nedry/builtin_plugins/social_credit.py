@@ -145,7 +145,7 @@ class SocialCredit(PluginModule):
     CMD_COUNT: this is the total number of bot commands the user has performed in public channels,
                or in DMs with the bot.
 
-    AVG_MSGS_PER_CHAN: this MSG_COUNT divided by CHAN_COUNT
+    AVG_MSGS_PER_CHAN: this is MSG_COUNT divided by CHAN_COUNT
 
     TIME_FACTOR: this will be between 0.0 and 1.0, depending on the time since the last
     message sent by the discord user. The scale goes up to 7 days. If the discord user
