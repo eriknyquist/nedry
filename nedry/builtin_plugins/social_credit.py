@@ -1,3 +1,4 @@
+import time
 import logging
 from versionedobj import VersionedObject, Serializer, ListField
 
@@ -30,6 +31,10 @@ Example:
 """
 
 
+TIME_FACTOR_MAX_SECONDS = 3600 * 24 * 7    # 7 days
+INACTIVITY_RESET_SECONDS = 3600 * 24 * 28  # 28 days
+
+
 # Stores all discord user data at runtime, in a dict keyed by user ID
 discord_users_by_id = {}
 
@@ -44,48 +49,46 @@ class DiscordUser(VersionedObject):
     # Key is channel ID, value is number of messages sent to the channel
     channels_visited = {}
 
+    # Time of last message
+    last_msg_time = 0
+
 
 # Stores all discord user data in config file when bot is not running
 class SocialCreditConfig(VersionedObject):
     version = "1.0.0"
     discord_users = ListField(DiscordUser)
 
-def _on_discord_message_received(message):
-    logger.info("msg received: " + message.content)
 
-    user_id = message.author.id
-    chan_id = message.channel.id
-
+def _record_user(user_id):
     if user_id not in discord_users_by_id:
         discord_users_by_id[user_id] = DiscordUser()
         discord_users_by_id[user_id].user_id = user_id
 
-    if chan_id not in discord_users_by_id[user_id].channels_visited:
-        discord_users_by_id[user_id].channels_visited[chan_id] = 0
+def _record_message(message):
+    inactivity_secs = time.time() - discord_users_by_id[message.author.id].last_msg_time
+    if inactivity_secs >= INACTIVITY_RESET_SECONDS:
+        # If discord user has been inactive for a long time, reset their score
+        discord_users_by_id[message.author.id] = DiscordUser()
+        discord_users_by_id[message.author.id].user_id = message.author.id
 
-    discord_users_by_id[user_id].channels_visited[chan_id] += 1
+    if message.channel.id not in discord_users_by_id[message.author.id].channels_visited:
+        discord_users_by_id[message.author.id].channels_visited[message.channel.id] = 0
+
+    discord_users_by_id[message.author.id].channels_visited[message.channel.id] += 1
+    discord_users_by_id[message.author.id].last_msg_time = time.time()
+
+def _on_discord_message_received(message):
+    _record_user(message.author.id)
+    _record_message(message)
 
 def _on_bot_command_received(message, text):
-    logger.info("cmd received:" + text)
-
     if text.startswith(COMMAND_PREFIX + "socialcredit"):
         # Don't add points for requesting credit score
         return
 
-    user_id = message.author.id
-    chan_id = message.channel.id
-
-    if user_id not in discord_users_by_id:
-        discord_users_by_id[user_id] = DiscordUser()
-        discord_users_by_id[user_id].user_id = user_id
-
-    discord_users_by_id[user_id].bot_commands_sent += 1
-
-    if chan_id not in discord_users_by_id[user_id].channels_visited:
-        discord_users_by_id[user_id].channels_visited[chan_id] = 0
-
-    discord_users_by_id[user_id].channels_visited[chan_id] += 1
-
+    _record_user(message.author.id)
+    _record_message(message)
+    discord_users_by_id[message.author.id].bot_commands_sent += 1
 
 def _calculate_score(user):
     total_message_count = 0
@@ -98,7 +101,10 @@ def _calculate_score(user):
     if channel_count:
         avg_msgs_per_channel = float(total_message_count) / float(channel_count)
 
-    return int((total_message_count + channel_count + user.bot_commands_sent) * avg_msgs_per_channel)
+    secs_since_last_msg = min(time.time() - user.last_msg_time, TIME_FACTOR_MAX_SECONDS)
+    time_factor = 1.0 - (secs_since_last_msg / TIME_FACTOR_MAX_SECONDS)
+
+    return int(((total_message_count + channel_count + user.bot_commands_sent) * avg_msgs_per_channel) * time_factor)
 
 def socialcredit_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     if message.author.id not in discord_users_by_id:
@@ -129,7 +135,7 @@ class SocialCredit(PluginModule):
 
     The score for each discord user is calculated in the following way:
 
-    (MSG_COUNT + CHAN_COUNT + CMD_COUNT) * AVG_MSGS_PER_CHAN
+    ((MSG_COUNT + CHAN_COUNT + CMD_COUNT) * AVG_MSGS_PER_CHAN) * TIME_FACTOR
 
     MSG_COUNT: this is the total number of discord messages sent by the user in all public channels,
                or in DMs with the bot.
@@ -138,6 +144,16 @@ class SocialCredit(PluginModule):
 
     CMD_COUNT: this is the total number of bot commands the user has performed in public channels,
                or in DMs with the bot.
+
+    AVG_MSGS_PER_CHAN: this MSG_COUNT divided by CHAN_COUNT
+
+    TIME_FACTOR: this will be between 0.0 and 1.0, depending on the time since the last
+    message sent by the discord user. The scale goes up to 7 days. If the discord user
+    has sent a message in the last few minutes, TIME_SCALE will be 1.0, and if the discord
+    user has sent no messages for 7 days or greater then TIME_SCALE will be 0.0
+
+    If a discord user has been inactive (sent no messages in the server) for 28 days or
+    longer, then MSG_COUNT, CHAN_COUNT and CMD_COUNT are reset to 0.
 
     Commands added:
 
