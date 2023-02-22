@@ -130,8 +130,8 @@ class SocialCredit(PluginModule):
     The intent of the scoring algorithm is to favour users who interact regularly with the
     server, as long as those interactions are not "spread thinly" throughout the server.
 
-    For example, posting a lot of messages in a single channel may make your score go up,
-    but posting one message in all channels may make your score go down.
+    For example, posting a lot of messages in a single channel every day may make your score go up,
+    but posting one message in all channels very infrequently may make your score go down.
 
     The score for each discord user is calculated in the following way:
 
