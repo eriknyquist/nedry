@@ -142,11 +142,14 @@ class DiscordBot(object):
         line_buf = None
         code_marker_count = 0
         current_message = ""
+        inside_code_marker = False
 
         for line in message.split("\n"):
             if len(current_message) + len(line) > self.message_limit:
                 # This line would exceed message limit, time for a new message
-                inside_code_marker = (code_marker_count % 6) != 0
+                if (code_marker_count % 6) != 0:
+                    inside_code_marker = not inside_code_marker
+
                 code_marker_count = 0
 
                 if inside_code_marker:

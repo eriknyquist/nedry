@@ -18,6 +18,12 @@ SOCIALCREDIT_HELPTEXT = """
 
 Show your social credit score.
 
+The scoring algorihm is designed to favour users who interact regularly with the
+server, as long as those interactions are not "spread thinly" throughout the server.
+
+For example, posting a lot of messages in a single channel may make your score go up,
+but posting one message in all channels may make your score go down.
+
 Example:
 
 @BotName !socialcredit
@@ -110,8 +116,32 @@ class SocialCredit(PluginModule):
     """
     plugin_name = PLUGIN_NAME
     plugin_version = PLUGIN_VERSION
-    plugin_short_description = ""
+    plugin_short_description = "'social credit score' based on discord server interaction"
     plugin_long_description = """
+    Keeps track of a 'social credit score' for discord users. Scores are based on
+    how people interact with the discord server. A higher score is better.
+
+    The intent of the scoring algorithm is to favour users who interact regularly with the
+    server, as long as those interactions are not "spread thinly" throughout the server.
+
+    For example, posting a lot of messages in a single channel may make your score go up,
+    but posting one message in all channels may make your score go down.
+
+    The score for each discord user is calculated in the following way:
+
+    (MSG_COUNT + CHAN_COUNT + CMD_COUNT) * AVG_MSGS_PER_CHAN
+
+    MSG_COUNT: this is the total number of discord messages sent by the user in all public channels,
+               or in DMs with the bot.
+
+    CHAN_COUNT: this is the total number of public channels the user has sent a message in
+
+    CMD_COUNT: this is the total number of bot commands the user has performed in public channels,
+               or in DMs with the bot.
+
+    Commands added:
+
+    !socialcredit (see !help socialcredit)
     """
 
     def startup(self):
