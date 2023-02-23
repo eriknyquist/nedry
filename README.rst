@@ -380,7 +380,8 @@ with their expected arguments and a brief description:
        "text_without_mention" is the message text with the bot mention stripped out.
      - Emitted whenever any discord message that starts with a mention of the bots
        discord name is received, either in a public channel which the bot has access
-       to, or in a DM with the bot.
+       to, or in a DM with the bot. Only mentions which are not followed by a command are
+       included here, there is a separate event for commands, BOT_COMMAND_RECEIVED
 
    * - NEW_DISCORD_MEMBER
      - (member)
@@ -393,6 +394,26 @@ with their expected arguments and a brief description:
      - No arguments
      - Emmitted whenever the bot is connected to the configured discord server
        (this can take up to a few seconds after startup)
+
+   * - BOT_COMMAND_RECEIVED
+     - (message, text_without_mention)
+
+       "message" is the discord.py message object (see
+       `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.Message>`__)
+       "text_without_mention" is the message text with the bot mention stripped out.
+
+     - Emitted whenever a message starting with a bot mention followed by the command
+       prefix character ("!") is received, either in a public channel which the bot has
+       access to, or in a DM with the bot. Event is emitted before the command is handled.
+
+   * - BOT_SENDING_MESSAGE
+     - (channel, message_text)
+
+       "channel" is the discord.py Channel object for the channel the message is being sent on
+       (see `discord.py docs <https://discordpy.readthedocs.io/en/stable/api.html#discord.TextChannel>`_).
+       "message_text" is the message that will be sent to the channel.
+
+     - Emitted whenever the bot is about to send a message to public channel or to a DM.
 
    * - TWITCH_STREAM_STARTED
      - (name, url)
@@ -444,6 +465,27 @@ Command ``help``
    Example:
 
    @BotName !help wiki
+
+   All discord users may use this command.
+
+
+Command ``info``
+----------------
+
+::
+
+
+   info
+
+   Show general information about the bot, including but not limited to;
+
+   - Python package version
+   - Uptime (how long the bot has been running for)
+   - Installed plugins, both enabled and disabled
+
+   Example:
+
+   @BotName !help info
 
    All discord users may use this command.
 
@@ -1141,6 +1183,34 @@ Command ``story``
    @BotName !story continue Call me Ishmael       (Start new story with provided text, no prompt)
    @BotName !story show                           (Show the story as written so far)
    @BotName !story stop                           (Stop the story)
+
+   All discord users may use this command.
+
+
+Command ``socialcredit``
+------------------------
+
+::
+
+
+   socialcredit [top]
+
+   Show your social credit score.
+
+   The scoring algorithm is designed to favour users who interact regularly with the
+   server, as long as those interactions are not "spread thinly" throughout the server.
+
+   For example, posting a lot of messages in a single channel every day may make your score go up,
+   but posting one message in all channels very infrequently may make your score go down.
+
+   Using the command with no arguments shows your own social credit score. Using the command
+   with a single argument of "top" (e.g. "!socialcredit top") shows the 10 users with the highest
+   social credit score.
+
+   Example:
+
+   @BotName !socialcredit                 # Show your social credit score
+   @BotName !socialcredit top             # Show highest 10 scores
 
    All discord users may use this command.
 
