@@ -1,7 +1,7 @@
 requests
 pytimeparse
 twitch-python
-versionedobj>=2.0.2
+versionedobj>=2.0.3
 discord.py==1.7.3
 discord==1.7.3
 nltk

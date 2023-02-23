@@ -204,7 +204,6 @@ class SocialCredit(PluginModule):
         Called once when bot shuts down / is killed
         """
         config = SocialCreditConfig()
-        config.discord_users = ListField(DiscordUser)
 
         # Populate new config object with all discord user data
         for user_id in discord_users_by_id:
