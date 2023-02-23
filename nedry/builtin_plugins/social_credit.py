@@ -15,19 +15,24 @@ PLUGIN_VERSION = "1.0.0"
 
 
 SOCIALCREDIT_HELPTEXT = """
-{0}
+{0} [top]
 
 Show your social credit score.
 
-The scoring algorihm is designed to favour users who interact regularly with the
+The scoring algorithm is designed to favour users who interact regularly with the
 server, as long as those interactions are not "spread thinly" throughout the server.
 
 For example, posting a lot of messages in a single channel every day may make your score go up,
 but posting one message in all channels very infrequently may make your score go down.
 
+Using the command with no arguments shows your own social credit score. Using the command
+with a single argument of "top" (e.g. "!socialcredit top") shows the 10 users with the highest
+social credit score.
+
 Example:
 
-@BotName !socialcredit
+@BotName !socialcredit                 # Show your social credit score
+@BotName !socialcredit top             # Show highest 10 scores
 """
 
 
@@ -106,7 +111,23 @@ def _calculate_score(user):
 
     return int(((total_message_count + channel_count + user.bot_commands_sent) * avg_msgs_per_channel) * time_factor)
 
+def _leaderboard(bot):
+    users = [(u, _calculate_score(u)) for u in discord_users_by_id.values()]
+    users.sort(key=lambda x: x[1], reverse=True)
+
+    leaders = []
+    for user, score in users[:10]:
+        discord_user = bot.client.get_user(user.user_id)
+        leaders.append(f"{discord_user.display_name}: {score}")
+
+    return "Social Credit Leaderboard:\n```%s```" % '\n'.join(leaders)
+
 def socialcredit_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
+    if args:
+        args = args.split()
+        if args[0] == "top":
+            return _leaderboard(proc.bot)
+
     if message.author.id not in discord_users_by_id:
         score = 0
     else:
