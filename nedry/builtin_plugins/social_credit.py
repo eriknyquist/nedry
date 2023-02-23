@@ -127,6 +127,8 @@ def socialcredit_command_handler(cmd_word, args, message, proc, config, twitch_m
         args = args.split()
         if args[0] == "top":
             return _leaderboard(proc.bot)
+        else:
+            return f"{message.author.mention} unrecognized argument, see '{COMMAND_PREFIX}help {cmd_word}'"
 
     if message.author.id not in discord_users_by_id:
         score = 0
