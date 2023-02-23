@@ -21,6 +21,11 @@ Some out-of-the-box features include:
 * Telling knock-knock jokes (and remembering jokes that are told by discord users)
 * Looking something up on wikipedia (or providing a summary of a random wikipedia article)
 * Interactive trivia questions (via opentdb.com)
+* Collaborative story writing; provide a randomly selected story prompt, and collect
+  everyone's contributions to build a story together
+
+All of the features mentioned above are implemented as modular plugins in the ``nedry/builtin_plugins``
+directory, which serves as a helpful reference for plugin writers.
 
 To get started right away, see the `Quick start`_ section.
 
