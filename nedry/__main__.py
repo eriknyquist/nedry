@@ -51,6 +51,7 @@ def main():
         else:
             b.config.enabled_plugins = [x.plugin_name for x in builtin_plugin_modules]
             b.save_to_file()
+            b.stop()
             print("Created default config file '%s', please add required parameters" %
                   DEFAULT_CONFIG_FILE)
             return
