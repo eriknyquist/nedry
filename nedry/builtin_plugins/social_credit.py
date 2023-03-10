@@ -38,6 +38,7 @@ Example:
 
 TIME_FACTOR_MAX_SECONDS = 3600 * 24 * 7    # 7 days
 INACTIVITY_RESET_SECONDS = 3600 * 24 * 28  # 28 days
+CHAN_SPREAD_FACTOR_MAX_MSGS_PER_CHAN = 10  # 10 average messages per channel or more for best score
 
 
 # Stores all discord user data at runtime, in a dict keyed by user ID
@@ -109,7 +110,12 @@ def _calculate_score(user):
     secs_since_last_msg = min(time.time() - user.last_msg_time, TIME_FACTOR_MAX_SECONDS)
     time_factor = 1.0 - (secs_since_last_msg / TIME_FACTOR_MAX_SECONDS)
 
-    return int(((total_message_count + channel_count + user.bot_commands_sent) * avg_msgs_per_channel) * time_factor)
+
+    clamped_msgs_per_chan = min(int(avg_msgs_per_channel), CHAN_SPREAD_FACTOR_MAX_MSGS_PER_CHAN)
+    channel_spread_factor = (float(clamped_msgs_per_chan) / float(CHAN_SPREAD_FACTOR_MAX_MSGS_PER_CHAN))
+
+    base = (total_message_count + user.bot_commands_sent) * time_factor
+    return int(base + (base * channel_spread_factor))
 
 def _leaderboard(bot):
     users = [(u, _calculate_score(u)) for u in discord_users_by_id.values()]
@@ -155,28 +161,6 @@ class SocialCredit(PluginModule):
 
     For example, posting a lot of messages in a single channel every day may make your score go up,
     but posting one message in all channels very infrequently may make your score go down.
-
-    The score for each discord user is calculated in the following way:
-
-    ((MSG_COUNT + CHAN_COUNT + CMD_COUNT) * AVG_MSGS_PER_CHAN) * TIME_FACTOR
-
-    MSG_COUNT: this is the total number of discord messages sent by the user in all public channels,
-               or in DMs with the bot.
-
-    CHAN_COUNT: this is the total number of public channels the user has sent a message in
-
-    CMD_COUNT: this is the total number of bot commands the user has performed in public channels,
-               or in DMs with the bot.
-
-    AVG_MSGS_PER_CHAN: this is MSG_COUNT divided by CHAN_COUNT
-
-    TIME_FACTOR: this will be between 0.0 and 1.0, depending on the time since the last
-    message sent by the discord user. The scale goes up to 7 days. If the discord user
-    has sent a message in the last few minutes, TIME_SCALE will be 1.0, and if the discord
-    user has sent no messages for 7 days or greater then TIME_SCALE will be 0.0
-
-    If a discord user has been inactive (sent no messages in the server) for 28 days or
-    longer, then MSG_COUNT, CHAN_COUNT and CMD_COUNT are reset to 0.
 
     Commands added:
 
