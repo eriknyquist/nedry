@@ -634,7 +634,8 @@ def cmd_removestreamers(cmd_word, args, message, proc, config, twitch_monitor):
 
 def cmd_clearallstreamers(cmd_word, args, message, proc, config, twitch_monitor):
     twitch_monitor.clear_usernames()
-    config.confing.streamers_to_monitor.clear()
+    config.config.streamers_to_monitor.clear()
+    config.save_to_file()
 
     return "OK, no streamers are being monitored any more."
 
