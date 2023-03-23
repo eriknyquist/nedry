@@ -4,6 +4,7 @@
 import time
 import logging
 import threading
+from requests.exceptions import ConnectionError
 
 from nedry import events
 from nedry.event_types import EventType
@@ -12,7 +13,7 @@ import twitch
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 class InvalidTwitchUser(Exception):
@@ -46,10 +47,8 @@ class TwitchMonitor(object):
         self.users = []
         self.config = config
         self.usernames = {}
-        self.request_complete = threading.Event()
         self.discord_connected = threading.Event()
         self.stopped = threading.Event()
-        self.request_complete.set()
         self.last_host_obj = None
         self.streamers = {}
 
@@ -68,7 +67,7 @@ class TwitchMonitor(object):
         self.discord_connected.set()
 
     def reconnect(self, client_id, client_secret):
-        self.request_complete.wait()
+        logger.debug("Connecting to Twitch")
 
         try:
             new_helix = twitch.Helix(client_id, client_secret)
@@ -185,17 +184,26 @@ class TwitchMonitor(object):
         user = self.helix.user(username)
         return TwitchChannel(user, username)
 
-    def read_streamer_info(self, username):
-        self.request_complete.clear()
-        ret = self._read_streamer_info(username)
-        self.request_complete.set()
+    def _twitch_op_retry(self, op, *args, **kwargs):
+        retry_count = 10
+        success = False
+
+        while (not success) and (retry_count > 0):
+            try:
+                ret = op(*args, **kwargs)
+            except (ConnectionError, ConnectionResetError):
+                self.reconnect(self.config.config.twitch_client_id, self.config.config.twitch_client_secret)
+                retry_count -= 1
+            else:
+                success = True
+
         return ret
 
+    def read_streamer_info(self, username):
+        return self._twitch_op_retry(self._read_streamer_info, username)
+
     def read_all_streamer_info(self):
-        self.request_complete.clear()
-        all_info = [self._read_streamer_info(u) for u in self.usernames]
-        self.request_complete.set()
-        return all_info
+        return [self._twitch_op_retry(self._read_streamer_info, u) for u in self.usernames]
 
     def stop(self):
         self.stopped.set()
