@@ -4,7 +4,7 @@
 import time
 import logging
 import threading
-from requests.exceptions import ConnectionError
+from requests import exceptions
 
 from nedry import events
 from nedry.event_types import EventType
@@ -191,7 +191,7 @@ class TwitchMonitor(object):
         while (not success) and (retry_count > 0):
             try:
                 ret = op(*args, **kwargs)
-            except (ConnectionError, ConnectionResetError):
+            except (exceptions.ConnectionError, exceptions.HTTPError, ConnectionResetError):
                 self.reconnect(self.config.config.twitch_client_id, self.config.config.twitch_client_secret)
                 retry_count -= 1
             else:
