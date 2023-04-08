@@ -104,12 +104,13 @@ def _calculate_score(user):
     for chan_id in user.channels_visited:
         total_message_count += user.channels_visited[chan_id]
 
-    # Time since last message sent by user, or max if greater than max
+    # Time since last message sent by user, or TIME_FACTOR_MAX_SECONDS, whichever is smaller
     secs_since_last_msg = min(time.time() - user.last_msg_time, TIME_FACTOR_MAX_SECONDS)
 
-    # Create factor between 0.0 - 1.0. If last message sent by user was very
-    # recently, factor will be close to 1.0, and if it was equal to or greater
-    # than the maximum, it will be 0.0
+    # Create factor between 0.0 - 1.0, representing the inverse of the time since
+    # the last message sent by this user. If the last message was sent very
+    # recently, the factor will be close to 1.0. The greater the time since the last
+    # message, the closer this factor will be to 0.0, up to a time value of TIME_FACTOR_MAX_SECONDS
     time_factor = 1.0 - (secs_since_last_msg / TIME_FACTOR_MAX_SECONDS)
 
     return int((total_message_count + (channel_count * 10) + user.bot_commands_sent) * time_factor)
