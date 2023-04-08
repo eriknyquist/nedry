@@ -38,7 +38,6 @@ Example:
 
 TIME_FACTOR_MAX_SECONDS = 3600 * 24 * 7    # 7 days
 INACTIVITY_RESET_SECONDS = 3600 * 24 * 28  # 28 days
-CHAN_SPREAD_FACTOR_MAX_MSGS_PER_CHAN = 10  # 10 average messages per channel or more for best score
 
 
 # Stores all discord user data at runtime, in a dict keyed by user ID
@@ -97,25 +96,23 @@ def _on_bot_command_received(message, text):
     discord_users_by_id[message.author.id].bot_commands_sent += 1
 
 def _calculate_score(user):
-    total_message_count = 0
-    avg_msgs_per_channel = 1.0
+    # Number of channels user has sent a message in
     channel_count = len(user.channels_visited)
 
+    # Count total number of message sent by user in all channels
+    total_message_count = 0
     for chan_id in user.channels_visited:
         total_message_count += user.channels_visited[chan_id]
 
-    if channel_count:
-        avg_msgs_per_channel = float(total_message_count) / float(channel_count)
-
+    # Time since last message sent by user, or max if greater than max
     secs_since_last_msg = min(time.time() - user.last_msg_time, TIME_FACTOR_MAX_SECONDS)
+
+    # Create factor between 0.0 - 1.0. If last message sent by user was very
+    # recently, factor will be close to 1.0, and if it was equal to or greater
+    # than the maximum, it will be 0.0
     time_factor = 1.0 - (secs_since_last_msg / TIME_FACTOR_MAX_SECONDS)
 
-
-    clamped_msgs_per_chan = min(int(avg_msgs_per_channel), CHAN_SPREAD_FACTOR_MAX_MSGS_PER_CHAN)
-    channel_spread_factor = (float(clamped_msgs_per_chan) / float(CHAN_SPREAD_FACTOR_MAX_MSGS_PER_CHAN))
-
-    base = (total_message_count + user.bot_commands_sent) * time_factor
-    return int(base + (base * channel_spread_factor))
+    return int((total_message_count + (channel_count * 10) + user.bot_commands_sent) * time_factor)
 
 def _leaderboard(bot):
     users = [(u, _calculate_score(u)) for u in discord_users_by_id.values()]
