@@ -80,12 +80,7 @@ class BotConfigManager(object):
         self.filename = filename
         self.config = BotConfig()
         self.serializer = Serializer(self.config)
-        self.stop_event = threading.Event()
         self.save_requested = threading.Event()
-
-        self.save_thread = threading.Thread(target=self._save_thread_task)
-        self.save_thread.daemon = True
-        self.save_thread.start()
 
     def load_from_file(self, filename=None):
         if filename is None:
@@ -116,8 +111,6 @@ class BotConfigManager(object):
 
     def stop(self):
         logger.debug("Stopping")
-        self.stop_event.set()
-        self.save_thread.join()
         self._check_flush_to_file()
 
     def timezone_by_discord_user_id(self, discord_user_id):
@@ -127,19 +120,3 @@ class BotConfigManager(object):
             tz_info = zoneinfo.ZoneInfo(tz_name)
 
         return tz_info
-
-    def _save_thread_task(self):
-        logger.debug("started config file save thread")
-        last_save_time = time.time()
-
-        while True:
-            # Wait until it's time to check for a requested save
-            while (time.time() - last_save_time) < self.SAVE_INTERVAL_SECS:
-                time.sleep(1.0)
-
-                if self.stop_event.is_set():
-                    self.stop_event.clear()
-                    return
-
-            last_save_time = time.time()
-            self._check_flush_to_file()

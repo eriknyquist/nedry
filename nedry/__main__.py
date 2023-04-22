@@ -92,7 +92,6 @@ def main():
 
 
     connect_thread = threading.Thread(target=wait_for_guild_avail, args=(config, bot))
-    connect_thread.daemon = True
     connect_thread.start()
 
     # KeyboardInterrupt will not be bubbled up, instead it will just
