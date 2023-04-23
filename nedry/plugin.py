@@ -69,16 +69,16 @@ class PluginModuleManager(object):
             raise NameError("Plugin name %s already exists" % name)
 
         self._plugin_modules[name] = cls(self._discord_bot)
-        logger.info("loaded built-in %s %s" % (cls.plugin_name, cls.plugin_version))
+        logger.info("loaded plugin %s %s" % (cls.plugin_name, cls.plugin_version))
 
     def check_and_load_object(self, obj, filepath):
-        name = obj.plugin_name.lower()
         if inspect.isclass(obj) and issubclass(obj, PluginModule) and (obj != PluginModule):
+            name = obj.plugin_name.lower()
             if name in self._plugin_modules:
                 raise NameError("Plugin name %s already exists" % name)
 
             self._plugin_modules[name] = obj(self._discord_bot)
-            logger.info("%s %s loaded from %s" % (name, obj.plugin_version, filepath))
+            logger.info("loaded plugin %s %s from %s" % (name, obj.plugin_version, filepath))
 
     def load_plugins_from_file(self, filepath):
         spec = importlib.util.spec_from_file_location("Plugin%d" % len(self._plugin_modules),
