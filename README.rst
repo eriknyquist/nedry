@@ -357,7 +357,7 @@ Event reference for plugins
 ===========================
 
 If you are writing a plugin, you probably need to subscribe to some events (as shown
-in `this example plugin <https://github.com/eriknyquist/nedry/blob/master/example_plugins/echo_dm_example.py>`_).
+in `this example plugin <https://github.com/eriknyquist/nedry/blob/master/example_plugins/echo_mentions_example.py>`_).
 This section enumerates al available event types in ``nedry.event_types.events``, along
 with their expected arguments and a brief description:
 
