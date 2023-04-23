@@ -1,3 +1,6 @@
+# Empty plugin template that has all the boilerplate you'll need to get started
+# with most plugin implementations. Copy/paste this file to start your plugin.
+
 from nedry.event_types import EventType
 from nedry import events
 from nedry.plugin import PluginModule
@@ -51,7 +54,7 @@ def command1_handler(cmd_word, args, message, proc, config, twitch_monitor):
 
 class PluginTemplate(PluginModule):
     """
-    Plugin template showing the boilerplate needed for most plugins
+    Plugin template showing the structure required for a custom plugin
     """
     plugin_name = "Unique and succint plugin name"
     plugin_version = "1.0.0"
