@@ -206,7 +206,8 @@ Writing and using plugins
   ``!plugson`` and ``!plugsoff`` commands. For example, to disable the built-in
   ``knock_knock_jokes`` plugin, use ``@BotName !plugsoff knock_knock_jokes``.
 
-* To get started with writing plugins, see `this sample plugin <https://github.com/eriknyquist/nedry/blob/master/example_plugins/echo_dm_example.py>`_.
+* To get started with writing plugins, see `this sample functional plugin <https://github.com/eriknyquist/nedry/blob/master/example_plugins/echo_mentions_example.py>`_
+  and `this plugin template file <https://github.com/eriknyquist/nedry/blob/master/example_plugins/plugin_template.py>`_ (copy, paste & modify to make your own plugin).
 
   Also, see `this more complex built-in plugin <https://github.com/eriknyquist/nedry/blob/master/nedry/builtin_plugins/stories.py>`_
 
