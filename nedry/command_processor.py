@@ -8,6 +8,7 @@ import datetime
 import os
 import time
 import logging
+from difflib import SequenceMatcher
 
 from nedry import __version__ as version
 from nedry import quotes
@@ -454,6 +455,16 @@ class CommandProcessor(object):
 
         return None
 
+    def _nearest_command(self, unrec_cmd_word):
+        sorted_cmd_words = []
+
+        for cmd_word in self.cmds.keys():
+            ratio = SequenceMatcher(None, cmd_word, unrec_cmd_word).ratio()
+            sorted_cmd_words.append((cmd_word, ratio))
+
+        sorted_cmd_words.sort(reverse=True, key=lambda x: x[1])
+        return sorted_cmd_words[0]
+
     def process_command(self, channel, author, text):
         """
         Parse some text containing a command and run the handler, if there is an
@@ -491,7 +502,12 @@ class CommandProcessor(object):
             handler = self.cmds[command].handler
             return handler(command, argtext, msg_data, self, self.config, self.twitch_monitor)
 
-        return "Sorry, I don't recognize the command '%s'" % command
+        nearest, ratio = self._nearest_command(command)
+        ret = f"Sorry, I don't recognize the command `{command}`."
+        if ratio > 0.5:
+            ret += f" Did you mean `{nearest}`?"
+
+        return ret
 
     def usage_msg(self, msg, cmd_word):
         ret = msg + "\n\n"
