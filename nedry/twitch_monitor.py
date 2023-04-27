@@ -122,27 +122,11 @@ class TwitchMonitor(object):
 
             self.streamers[c.name] = c
 
-    def _check_streamers_retry(self, max_retries=5):
-        retry_count = 0
-
-        while True:
-            try:
-                self._check_streamers()
-            except ConnectionResetError as e:
-                if retry_count >= max_retries:
-                    raise e
-
-                retry_count += 1
-                logger.warning(f"ConnectionResetError occurred, retrying ({retry_count}/{max_retries})")
-                continue
-            else:
-                break
-
     def _streamer_check_loop(self):
         self.discord_connected.wait()
 
         last_check_time = time.time()
-        self._check_streamers_retry()
+        self._check_streamers()
 
         while True:
             # Wait for the poll period to expire
@@ -152,7 +136,7 @@ class TwitchMonitor(object):
                     return
 
             last_check_time += self.config.config.poll_period_seconds
-            self._check_streamers_retry()
+            self._check_streamers()
 
     def add_usernames(self, names):
         lnames = [x.lower() for x in names]
