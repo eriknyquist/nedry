@@ -24,6 +24,9 @@ jobs:
         # Install dev. requirements
       - name: Install deps
         run: pip install -r dev_requirements.txt
+        # Build wheel file
+      - name: Build wheel
+        run: python setup.py bdist_wheel
         # Install the wheel using pip
-      - name: Install package
+      - name: Install wheel
         run: pip install dist/nedry*.whl
