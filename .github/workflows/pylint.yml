@@ -23,7 +23,7 @@ jobs:
         run: python -c "import sys; print(sys.version)"
         # Install dev. requirements
 	  - name: Install deps
-	  - run: pip install -r dev_requirements.txt
+	    run: pip install -r dev_requirements.txt
         # Run pylint
       - name: Run pylint
         run: pylint nedry
