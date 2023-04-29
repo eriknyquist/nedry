@@ -2,7 +2,7 @@
 
     <p style=text-align:center;"><img src="images/dennis.png" width="100%" alt="Dennis Nedry from Jurassic Park"></p>
 
-Nedry discord bot 2.4.2
+Nedry discord bot 2.4.3
 =======================
 
 .. |build_badge| image:: https://github.com/eriknyquist/nedry/actions/workflows/build.yml/badge.svg
