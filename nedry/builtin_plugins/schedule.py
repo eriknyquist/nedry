@@ -5,7 +5,6 @@ from pytimeparse.timeparse import timeparse
 from datetime import timedelta, timezone, datetime
 import threading
 import logging
-import zoneinfo
 
 
 logger = logging.getLogger(__name__)
@@ -143,7 +142,7 @@ class Scheduler(object):
 
                     channel = self._discord_bot.get_channel_by_name(channel_name)
                     if not channel:
-                        self.logger.error("unable to find channel '%s'" % channel_name)
+                        logger.error("unable to find channel '%s'" % channel_name)
                         continue
 
                     logger.debug("sending '%s' to channel %s" % (text, channel_name))
@@ -193,7 +192,7 @@ class Scheduler(object):
 
     def save_scheduled_events(self):
         if PLUGIN_NAME in self._discord_bot.config.config.plugin_data:
-           del self._discord_bot.config.config.plugin_data[PLUGIN_NAME]
+            del self._discord_bot.config.config.plugin_data[PLUGIN_NAME]
 
         scheduled_events = []
         for event in self._active_events:
@@ -223,7 +222,6 @@ class Scheduler(object):
         event = ScheduledEvent(mins_from_now * 60, expiry_time_secs, event_type, *event_data)
 
         with self._lock:
-            first_event = len(self._active_events) == 0
             if self._active_events:
                 # Other events are active, stop the thread before modifying the list
                 self.stop()
@@ -468,7 +466,6 @@ def _parse_timedelta_from_message(config, discord_user, message):
         return None, None, None
 
     # See if string describes a time delta
-    msg = ' '.join(fields[:-1])
     timedesc = fields[-1]
     deltasecs = _parse_time_string(timedesc)
 

@@ -1,12 +1,8 @@
-import requests
 import logging
-import threading
-import concurrent
 import asyncio
 import random
 
-from nedry.event_types import EventType
-from nedry import events, utils
+from nedry import utils
 from nedry.plugin import PluginModule
 
 logger = logging.getLogger(__name__)

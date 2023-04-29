@@ -3,7 +3,6 @@
 #
 # All of the handler functions for commands are also implemented here.
 
-import random
 import datetime
 import os
 import time
@@ -442,18 +441,6 @@ class CommandProcessor(object):
             cmd_names = [self.cmds[x].help_oneline() for x in self.cmds if not self.cmds[x].admin_only]
 
         return "Available commands:\n```%s```" % "\n".join(cmd_names)
-
-    def process_message(self, message):
-        """
-        Called for any old message (not a command for the bot)
-
-        :return: Response to send back to discord
-        :rtype: str
-        """
-        author = message.author
-        text = message.content
-
-        return None
 
     def _nearest_command(self, unrec_cmd_word):
         sorted_cmd_words = []

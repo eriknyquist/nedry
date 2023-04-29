@@ -5,7 +5,7 @@ from versionedobj import VersionedObject, Serializer, ListField
 from nedry.command_processor import COMMAND_PREFIX
 from nedry.plugin import PluginModule
 from nedry.event_types import EventType
-from nedry import utils, events
+from nedry import events
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

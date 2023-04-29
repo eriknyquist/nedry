@@ -90,15 +90,12 @@ class TwitchMonitor(object):
         channels = self.read_all_streamer_info()
 
         # See if host stream status changed state
-        host_is_streaming = False
         if self.config.config.host_streamer is not None:
             host = self.read_streamer_info(self.config.config.host_streamer)
-            host_is_streaming = host.is_live
             if self.last_host_obj is not None:
                 if self.last_host_obj.is_live != host.is_live:
                     if host.is_live:
                         events.emit(EventType.HOST_STREAM_STARTED)
-                        host_stream_started = True
                     else:
                         events.emit(EventType.HOST_STREAM_ENDED)
 

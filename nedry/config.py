@@ -1,8 +1,6 @@
 # Implements a BotConfig class that handles saving/loading the bot .json
 # configuration file from disk.
 
-import json
-import time
 import logging
 import threading
 import zoneinfo

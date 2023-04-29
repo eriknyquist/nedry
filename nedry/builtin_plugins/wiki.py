@@ -1,14 +1,14 @@
 import requests
 import logging
 
-from nedry.event_types import EventType
-from nedry import events, utils
+from nedry import utils
 from nedry.plugin import PluginModule
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 WIKI_URL = 'https://en.wikipedia.org/w/api.php'
+REQUEST_TIMEOUT_S = 5.0
 
 
 def _wiki_summary_by_page_title(title):
@@ -23,7 +23,7 @@ def _wiki_summary_by_page_title(title):
 
     # Use the search API to search for pages related to text
     try:
-        response = requests.get(WIKI_URL, params=params)
+        response = requests.get(WIKI_URL, params=params, timeout=REQUEST_TIMEOUT_S)
     except:
         return None
 
@@ -42,7 +42,7 @@ def get_wiki_summary(search_text):
 
     # Use the search API to search for pages related to text
     try:
-        response = requests.get(WIKI_URL, params=params)
+        response = requests.get(WIKI_URL, params=params, timeout=REQUEST_TIMEOUT_S)
     except:
         return None
 
@@ -67,7 +67,7 @@ def get_random_wiki_summary():
     }
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT_S)
     except:
         return None
 

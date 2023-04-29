@@ -188,7 +188,7 @@ class PluginModuleManager(object):
         logger.debug("Starting up")
         # Start up all plugins
         for n in self._plugin_modules:
-            plugin = self._plugin_modules[n].startup()
+            self._plugin_modules[n].startup()
 
     def shutdown_plugins(self):
         """
@@ -197,4 +197,4 @@ class PluginModuleManager(object):
         logger.debug("Shutting down")
         # Start up all plugins
         for n in self._plugin_modules:
-            plugin = self._plugin_modules[n].shutdown()
+            self._plugin_modules[n].shutdown()

@@ -57,8 +57,8 @@ def _retrieve_quote(json_filename):
             elif ch == b'}':
                 if depth == 0:
                     break
-                else:
-                    depth -= 1
+
+                depth -= 1
 
             ch = fh.read(1)
 
@@ -156,8 +156,6 @@ def get_donk_quote(json_filename=DEFAULT_JSON_FILE):
     :return: Tuple of the form (str(quote_text), str(quote_author))
     :rtype: tuple
     """
-    quote = None
-    words = None
     spans = []
 
     # Keep grabbing quotes until we get one with at least one verb or noun

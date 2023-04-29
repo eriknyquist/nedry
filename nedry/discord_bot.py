@@ -1,7 +1,5 @@
 # Implements a DiscordBot class that provides a interface for interacting
 # with discord's bot API
-import queue
-import os
 import discord
 import asyncio
 import logging
@@ -30,7 +28,7 @@ class MessageResponse(object):
         self.response_data = response_data
 
     def is_dm(self):
-        return member is not None
+        return self.member is not None
 
 
 class DiscordBot(object):
@@ -104,25 +102,19 @@ class DiscordBot(object):
                 # Ignore messages from ourself
                 return
 
-            resp = None
-
             if (self.mention() in message.content) or (self.nickmention() in message.content):
-                resp = self.on_mention(message)
+                self.on_mention(message)
             else:
-                resp = self.on_message(message)
+                self.on_message(message)
 
-            if resp is None:
-                return
+    async def _send_dm_async(self, member, message):
+        channel = await member.create_dm()
+        await channel.send(message)
 
-            if resp.is_dm():
-                # Response should be sent in a DM to given member
-                self._dm_response(message, resp)
-            elif resp.channel is not None:
-                # Response should be sent on the given channel
-                self._channel_response(resp.channel, resp)
-            else:
-                raise RuntimeError("malformed response: either member or "
-                                   "channel must be set")
+    def send_dm(self, member, message):
+        messages = self._split_message_on_limit(message)
+        for m in messages:
+            asyncio.run_coroutine_threadsafe(self._send_dm_async(member, m), main_event_loop)
 
     def get_channel_by_name(self, name):
         if self.guild is None:
@@ -139,7 +131,6 @@ class DiscordBot(object):
 
     def _split_message_on_limit(self, message):
         msgs = []
-        line_buf = None
         code_marker_count = 0
         current_message = ""
         inside_code_marker = False
@@ -224,8 +215,8 @@ class DiscordBot(object):
 
     def _on_bot_sending_message(self, channel, message):
         messages = self._split_message_on_limit(message)
-        for message in messages:
-            asyncio.run_coroutine_threadsafe(channel.send(message), main_event_loop)
+        for m in messages:
+            asyncio.run_coroutine_threadsafe(channel.send(m), main_event_loop)
 
     def send_message(self, channel, message):
         events.emit(EventType.BOT_SENDING_MESSAGE, channel, message)
@@ -260,15 +251,6 @@ class DiscordBot(object):
         else:
             raise RuntimeError("malformed response: channel must be set")
 
-    def _on_discord_message_received(self, discord_message):
-        resp = self.cmdprocessor.process_message(discord_message)
-
-        if resp is None:
-            return
-
-        resp_msg = MessageResponse(resp, channel=discord_message.channel)
-        self._send_processed_response(discord_message, resp_msg)
-
     def on_message(self, message):
         events.emit(EventType.DISCORD_MESSAGE_RECEIVED, message)
 
@@ -283,7 +265,7 @@ class DiscordBot(object):
     def on_mention(self, message):
         if message.author.id == self.client.user.id:
             # Ignore mentions of ourself from ourself
-            return None
+            return
 
         msg = message.content.replace(self.mention(), '', 1).strip()
 

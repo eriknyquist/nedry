@@ -455,7 +455,10 @@ disable=raw-checker-failed,
         super-with-arguments,
         logging-not-lazy,
         consider-using-get,
-        logging-fstring-interpolation
+        logging-fstring-interpolation,
+        duplicate-code,
+        unnecessary-pass,
+        simplifiable-if-expression
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

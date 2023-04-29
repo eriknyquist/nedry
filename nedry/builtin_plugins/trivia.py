@@ -1,7 +1,6 @@
 import requests
 import random
 import html
-import time
 import threading
 import logging
 
@@ -12,6 +11,7 @@ from nedry import events, utils
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+REQUEST_TIMEOUT_S = 5.0
 PLUGIN_NAME = "trivia"
 PLUGIN_VERSION = "1.0.0"
 
@@ -109,7 +109,7 @@ class TriviaSession(object):
 
 
 def populate_categories():
-    resp = requests.get(url="https://opentdb.com/api_category.php")
+    resp = requests.get(url="https://opentdb.com/api_category.php", timeout=REQUEST_TIMEOUT_S)
     attrs = resp.json()
 
     for d in attrs["trivia_categories"]:
@@ -125,7 +125,7 @@ def get_trivia_question():
     if category_ids:
         dburl += f"&category={random.choice(category_ids)}"
 
-    resp = requests.get(url=dburl)
+    resp = requests.get(url=dburl, timeout=REQUEST_TIMEOUT_S)
     attrs = resp.json()
 
     q = attrs["results"][0]

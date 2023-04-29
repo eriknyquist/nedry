@@ -19,7 +19,7 @@ class EventType(object):
 
     # Connected to discord server (this sometimes takes a few seconds after startup)
     DISCORD_CONNECTED = 3
-    
+
 
     # Events 1000 through 1999 are reserved for twitch-related events
 
