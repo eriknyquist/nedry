@@ -1,0 +1,29 @@
+name: Build
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # Run in all these versions of Python
+        python-version: [3.7, 3.8, 3.9, 3.10]
+
+    steps:
+        # Checkout the latest code from the repo
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        # Setup which version of Python to use
+      - name: Set Up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+        # Display the Python version being used
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+        # Install dev. requirements
+	  - name: Install deps
+	  - run: pip install -r dev_requirements.txt
+        # Install the wheel using pip
+      - name: Install package
+        run: pip install dist/nedry*.whl
