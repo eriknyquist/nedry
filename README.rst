@@ -5,6 +5,14 @@
 Nedry discord bot 2.4.2
 =======================
 
+.. |build_badge| image:: https://github.com/eriknyquist/nedry/actions/workflows/build.yml/badge.svg
+.. |pylint_badge| image:: https://github.com/eriknyquist/nedry/actions/workflows/pylint.yml/badge.svg
+.. |version_badge| image:: https://badgen.net/pypi/v/nedry
+.. |license_badge| image:: https://badgen.net/pypi/license/nedry
+.. |codeclimate_badge| image:: https://api.codeclimate.com/v1/badges/eec6b28ea8ca99a910bb/maintainability
+
+|build_badge| |pylint_badge| |version_badge| |license_badge| |codeclimate_badge|
+
 (formerly "twitch_monitor_discord_bot")
 
 Nedry is a self-hosted discord bot with a modular plugin system. Lots of useful
