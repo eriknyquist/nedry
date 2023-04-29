@@ -22,8 +22,8 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
         # Install dev. requirements
-	  - name: Install deps
-	    run: pip install -r dev_requirements.txt
+      - name: Install deps
+        run: pip install -r dev_requirements.txt
         # Install the wheel using pip
       - name: Install package
         run: pip install dist/nedry*.whl
