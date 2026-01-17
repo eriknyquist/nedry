@@ -43,13 +43,6 @@ class DiscordBot(object):
         self.channel_name = config.config.discord_channel_name
         self.config = config
 
-        #intents = discord.Intents.default()
-        #intents.members = True
-        #intents.messages = True
-        #intents.message_content = True
-        #intents.guilds = True
-        #intents.guild_messages = True
-        #self.client = discord.Client(intents=intents)
         self.client = discord.Client(intents=discord.Intents().all())
         self.guild = None
         self.cmdprocessor = CommandProcessor(config, self, twitch_monitor, nedry_command_list)
@@ -111,10 +104,17 @@ class DiscordBot(object):
         channel = await member.create_dm()
         await channel.send(message)
 
+    def schedule_coroutine(self, coro):
+        try:
+            asyncio.get_running_loop()
+            asyncio.create_task(coro)
+        except RuntimeError:
+            asyncio.run_coroutine_threadsafe(coro, self.client.loop)
+
     def send_dm(self, member, message):
         messages = self._split_message_on_limit(message)
         for m in messages:
-            asyncio.run_coroutine_threadsafe(self._send_dm_async(member, m), main_event_loop)
+            self.schedule_coroutine(self._send_dm_async(member, m))
 
     def get_channel_by_name(self, name):
         if self.guild is None:
@@ -216,24 +216,14 @@ class DiscordBot(object):
     def _on_bot_sending_message(self, channel, message):
         messages = self._split_message_on_limit(message)
         for m in messages:
-            asyncio.run_coroutine_threadsafe(channel.send(m), main_event_loop)
+            #asyncio.create_task(channel.send(m))
+            self.schedule_coroutine(channel.send(m))
 
     def send_message(self, channel, message):
         events.emit(EventType.BOT_SENDING_MESSAGE, channel, message)
 
     def send_stream_announcement(self, message):
-        asyncio.run_coroutine_threadsafe(self.channel.send(message), main_event_loop)
-
-    def message_history(self, channel, limit=20):
-        async def _get_messages(chan, lim):
-            return await chan.history(limit=lim).flatten()
-
-        fut = asyncio.run_coroutine_threadsafe(_get_messages(channel, limit), main_event_loop)
-        async def _await_fut():
-            await fut
-
-        asyncio.run_coroutine_threadsafe(_await_fut(), main_event_loop)
-        return fut.result(1)
+        self.schedule_coroutine(self.channel.send(message))
 
     def on_connect(self):
         pass

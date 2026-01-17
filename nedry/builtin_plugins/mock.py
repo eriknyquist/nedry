@@ -104,7 +104,7 @@ def mock_command_handler(cmd_word, args, message, proc, config, twitch_monitor):
     if user_id is None:
         return "Please mention the user you wish to mock (e.g. '!mock @eknyquist)"
 
-    asyncio.run_coroutine_threadsafe(_mock_last_message(proc.bot, message.channel, user_id), main_event_loop)
+    asyncio.create_task(_mock_last_message(proc.bot, message.channel, user_id))
 
 
 def apologize_command_handler(cmd_word, args, message, proc, config, twitch_monitor):

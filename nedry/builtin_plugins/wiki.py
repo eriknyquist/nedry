@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 WIKI_URL = 'https://en.wikipedia.org/w/api.php'
 REQUEST_TIMEOUT_S = 5.0
-
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
 
 def _wiki_summary_by_page_title(title):
     params = {
@@ -23,7 +23,8 @@ def _wiki_summary_by_page_title(title):
 
     # Use the search API to search for pages related to text
     try:
-        response = requests.get(WIKI_URL, params=params, timeout=REQUEST_TIMEOUT_S)
+        response = requests.get(WIKI_URL, params=params, timeout=REQUEST_TIMEOUT_S,
+                                headers={'User-Agent': USER_AGENT})
     except:
         return None
 
@@ -33,16 +34,17 @@ def _wiki_summary_by_page_title(title):
 
 def get_wiki_summary(search_text):
     params = {
-            'action': 'query',
-            'format': 'json',
-            'list': 'search',
-            'utf8': 1,
-            'srsearch': search_text
+        'action': 'query',
+        'format': 'json',
+        'list': 'search',
+        'utf8': 1,
+        'srsearch': search_text,
     }
 
     # Use the search API to search for pages related to text
     try:
-        response = requests.get(WIKI_URL, params=params, timeout=REQUEST_TIMEOUT_S)
+        response = requests.get(WIKI_URL, params=params, timeout=REQUEST_TIMEOUT_S,
+                                headers={'User-Agent': USER_AGENT})
     except:
         return None
 
@@ -58,16 +60,17 @@ def get_wiki_summary(search_text):
 def get_random_wiki_summary():
     url = 'https://en.wikipedia.org/w/api.php'
     params = {
-            'action': 'query',
-            'format': 'json',
-            'list': 'random',
-            'utf8': 1,
-            'rnnamespace': 0,
-            'rnlimit': 1
+        'action': 'query',
+        'format': 'json',
+        'list': 'random',
+        'utf8': 1,
+        'rnnamespace': 0,
+        'rnlimit': 1,
     }
 
     try:
-        response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT_S)
+        response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT_S,
+                                headers={'User-Agent': USER_AGENT})
     except:
         return None
 

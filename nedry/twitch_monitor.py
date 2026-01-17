@@ -184,7 +184,7 @@ class TwitchMonitor(object):
         return self._twitch_op_retry(self._read_streamer_info, username)
 
     def read_all_streamer_info(self):
-        return [self._twitch_op_retry(self._read_streamer_info, u) for u in self.usernames]
+        return [self._twitch_op_retry(self._read_streamer_info, u) for u in list(self.usernames.keys())]
 
     def stop(self):
         self.stopped.set()

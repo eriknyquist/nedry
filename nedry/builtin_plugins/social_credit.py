@@ -122,7 +122,8 @@ def _leaderboard(bot):
     leaders = []
     for user, score in users[:10]:
         discord_user = bot.client.get_user(user.user_id)
-        leaders.append(f"{discord_user.display_name}: {score}")
+        if discord_user is not None:
+            leaders.append(f"{discord_user.name}: {score}")
 
     return "Social Credit Leaderboard:\n```%s```" % '\n'.join(leaders)
 
